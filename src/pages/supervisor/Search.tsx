@@ -9,19 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
-import { Search, Download, Clock, User, Loader2 } from 'lucide-react';
+import { Search, Download, Clock, User, Loader2, ChevronDown, X } from 'lucide-react';
 
 export default function CallSearch() {
   const [keyword, setKeyword] = useState('');
-  const [agentId, setAgentId] = useState<string>('all');
+  const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [sentimentRange, setSentimentRange] = useState<[number, number]>([-1, 1]);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -30,12 +29,24 @@ export default function CallSearch() {
   const [selectedCall, setSelectedCall] = useState<Call | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const handleAgentToggle = (agentId: string) => {
+    setSelectedAgentIds((prev) =>
+      prev.includes(agentId)
+        ? prev.filter((id) => id !== agentId)
+        : [...prev, agentId]
+    );
+  };
+
+  const clearAgentSelection = () => {
+    setSelectedAgentIds([]);
+  };
+
   const handleSearch = async (page = 1) => {
     setLoading(true);
     try {
       const result = await MockService.searchCalls({
         keyword: keyword || undefined,
-        agentId: agentId !== 'all' ? agentId : undefined,
+        agentIds: selectedAgentIds.length > 0 ? selectedAgentIds : undefined,
         sentimentMin: sentimentRange[0],
         sentimentMax: sentimentRange[1],
         dateFrom: dateFrom || undefined,
@@ -105,6 +116,10 @@ export default function CallSearch() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const selectedAgentNames = selectedAgentIds
+    .map((id) => mockData.agents.find((a) => a.id === id)?.name)
+    .filter(Boolean);
+
   return (
     <div className="container mx-auto px-6 py-8">
       {/* Search Filters */}
@@ -121,20 +136,72 @@ export default function CallSearch() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Agent</Label>
-            <Select value={agentId} onValueChange={setAgentId}>
-              <SelectTrigger>
-                <SelectValue placeholder="All agents" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All agents</SelectItem>
-                {mockData.agents.map((agent) => (
-                  <SelectItem key={agent.id} value={agent.id}>
-                    {agent.name}
-                  </SelectItem>
+            <Label>Agents</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between font-normal"
+                >
+                  {selectedAgentIds.length === 0 ? (
+                    <span className="text-muted-foreground">Select agents...</span>
+                  ) : (
+                    <span className="truncate">
+                      {selectedAgentIds.length} agent{selectedAgentIds.length !== 1 ? 's' : ''} selected
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-0" align="start">
+                <div className="p-2 border-b">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Select Agents</span>
+                    {selectedAgentIds.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-1 text-xs"
+                        onClick={clearAgentSelection}
+                      >
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="max-h-64 overflow-y-auto p-2">
+                  {mockData.agents.map((agent) => (
+                    <label
+                      key={agent.id}
+                      className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedAgentIds.includes(agent.id)}
+                        onCheckedChange={() => handleAgentToggle(agent.id)}
+                      />
+                      <span className="text-sm">{agent.name}</span>
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        {agent.team}
+                      </Badge>
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            {selectedAgentIds.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {selectedAgentNames.slice(0, 3).map((name) => (
+                  <Badge key={name} variant="secondary" className="text-xs">
+                    {name}
+                  </Badge>
                 ))}
-              </SelectContent>
-            </Select>
+                {selectedAgentIds.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{selectedAgentIds.length - 3} more
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label>

@@ -1,6 +1,7 @@
 import { mockData, Call, Alert, CallSummary } from './mock-data';
 import { useAppStore } from '@/stores/app-store';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export interface SearchParams {
   keyword?: string;
@@ -45,6 +46,7 @@ export const MockService = {
         if (!transcriptMatch && !topicMatch && !nameMatch) return false;
       }
       
+      // Support both single agentId and multiple agentIds
       if (params.agentId && call.agentId !== params.agentId) return false;
       if (params.agentIds?.length && !params.agentIds.includes(call.agentId)) return false;
       if (params.sentimentMin !== undefined && call.sentimentScore < params.sentimentMin) return false;
@@ -74,6 +76,7 @@ export const MockService = {
   listAlerts(filters?: {
     status?: 'open' | 'closed';
     severity?: 'high' | 'medium' | 'low';
+    ruleLabel?: string;
     dateFrom?: string;
     dateTo?: string;
   }): Alert[] {
@@ -83,6 +86,7 @@ export const MockService = {
     return alerts.filter((alert) => {
       if (filters?.status && alert.status !== filters.status) return false;
       if (filters?.severity && alert.severity !== filters.severity) return false;
+      if (filters?.ruleLabel && alert.ruleLabel !== filters.ruleLabel) return false;
       if (filters?.dateFrom && alert.createdAt < filters.dateFrom) return false;
       if (filters?.dateTo && alert.createdAt > filters.dateTo) return false;
       return true;
@@ -174,7 +178,59 @@ export const MockService = {
     URL.revokeObjectURL(url);
   },
 
-  async exportPDF(htmlContent: string, filename: string) {
+  async exportPDF(elementId: string, filename: string): Promise<void> {
+    const element = document.getElementById(elementId);
+    
+    if (!element) {
+      // Fallback to text-based PDF if no element found
+      console.warn('Element not found for PDF export, using fallback');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      pdf.setFontSize(20);
+      pdf.text('Daily Brief Report', 105, 20, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text('Content not available', 20, 40);
+      pdf.save(`${filename}.pdf`);
+      return;
+    }
+
+    try {
+      // Use html2canvas to capture the element
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+      
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${filename}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      // Fallback to text-based PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      pdf.setFontSize(20);
+      pdf.text('Daily Brief Report', 105, 20, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text('Export failed - please try again', 20, 40);
+      pdf.save(`${filename}.pdf`);
+    }
+  },
+
+  // Legacy text-based PDF export for backwards compatibility
+  async exportPDFText(content: string, filename: string) {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     
@@ -182,7 +238,7 @@ export const MockService = {
     pdf.text('Daily Brief Report', pageWidth / 2, 20, { align: 'center' });
     
     pdf.setFontSize(12);
-    const lines = htmlContent.split('\n');
+    const lines = content.split('\n');
     let y = 40;
     
     lines.forEach((line) => {
@@ -289,5 +345,35 @@ export const MockService = {
         if (filters?.minSentiment !== undefined && c.sentimentScore < filters.minSentiment) return false;
         return true;
       });
+  },
+
+  // Get agent's recent calls for the agent view
+  listAgentCalls(agentId: string, limit = 20): Call[] {
+    return mockData.calls
+      .filter((c) => c.agentId === agentId)
+      .slice(0, limit);
+  },
+
+  // Simulate a call ending and generate tips for agent
+  simulateCallEndForAgent(agentId: string): { call: Call; tips: string[]; reason: string } | null {
+    const agentCalls = mockData.calls.filter((c) => c.agentId === agentId);
+    const randomCall = agentCalls[Math.floor(Math.random() * agentCalls.length)];
+    
+    if (!randomCall) return null;
+    
+    const { tips, reason } = this.generatePostCallTips(randomCall);
+    
+    useAppStore.getState().addAgentTip({
+      callId: randomCall.id,
+      agentId,
+      tips,
+      reason,
+    });
+    
+    useAppStore.getState().addNotification(
+      `New coaching tips available for your recent call`
+    );
+    
+    return { call: randomCall, tips, reason };
   },
 };

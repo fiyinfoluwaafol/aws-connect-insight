@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   Star,
   Plus,
+  Loader2,
 } from 'lucide-react';
 
 export default function DailyBriefs() {
@@ -32,12 +33,13 @@ export default function DailyBriefs() {
   );
   const [viewBrief, setViewBrief] = useState<typeof dailyBriefs[0] | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       await new Promise((r) => setTimeout(r, 500)); // Simulate delay
-      const brief = MockService.generateDailyBrief(selectedDate);
+      MockService.generateDailyBrief(selectedDate);
       toast({
         title: 'Brief Generated',
         description: `Daily brief for ${selectedDate} has been created.`,
@@ -53,7 +55,17 @@ export default function DailyBriefs() {
   };
 
   const handleExportPDF = async (brief: typeof dailyBriefs[0]) => {
-    const content = `
+    setExporting(true);
+    try {
+      // Try to export using html2canvas if the element exists
+      await MockService.exportPDF('brief-content', `daily-brief-${brief.date}`);
+      toast({
+        title: 'PDF Exported',
+        description: 'The daily brief has been downloaded as PDF.',
+      });
+    } catch (error) {
+      // Fallback to text-based export
+      const content = `
 Daily Brief - ${brief.date}
 Generated: ${new Date(brief.generatedAt).toLocaleString()}
 
@@ -75,13 +87,16 @@ ${brief.content.coachingOpportunities.map((opp, i) => `${i + 1}. ${opp}`).join('
 EXEMPLAR CALLS
 --------------
 ${brief.content.exemplarLinks.join(', ')}
-    `.trim();
+      `.trim();
 
-    await MockService.exportPDF(content, `daily-brief-${brief.date}`);
-    toast({
-      title: 'PDF Exported',
-      description: 'The daily brief has been downloaded as PDF.',
-    });
+      await MockService.exportPDFText(content, `daily-brief-${brief.date}`);
+      toast({
+        title: 'PDF Exported',
+        description: 'The daily brief has been downloaded as PDF.',
+      });
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleEmailBrief = (brief: typeof dailyBriefs[0]) => {
@@ -116,7 +131,11 @@ ${brief.content.exemplarLinks.join(', ')}
             />
           </div>
           <Button onClick={handleGenerate} disabled={generating}>
-            <Plus className="h-4 w-4 mr-2" />
+            {generating ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4 mr-2" />
+            )}
             {generating ? 'Generating...' : 'Generate Brief'}
           </Button>
         </div>
@@ -201,76 +220,91 @@ ${brief.content.exemplarLinks.join(', ')}
           </DialogHeader>
           {viewBrief && (
             <div className="space-y-6">
-              {/* Summary Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{viewBrief.content.totalCalls}</p>
-                  <p className="text-xs text-muted-foreground">Total Calls</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{viewBrief.content.avgSentiment}</p>
-                  <p className="text-xs text-muted-foreground">Avg Sentiment</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{viewBrief.content.negativePercent}%</p>
-                  <p className="text-xs text-muted-foreground">Negative</p>
-                </Card>
-                <Card className="p-4 text-center">
-                  <p
-                    className={`text-2xl font-bold ${
-                      viewBrief.content.deltaVsPrior > 0 ? 'text-success' : 'text-destructive'
-                    }`}
-                  >
-                    {viewBrief.content.deltaVsPrior > 0 ? '+' : ''}
-                    {viewBrief.content.deltaVsPrior}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Delta</p>
-                </Card>
-              </div>
-
-              {/* Top Issues */}
-              <div>
-                <h4 className="font-semibold flex items-center gap-2 mb-3">
-                  <AlertTriangle className="h-4 w-4" />
-                  Top Issues
-                </h4>
-                <div className="space-y-2">
-                  {viewBrief.content.topIssues.map((issue, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <Badge variant="outline">{i + 1}</Badge>
-                      <span className="capitalize">{issue.replace(/-/g, ' ')}</span>
-                    </div>
-                  ))}
+              {/* Brief Content - with ID for PDF export */}
+              <div id="brief-content" className="space-y-6 bg-background p-4 rounded-lg">
+                {/* Summary Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="p-4 text-center">
+                    <p className="text-2xl font-bold">{viewBrief.content.totalCalls}</p>
+                    <p className="text-xs text-muted-foreground">Total Calls</p>
+                  </Card>
+                  <Card className="p-4 text-center">
+                    <p className="text-2xl font-bold">{viewBrief.content.avgSentiment}</p>
+                    <p className="text-xs text-muted-foreground">Avg Sentiment</p>
+                  </Card>
+                  <Card className="p-4 text-center">
+                    <p className="text-2xl font-bold">{viewBrief.content.negativePercent}%</p>
+                    <p className="text-xs text-muted-foreground">Negative</p>
+                  </Card>
+                  <Card className="p-4 text-center">
+                    <p
+                      className={`text-2xl font-bold ${
+                        viewBrief.content.deltaVsPrior > 0 ? 'text-success' : 'text-destructive'
+                      }`}
+                    >
+                      {viewBrief.content.deltaVsPrior > 0 ? '+' : ''}
+                      {viewBrief.content.deltaVsPrior}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Delta</p>
+                  </Card>
                 </div>
-              </div>
 
-              {/* Coaching Opportunities */}
-              <div>
-                <h4 className="font-semibold flex items-center gap-2 mb-3">
-                  <TrendingUp className="h-4 w-4" />
-                  Coaching Opportunities
-                </h4>
-                <div className="space-y-2">
-                  {viewBrief.content.coachingOpportunities.map((opp, i) => (
-                    <div key={i} className="p-3 bg-muted/50 rounded-lg text-sm">
-                      {opp}
-                    </div>
-                  ))}
+                {/* Top Issues */}
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2 mb-3">
+                    <AlertTriangle className="h-4 w-4" />
+                    Top Issues
+                  </h4>
+                  <div className="space-y-2">
+                    {viewBrief.content.topIssues.length > 0 ? (
+                      viewBrief.content.topIssues.map((issue, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Badge variant="outline">{i + 1}</Badge>
+                          <span className="capitalize">{issue.replace(/-/g, ' ')}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No issues recorded</p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Exemplar Links */}
-              <div>
-                <h4 className="font-semibold flex items-center gap-2 mb-3">
-                  <Star className="h-4 w-4" />
-                  Exemplar Calls
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {viewBrief.content.exemplarLinks.map((callId) => (
-                    <Badge key={callId} variant="secondary">
-                      {callId}
-                    </Badge>
-                  ))}
+                {/* Coaching Opportunities */}
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-4 w-4" />
+                    Coaching Opportunities
+                  </h4>
+                  <div className="space-y-2">
+                    {viewBrief.content.coachingOpportunities.length > 0 ? (
+                      viewBrief.content.coachingOpportunities.map((opp, i) => (
+                        <div key={i} className="p-3 bg-muted/50 rounded-lg text-sm">
+                          {opp}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No coaching opportunities identified</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Exemplar Links */}
+                <div>
+                  <h4 className="font-semibold flex items-center gap-2 mb-3">
+                    <Star className="h-4 w-4" />
+                    Exemplar Calls
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {viewBrief.content.exemplarLinks.length > 0 ? (
+                      viewBrief.content.exemplarLinks.map((callId) => (
+                        <Badge key={callId} variant="secondary">
+                          {callId}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No exemplar calls for this period</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -279,8 +313,13 @@ ${brief.content.exemplarLinks.join(', ')}
                 <Button
                   variant="outline"
                   onClick={() => handleExportPDF(viewBrief)}
+                  disabled={exporting}
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  {exporting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
                   Export PDF
                 </Button>
                 <Button

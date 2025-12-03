@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '@/stores/app-store';
+import { resetAndReseed } from '@/lib/seed';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,9 +30,10 @@ import {
 } from 'lucide-react';
 
 export default function Settings() {
-  const { settings, updateSettings, sentEmails, resetAll } = useAppStore();
+  const { settings, updateSettings, sentEmails } = useAppStore();
   const [newKeyword, setNewKeyword] = useState('');
   const [testSlackLoading, setTestSlackLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleAddKeyword = () => {
     if (!newKeyword.trim()) return;
@@ -81,13 +83,21 @@ export default function Settings() {
     });
   };
 
-  const handleResetDemo = () => {
-    resetAll();
+  const handleResetDemo = async () => {
+    setResetLoading(true);
+    
+    // Small delay for UX
+    await new Promise((r) => setTimeout(r, 500));
+    
+    // Reset and reseed data
+    resetAndReseed();
+    
+    setResetLoading(false);
+    
     toast({
-      title: 'Demo Reset',
-      description: 'All persisted data has been cleared. Refresh to re-seed.',
+      title: 'Demo Reset Complete',
+      description: 'All data has been cleared and re-seeded with fresh mock data.',
     });
-    setTimeout(() => window.location.reload(), 1000);
   };
 
   return (
@@ -259,11 +269,15 @@ export default function Settings() {
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
               Clear all persisted state (alerts, briefs, notes, settings) and
-              reload with fresh data. This action cannot be undone.
+              re-seed with fresh mock data. This action cannot be undone.
             </p>
-            <Button variant="destructive" onClick={handleResetDemo}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reset Demo
+            <Button
+              variant="destructive"
+              onClick={handleResetDemo}
+              disabled={resetLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${resetLoading ? 'animate-spin' : ''}`} />
+              {resetLoading ? 'Resetting...' : 'Reset Demo'}
             </Button>
           </Card>
         </div>
