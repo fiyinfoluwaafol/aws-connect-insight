@@ -23,7 +23,7 @@ This document catalogs the technical debt and system risks identified in the AWS
 | **Build Tool** | Vite with SWC compiler |
 | **Package Manager** | npm / bun |
 
-### High-Level Architecture (Inferred)
+### High-Level Architecture (Inferred) test
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
