@@ -1,7 +1,5 @@
 # Technical Debt & Risk Assessment
 
-> A high-level overview of known debt and risks in this project. Not meant to be exhaustive or nitpicky—just honest about where we are.
-
 ---
 
 ## Architectural Debt
