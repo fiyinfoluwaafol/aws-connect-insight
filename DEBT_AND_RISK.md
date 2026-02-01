@@ -1,79 +1,3 @@
-# Mujeeb's Contribution
-# Technical Debt & Risk Assessment
-
----
-
-## Architectural Debt
-
-**The app is entirely client-side with simulated data.**
-
-- All data lives in localStorage. There's no backend, no database, no real API calls.
-- Authentication is fake—users are hardcoded in `auth-store.ts`. Anyone can "log in" as any role.
-- The mock service layer (`mock-service.ts`) simulates what would be real AWS Connect API calls. The interfaces may not match actual AWS Connect data shapes.
-- State management is simple (Zustand + localStorage), which works for a demo but doesn't handle multi-user scenarios, real-time updates, or data sync.
-
-**What this means:** The entire backend integration is ahead of us. The current architecture is a UI prototype, not a foundation for production.
-
----
-
-## AI-Assisted Development Debt
-
-**This codebase was largely generated with AI assistance. That comes with specific debt:**
-
-- **Knowledge gaps** — Code exists that the team may not fully understand. Before modifying anything significant, take time to read and understand what's there.
-- **Inconsistent patterns** — AI tools don't always remember decisions from earlier in the conversation. You may find slightly different approaches to the same problem in different files.
-- **"Works but why?"** — Some code is functional but over-engineered or structured in ways that made sense to the AI but may not be intuitive. Don't be afraid to simplify.
-- **Mock data assumptions** — The generated mock data (`mock-data.ts`) makes assumptions about what real contact center data looks like. These assumptions are guesses, not based on real AWS Connect schemas.
-- **Missing edge cases** — AI tends to generate the happy path. Error states, empty states, and weird user behavior may not be handled well.
-- **Copy-paste residue** — Look for duplicated logic that could be consolidated. AI often generates similar code in multiple places rather than abstracting.
-
-**What this means:** Treat the codebase as a starting point, not gospel. Refactor freely. The AI doesn't have feelings about its code.
-
----
-
-## Production Readiness Gaps
-
-**Things that don't exist yet but would be needed for a real working demo:**
-
-| Gap | Why it matters |
-|-----|----------------|
-| Real authentication | Currently anyone can access anything. Need actual auth (Cognito, Auth0, etc.) |
-| Backend API | Need actual endpoints, not mock functions returning fake data |
-| Real AWS Connect integration | The whole point—need to pull actual call data, transcripts, sentiment |
-| Error handling | Almost no error boundaries or failure states. Things will break silently. |
-| Loading states | Some exist, but API latency isn't really simulated. Real calls take time. |
-| Input validation | Forms mostly trust user input. Need proper validation before hitting a real API. |
-| Environment config | Hardcoded values scattered around. Need proper env vars for different environments. |
-
----
-
-## Security Considerations
-
-**Not currently addressed (fine for a demo, not fine for production):**
-
-- No real authorization—role checks are client-side only
-- Sensitive data (call transcripts, customer info) would need encryption
-- No audit logging for compliance (who accessed what, when)
-- No rate limiting or abuse prevention
-- localStorage is not secure storage for anything sensitive
-
----
-
-## Recommendations
-
-When picking this back up, consider this order of priority:
-
-1. **Understand before changing** — Read through the core files (`app-store.ts`, `mock-service.ts`, `mock-data.ts`) so the team has shared understanding.
-
-2. **Define real data shapes** — Look at actual AWS Connect APIs and update TypeScript interfaces to match reality. This will reveal gaps in the mock data.
-
-3. **Add a backend** — Even a simple one. This separates concerns and forces you to think about real data flow.
-
-4. **Consolidate patterns** — Pick one way to do things (data fetching, error handling, form state) and apply it consistently.
-
-5. **Add error states** — Before adding features, make sure existing features fail gracefully.
-
-# Current Consolidated Version
 # Risk & Technical Debt Inventory
 
 ## Context
@@ -102,43 +26,43 @@ This document presents the consolidated technical debt and risk assessment for t
 ### High-Level Architecture (Inferred)
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Browser (Client-Side Only)                  │
-├─────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐ │
-│  │  Supervisor UI  │  │    Agent UI     │  │   Shared Components │ │
-│  │  - Overview     │  │  - Home         │  │   - AppHeader       │ │
-│  │  - Alerts       │  │  - Performance  │  │   - ProtectedRoute  │ │
-│  │  - Search       │  │  - Exemplars    │  │   - CallDetailDrawer│ │
-│  │  - Briefs       │  │  - Notifications│  │   - StatCard        │ │
-│  │  - Settings     │  │                 │  │   - SentimentBadge  │ │
-│  └────────┬────────┘  └────────┬────────┘  └──────────┬──────────┘ │
-│           │                    │                      │            │
-│           └────────────────────┼──────────────────────┘            │
-│                                ▼                                    │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    Zustand Stores                            │   │
-│  │  ┌──────────────────┐  ┌──────────────────────────────────┐ │   │
-│  │  │   auth-store.ts  │  │         app-store.ts             │ │   │
-│  │  │  - user session  │  │  - alerts, briefs, tips, notes   │ │   │
-│  │  │  - role (mock)   │  │  - exemplars, bookmarks, settings│ │   │
-│  │  └──────────────────┘  └──────────────────────────────────┘ │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                │                                    │
-│                                ▼                                    │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    Mock Data Layer                           │   │
-│  │  ┌──────────────────┐  ┌──────────────────────────────────┐ │   │
-│  │  │  mock-data.ts    │  │        mock-service.ts           │ │   │
-│  │  │  - 300 calls     │  │  - searchCalls, generateBrief    │ │   │
-│  │  │  - 12 agents     │  │  - exportCSV/PDF, coaching tips  │ │   │
-│  │  │  - 25 alerts     │  │  - email mock, agent performance │ │   │
-│  │  └──────────────────┘  └──────────────────────────────────┘ │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                │                                    │
-│                                ▼                                    │
-│                         localStorage                                │
-└─────────────────────────────────────────────────────────────────────┘
++---------------------------------------------------------------------+
+|                         Browser (Client-Side Only)                  |
++---------------------------------------------------------------------+
+|  +-----------------+  +-----------------+  +---------------------+  |
+|  |  Supervisor UI  |  |    Agent UI     |  |   Shared Components |  |
+|  |  - Overview     |  |  - Home         |  |   - AppHeader       |  |
+|  |  - Alerts       |  |  - Performance  |  |   - ProtectedRoute  |  |
+|  |  - Search       |  |  - Exemplars    |  |   - CallDetailDrawer|  |
+|  |  - Briefs       |  |  - Notifications|  |   - StatCard        |  |
+|  |  - Settings     |  |                 |  |   - SentimentBadge  |  |
+|  +--------+--------+  +--------+--------+  +----------+----------+  |
+|           |                    |                      |             |
+|           +--------------------+----------------------+             |
+|                                v                                    |
+|  +-------------------------------------------------------------+   |
+|  |                    Zustand Stores                            |   |
+|  |  +------------------+  +----------------------------------+  |   |
+|  |  |   auth-store.ts  |  |         app-store.ts             |  |   |
+|  |  |  - user session  |  |  - alerts, briefs, tips, notes   |  |   |
+|  |  |  - role (mock)   |  |  - exemplars, bookmarks, settings|  |   |
+|  |  +------------------+  +----------------------------------+  |   |
+|  +-------------------------------------------------------------+   |
+|                                |                                    |
+|                                v                                    |
+|  +-------------------------------------------------------------+   |
+|  |                    Mock Data Layer                           |   |
+|  |  +------------------+  +----------------------------------+  |   |
+|  |  |  mock-data.ts    |  |        mock-service.ts           |  |   |
+|  |  |  - 300 calls     |  |  - searchCalls, generateBrief    |  |   |
+|  |  |  - 12 agents     |  |  - exportCSV/PDF, coaching tips  |  |   |
+|  |  |  - 25 alerts     |  |  - email mock, agent performance |  |   |
+|  |  +------------------+  +----------------------------------+  |   |
+|  +-------------------------------------------------------------+   |
+|                                |                                    |
+|                                v                                    |
+|                         localStorage                                |
++---------------------------------------------------------------------+
 ```
 
 ### Environment/Config Overview
@@ -169,28 +93,31 @@ This document presents the consolidated technical debt and risk assessment for t
 ### TD-01: Mock-Only Data Layer with No Backend Integration Path
 
 - **Category:** Architectural Debt
-- **Description:** The entire application operates on client-side mock data with no abstraction layer for backend integration. The `MockService` class directly manipulates in-memory arrays and Zustand stores, with hardcoded delays to simulate network latency. Components directly import `mockData` and `MockService`, coupling UI to mock implementations. There is no HTTP client, no API configuration, and no service interface that would allow swapping mock for real implementations.
+- **Description:** The entire application operates on client-side mock data with no abstraction layer for backend integration. The `MockService` class directly manipulates in-memory arrays and Zustand stores, with hardcoded delays to simulate network latency. Components directly import `mockData` and `MockService`, coupling UI to mock implementations. There is no HTTP client, no API configuration, and no service interface that would allow swapping mock for real implementations. Additionally, the mock data interfaces and type definitions may not match actual AWS Connect API schemas, requiring significant refactoring when integrating with real services.
 - **Evidence:**
   - `src/lib/mock-data.ts` line 121 — Generates 300 calls at module load: `const mockCalls = generateCalls(300);`
   - `src/lib/mock-service.ts` lines 30-31 — Hardcoded delay simulation: `await delay(200 + Math.random() * 200);`
   - `src/lib/mock-service.ts` line 35 — Direct mock data filtering: `let filtered = mockData.calls.filter((call) => {...`
   - `src/lib/mock-service.ts` lines 83-84 — Store mutation from service: `const storeAlerts = useAppStore.getState().alerts;`
   - `src/pages/agent/Performance.tsx` — Direct mock service call: `MockService.getAgentPerformance(user?.agentId || 'a1');`
+  - `src/lib/mock-data.ts` — Type definitions (Call, Alert, Agent) are guesses, not based on real AWS Connect Contact Lens schemas
 - **Impact:**
   - Cannot connect to real Amazon Connect APIs without rewriting the data layer
   - Business logic (filtering, pagination, analytics) duplicated in mock layer must be reimplemented
   - Frontend and backend teams cannot work independently; no contract-based development possible
   - Performance characteristics of mock delays don't represent real API latency or failure modes
+  - Type definitions will likely need significant changes to match AWS Connect Contact Lens API responses
 - **Severity:** Critical
 - **Remediation Plan:**
-  1. Define TypeScript interfaces for all API contracts (`ICallService`, `IAlertService`, `IBriefService`)
-  2. Create abstract service interfaces with methods matching current MockService signatures
-  3. Implement repository pattern for data access
-  4. Refactor `MockService` into `MockCallService`, `MockAlertService` implementations
-  5. Create `ApiCallService` stubs for AWS Connect integration
-  6. Use React Context or dependency injection to swap implementations based on environment
-  7. Integrate `@tanstack/react-query` (already in dependencies) for data fetching, caching, and error handling
-  8. **Target end-state:** All data access through typed interfaces; mock and API implementations interchangeable via environment config
+  1. Review actual AWS Connect APIs (Streams, Contact Lens, CTR) and update TypeScript interfaces to match real data shapes
+  2. Define TypeScript interfaces for all API contracts (`ICallService`, `IAlertService`, `IBriefService`)
+  3. Create abstract service interfaces with methods matching current MockService signatures
+  4. Implement repository pattern for data access
+  5. Refactor `MockService` into `MockCallService`, `MockAlertService` implementations
+  6. Create `ApiCallService` stubs for AWS Connect integration
+  7. Use React Context or dependency injection to swap implementations based on environment
+  8. Integrate `@tanstack/react-query` (already in dependencies) for data fetching, caching, and error handling
+  9. **Target end-state:** All data access through typed interfaces matching real AWS schemas; mock and API implementations interchangeable via environment config
 - **Suggested Backlog Ticket Title:** "Abstract data layer with service interfaces for backend integration"
 
 ---
@@ -252,7 +179,7 @@ This document presents the consolidated technical debt and risk assessment for t
   - No `@testing-library/*`, `jest`, `vitest`, `cypress`, or `playwright` in dependencies
   - No unit tests for utility functions in `utils.ts`
   - No store tests for Zustand state management in `app-store.ts`
-- **Impact:** 
+- **Impact:**
   - Cannot verify correctness of business logic (sentiment thresholds, alert rules, coaching tip generation)
   - Refactoring is high-risk without regression safety net
   - No confidence in deployments; manual QA required for every change
@@ -348,7 +275,7 @@ This document presents the consolidated technical debt and risk assessment for t
 ### TD-06: Inadequate Production and Architecture Documentation
 
 - **Category:** Documentation Debt
-- **Description:** While the README documents demo features comprehensively, it lacks critical documentation for production deployment, architecture decisions, API contracts, and requirements traceability. There are no ADRs (Architecture Decision Records), no deployment runbooks, no documentation of AWS Connect integration points, and no explanation of business logic thresholds used in coaching tip generation. There is no connection between code and original Agile requirements—no JSDoc comments explaining business logic purpose, no links to user stories, and no inline comments explaining complex algorithms.
+- **Description:** While the README documents demo features comprehensively, it lacks critical documentation for production deployment, architecture decisions, API contracts, and requirements traceability. There are no ADRs (Architecture Decision Records), no deployment runbooks, no documentation of AWS Connect integration points, and no explanation of business logic thresholds used in coaching tip generation. There is no connection between code and original Agile requirements—no JSDoc comments explaining business logic purpose, no links to user stories, and no inline comments explaining complex algorithms. Additionally, there is no documentation distinguishing AI-generated code from hand-written code.
 - **Evidence:**
   - `README.md` lines 74-76 — Documents mock auth but not production requirements:
     ```markdown
@@ -369,12 +296,14 @@ This document presents the consolidated technical debt and risk assessment for t
   - No environment variable documentation; no mention of required secrets
   - No JSDoc comments on exported functions explaining requirement references
   - No inline comments explaining sentiment analysis thresholds in `generateDailyBrief`
+  - No documentation of which components/files were AI-generated vs hand-written
 - **Impact:**
   - New team members cannot understand production requirements
   - Operations team cannot deploy without developer assistance
   - Coaching tip thresholds (-0.3 sentiment, 900 second duration) are arbitrary with no documented rationale
   - AWS Connect integration requirements unclear; no API contract documentation
   - Cannot trace features back to user stories or acceptance criteria
+  - Team may not know which code to trust or scrutinize more carefully
 - **Severity:** Medium
 - **Remediation Plan:**
   1. Create `docs/ARCHITECTURE.md` documenting component hierarchy, data flow, and state management
@@ -385,7 +314,8 @@ This document presents the consolidated technical debt and risk assessment for t
   6. Create `REQUIREMENTS_TRACEABILITY.md` mapping features to user stories
   7. Add inline comments explaining business logic decisions and magic numbers
   8. Add Storybook documentation for UI components
-  9. **Target end-state:** New developer can deploy to production using docs alone; all thresholds documented; features traceable to requirements
+  9. Document which files/components are AI-generated vs hand-written in a `CODE_PROVENANCE.md`
+  10. **Target end-state:** New developer can deploy to production using docs alone; all thresholds documented; features traceable to requirements; AI-generated code clearly identified
 - **Suggested Backlog Ticket Title:** "Create production deployment, architecture, and requirements traceability documentation"
 
 ---
@@ -427,6 +357,38 @@ This document presents the consolidated technical debt and risk assessment for t
   7. Design graceful degradation for critical supervisor workflows (offline-capable)
   8. **Target end-state:** All errors surface to users with actionable messages; no silent failures; error monitoring in production
 - **Suggested Backlog Ticket Title:** "Implement global error boundaries and consistent error handling patterns"
+
+---
+
+### TD-08: AI-Assisted Development Code Quality Debt
+
+- **Category:** Architectural Debt
+- **Description:** This codebase was largely generated with AI assistance (Lovable.dev), which introduces specific technical debt patterns. The team may not fully understand code that was generated rather than written. AI tools don't always maintain consistency across files, leading to different approaches to the same problem in different places. Some code may be functional but over-engineered or structured in ways that made sense to the AI but aren't intuitive to human developers. AI-generated code tends to handle the happy path well but may miss edge cases, error states, empty states, and unexpected user behavior.
+- **Evidence:**
+  - `package.json` line 79 — `"lovable-tagger": "^1.1.11"` indicates AI-assisted generation
+  - `src/lib/mock-data.ts` — Mock data makes assumptions about contact center data shapes that are guesses, not based on real AWS Connect schemas
+  - `src/components/ui/` — 49 shadcn/ui components generated in bulk, may have subtle inconsistencies
+  - Multiple files show slightly different patterns for similar operations (e.g., data fetching, state updates)
+  - Limited handling for empty states (e.g., what happens with zero calls, zero alerts)
+  - Business logic in `mock-service.ts` appears to duplicate similar filtering logic in multiple functions
+- **Impact:**
+  - **Knowledge gaps:** Code exists that the team may not fully understand; modifications risk breaking functionality
+  - **Inconsistent patterns:** Different approaches to the same problem create confusion and maintenance burden
+  - **Over-engineering:** Some abstractions may be unnecessary or confusing, adding complexity without value
+  - **Missing edge cases:** Error states, empty states, and weird user behavior may not be handled, causing production issues
+  - **Copy-paste residue:** Duplicated logic across files increases maintenance burden and bug surface area
+  - **Mock data mismatch:** TypeScript interfaces may need significant changes when integrating with real AWS Connect APIs
+- **Severity:** Medium
+- **Remediation Plan:**
+  1. **Understand before changing:** Team should read through core files (`app-store.ts`, `mock-service.ts`, `mock-data.ts`) to build shared understanding
+  2. **Audit for inconsistencies:** Review codebase for different approaches to same problems; standardize on one pattern
+  3. **Simplify over-engineered code:** Identify and refactor code that is functional but unnecessarily complex
+  4. **Add edge case handling:** Systematically add empty states, error states, and boundary condition handling
+  5. **Consolidate duplicated logic:** Extract shared utilities from copy-pasted code patterns
+  6. **Validate against real schemas:** Compare mock data types with actual AWS Connect Contact Lens API documentation
+  7. **Document AI-generated sections:** Mark which files/functions were AI-generated for future maintainers
+  8. **Target end-state:** Team understands all code; consistent patterns throughout; edge cases handled; no duplicated logic
+- **Suggested Backlog Ticket Title:** "Audit and refactor AI-generated code for consistency and completeness"
 
 ---
 
@@ -549,7 +511,7 @@ This document presents the consolidated technical debt and risk assessment for t
   16. Document limitations of automated assessments clearly
 - **Trust Boundary / Human-in-the-Loop:**
   - **Mandatory:** User provisioning and role assignment requires admin review
-  - **Cannot Automate:** Role escalation (agent → supervisor) requires human approval
+  - **Cannot Automate:** Role escalation (agent to supervisor) requires human approval
   - **Audit Required:** All access to call recordings and transcripts must be logged
   - **Human Oversight:** Performance-related decisions require human review before action
 
@@ -619,7 +581,7 @@ This document presents the consolidated technical debt and risk assessment for t
 - TD-01 (Data Layer) ranked second due to critical path for AWS integration, though higher effort
 - TD-02 (Auth) ranked third as security prerequisite; can proceed in parallel with TD-01
 
-**Note:** TD-07 (Error Handling) should be addressed in Sprint 2 alongside TD-01, as proper error handling is essential when introducing real API calls.
+**Note:** TD-07 (Error Handling) should be addressed in Sprint 2 alongside TD-01, as proper error handling is essential when introducing real API calls. TD-08 (AI Code Quality) should be addressed incrementally as the team works through other items.
 
 ---
 
@@ -639,6 +601,7 @@ This document presents the consolidated technical debt and risk assessment for t
 - No Error Boundary components in the codebase
 - Sentiment thresholds are hardcoded in multiple locations (-0.2, -0.3, 0.3)
 - Agent performance percentile uses arbitrary formula (`50 + avgSentiment * 40`)
+- Mock data types (Call, Alert, Agent) are not validated against real AWS Connect schemas
 
 ### Assumptions (Needs Verification)
 
@@ -657,3 +620,15 @@ This document presents the consolidated technical debt and risk assessment for t
 - [ ] Product roadmap for feature prioritization alignment
 - [ ] Intended sentiment threshold values and their business rationale
 - [ ] Bias audit requirements for performance algorithms
+
+### Onboarding Recommendations
+
+When picking up this codebase, the team should follow this order of priority:
+
+1. **Understand before changing** — Read through the core files (`app-store.ts`, `mock-service.ts`, `mock-data.ts`) so the team has shared understanding of what exists
+2. **Define real data shapes** — Review actual AWS Connect APIs and update TypeScript interfaces to match reality; this will reveal gaps in the mock data assumptions
+3. **Add a backend** — Even a simple one; this separates concerns and forces thinking about real data flow
+4. **Consolidate patterns** — Pick one way to do things (data fetching, error handling, form state) and apply it consistently across the codebase
+5. **Add error states** — Before adding new features, ensure existing features fail gracefully
+
+**Important:** Treat this AI-generated codebase as a starting point, not gospel. Refactor freely where it improves clarity or maintainability.
