@@ -73,15 +73,3 @@ When picking this back up, consider this order of priority:
 4. **Consolidate patterns** — Pick one way to do things (data fetching, error handling, form state) and apply it consistently.
 
 5. **Add error states** — Before adding features, make sure existing features fail gracefully.
-
----
-
-## What This Doc Is Not
-
-- Not a bug tracker—specific issues should go in GitHub Issues
-- Not a style guide—that's a separate concern
-- Not permanent—update this as debt gets paid down or new risks emerge
-
----
-
-*Last updated: January 2025*
