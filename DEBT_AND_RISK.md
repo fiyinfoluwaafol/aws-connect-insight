@@ -83,7 +83,7 @@ This document presents the consolidated technical debt and risk assessment for t
 | **E2E Tests** | None |
 | **Test Framework** | Not configured (no Jest/Vitest) |
 | **CI/CD Pipeline** | None (no `.github/workflows` directory) |
-| **Deployment** | Manual; no Vercel/Netlify config files |
+| **Deployment** | Automated via Vercel (main → prod, branches → previews); no explicit config files (using Vercel defaults) |
 | **Linting** | ESLint configured but `@typescript-eslint/no-unused-vars: "off"` |
 
 ---
@@ -151,7 +151,7 @@ This document presents the consolidated technical debt and risk assessment for t
   3. Add password hashing and secure credential storage
   4. Store tokens in httpOnly cookies, not localStorage
   5. Add automatic session timeout (15-30 minutes of inactivity for contact center compliance)
-  6. Design RBAC permission matrix for roles: Admin, Supervisor, Team Lead, Agent
+  6. Design RBAC permission matrix for roles: Supervisor, Agent
   7. Implement RBAC at the API level, not just UI
   8. Move Slack webhook to server-side environment variables
   9. Add audit logging for authentication events (login, logout, failed attempts)
@@ -244,31 +244,31 @@ This document presents the consolidated technical debt and risk assessment for t
 
 ---
 
-### TD-05: Missing CI/CD Pipeline and Quality Gates
+### TD-05: Missing Pre-Merge Quality Gates
 
 - **Category:** Architectural Debt
-- **Description:** No continuous integration or deployment configuration exists. There are no GitHub Actions workflows, no Vercel/Netlify deployment configs, and no automated quality checks on pull requests. Linting, building, and (future) testing must be run manually, with no enforcement before merge.
+- **Description:** While Vercel handles deployment automatically, there are no pre-merge quality checks (linting, build validation, tests) that prevent broken code from being merged. Vercel will build and deploy after merge, meaning broken builds can land on main branch before deployment failures are detected. Branch protection requires PRs but doesn't enforce code quality checks.
 - **Evidence:**
-  - No `.github/workflows/` directory in repository
-  - No `vercel.json`, `netlify.toml`, or similar deployment configuration
-  - No `.gitlab-ci.yml`, `Jenkinsfile`, or other CI config
-  - `package.json` only defines `dev`, `build`, `lint`, `preview` scripts—no `test` or `ci` script
+  - No `.github/workflows/` directory for CI checks
+  - No GitHub Actions workflow to run `npm run lint` before merge
+  - No GitHub Actions workflow to validate `npm run build` before merge
+  - No test enforcement (will be relevant after TD-03)
+  - Branch protection exists but doesn't require CI checks to pass
 - **Impact:**
-  - Broken builds can be merged to main branch
-  - No automated deployment process; manual builds required
+  - Broken builds can be merged to main branch (Vercel fails after merge)
+  - Linting errors can slip through without pre-merge checks
   - Team relies on manual discipline for code quality
-  - Cannot enforce branch protection rules effectively
+  - No automated validation that code builds successfully before merge
 - **Severity:** Medium
 - **Remediation Plan:**
   1. Create `.github/workflows/ci.yml` with jobs for:
-     - Lint: `npm run lint`
-     - Build: `npm run build`
-     - Test: `npm test` (after TD-03 complete)
-  2. Configure branch protection on `main` requiring CI pass
-  3. Add Vercel preview deployments for PRs
-  4. Add production deployment workflow with manual approval gate
-  5. **Target end-state:** All PRs require passing CI; automated preview and production deployments
-- **Suggested Backlog Ticket Title:** "Implement GitHub Actions CI/CD pipeline with branch protection"
+     - Lint: `npm run lint` (must pass before merge)
+     - Build: `npm run build` (must pass before merge)
+     - Test: `npm test` (after TD-03 complete; must pass before merge)
+  2. Update branch protection rules to require CI checks to pass before merge
+  3. **Note:** Deployment is already handled by Vercel (no changes needed)
+  4. **Target end-state:** All PRs require passing lint/build/test checks before merge; broken code cannot be merged
+- **Suggested Backlog Ticket Title:** "Add GitHub Actions CI for pre-merge quality gates"
 
 ---
 
@@ -605,21 +605,25 @@ This document presents the consolidated technical debt and risk assessment for t
 
 ### Assumptions (Needs Verification)
 
-1. **Target deployment:** Assumed static SPA with separate backend service (not SSR)
-2. **Authentication provider:** Assumed AWS Cognito given Amazon Connect context; not confirmed
-3. **AI integration:** Assumed Amazon Bedrock for sentiment/summarization; no documentation confirms
-4. **Compliance requirements:** HIPAA/SOC2/GDPR requirements unknown; assumed contact center data contains PII
-5. **Team capacity:** Effort estimates assume 2-3 developers; actual velocity not provided
+1. **Target deployment:** Currently client-side React app; backend service will be added (architecture TBD)
+2. **Authentication provider:** Production authentication will be implemented (AWS Cognito preferred given Amazon Connect context, but not yet confirmed)
+3. **AI integration:** LLM integration required for production; currently using rule-based logic for prototyping with mock data
+4. **Compliance requirements:** Compliance (HIPAA/SOC2/GDPR) will be considered and implemented where reasonably possible for a year-long capstone project
+5. **Team capacity:** 5-member capstone team; effort estimates may need adjustment based on actual velocity
+6. **Project scope:** Year-long capstone project with expectation of production-quality implementation (1st Half completed and was focused on planning, 2nd Half in progress and is focused on development)
 
-### Missing Information Requested
+### Missing Information Requested (Capstone Context)
 
-- [ ] Target AWS region and hosting service
-- [ ] Expected concurrent user count for capacity planning
-- [ ] Specific compliance requirements (HIPAA, SOC2, GDPR)
-- [ ] AWS Connect instance details and available APIs
-- [ ] Product roadmap for feature prioritization alignment
-- [ ] Intended sentiment threshold values and their business rationale
-- [ ] Bias audit requirements for performance algorithms
+- [ ] **Project timeline and demo requirements** — Capstone timeline, what features must be demo-ready vs. stretch goals, key milestones
+- [ ] **Backend architecture decision** — Technology stack, deployment strategy, API design approach (REST/GraphQL, serverless/monolith)
+- [ ] **Authentication provider selection** — AWS Cognito vs. Auth0 vs. other; decision rationale and implementation timeline
+- [ ] **LLM integration plan** — Target provider (AWS Bedrock, OpenAI, Anthropic), model selection, cost considerations, prompt engineering approach
+- [ ] **Documented sentiment threshold rationale** — Business logic behind thresholds (-0.2, -0.3, 0.3) used in alerts and coaching tips; how these will be configurable
+- [ ] **Demo scenario planning** — Expected concurrent users for presentation (e.g., 1-2 supervisors, 5-10 agents simultaneously)
+- [ ] **Target AWS Connect API schemas** — Which AWS Connect Contact Lens APIs/data structures to match for compatibility (even if not integrating directly)
+- [ ] **Compliance scope** — Which compliance requirements (HIPAA, SOC2, GDPR) are feasible to implement and which are out of scope
+- [ ] **Team velocity and capacity** — Sprint capacity, work distribution, and how effort estimates align with actual team velocity
+- [ ] **Grading/evaluation criteria** — Any specific technical requirements from course that affect prioritization and technical debt remediation
 
 ### Onboarding Recommendations
 
