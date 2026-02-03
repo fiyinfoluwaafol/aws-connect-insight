@@ -1,7 +1,6 @@
-# Individual Contribution — Kiitan
+# Technical Debt & Risk Analysis
 
-**Source:** `DEBT_AND_RISK.md`
-**Scope:** Assigned risk and technical debt items
+This document summarizes individual contributions to the team's technical debt and risk analysis for the Amazon Connect Agent Supervisor Insights project.
 
 ### TD-05: Missing Pre-Merge Quality Gates
 
