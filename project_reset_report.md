@@ -2,7 +2,7 @@
 
 **Project:** Amazon Connect Agent Supervisor Insights
 **Date:** February 3, 2026
-**Prepared For:** Senior Project II
+**Team:** AWS Minority Business Support 4 (Team 5)
 
 ## Architecture Diagram
 
@@ -84,7 +84,7 @@ The system is currently a client-only React application with two primary user ex
 - Several backlog items include clear, testable acceptance checklists.
 
 **Gaps / Risks**
-- No explicit prioritization metadata (e.g., P0/P1), ownership, or sprint assignment in `issues.csv`.
+- No explicit prioritization metadata (e.g., P0/P1), ownership, or sprint assignment.
 - Some issues are missing dependencies or sequencing notes (e.g., backend contracts vs. UI wiring).
 - Risk items are documented separately but not consistently linked to backlog items.
 
@@ -105,10 +105,3 @@ The system is currently a client-only React application with two primary user ex
    - Incrementally enable strict checks and fix high-impact type issues.
 5. **Add CI quality gates (TD-05)**
    - Lint/build/test in GitHub Actions and require passing checks before merge.
-
----
-
-**Appendix: Source Artifacts Used**
-- `DEBT_AND_RISK.md`
-- `swark-output/2026-01-13__17-45-58__diagram.md`
-- `issues.csv`
