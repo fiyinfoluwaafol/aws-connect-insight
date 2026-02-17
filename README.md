@@ -2,6 +2,8 @@
 
 A comprehensive MVP demo application for contact center supervisors and agents, built with React, TypeScript, and Tailwind CSS.
 
+> The web app lives in the **`frontend/`** directory.
+
 ## Features
 
 ### Supervisor Dashboard
@@ -26,10 +28,8 @@ A comprehensive MVP demo application for contact center supervisors and agents, 
 ### Installation
 
 ```bash
-# Install dependencies
+cd frontend
 npm install
-
-# Start development server
 npm run dev
 ```
 
@@ -49,7 +49,7 @@ The app will be available at `http://localhost:5173`
 ### Project Structure
 
 ```
-src/
+frontend/src/
 ├── components/          # Reusable UI components
 │   ├── ui/             # shadcn/ui primitives
 │   ├── AppHeader.tsx   # Main app header with user menu
@@ -197,6 +197,8 @@ The following data persists across browser sessions via localStorage:
 
 ### Scripts
 
+From the `frontend/` directory:
+
 ```bash
 npm run dev      # Start dev server
 npm run build    # Production build
@@ -206,10 +208,10 @@ npm run lint     # Run ESLint
 
 ### Adding New Features
 
-1. **New Pages**: Add to `src/pages/`, update routes in `App.tsx`
-2. **New Components**: Add to `src/components/`
-3. **State Changes**: Update stores in `src/stores/`
-4. **Mock Data**: Extend `src/lib/mock-data.ts` or `mock-service.ts`
+1. **New Pages**: Add to `frontend/src/pages/`, update routes in `App.tsx`
+2. **New Components**: Add to `frontend/src/components/`
+3. **State Changes**: Update stores in `frontend/src/stores/`
+4. **Mock Data**: Extend `frontend/src/lib/mock-data.ts` or `mock-service.ts`
 
 ## Technologies Used
 
