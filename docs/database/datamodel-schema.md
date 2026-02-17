@@ -213,7 +213,7 @@ For insertion, we'd do the following:
 | `supervisor_id` | **Foreign Key** → users | Alert recipient |
 | `team_id` | **Foreign Key** → teams | |
 | `severity` | ENUM | `low` · `medium` · `high` |
-| `status` | ENUM | `unread` · `read`|
+| `is_read` | BOOLEAN | Read status |
 | `created_at` | TIMESTAMP | |
 | `updated_at` | TIMESTAMP | |
 
@@ -330,8 +330,6 @@ alert_type:  `threshold`, `keyword`
 
 alert_severity:  `low`, `medium`, `high`
 
-alert_status *(up for discussion)*:  `unread`, `read`
-
 notification_type:  `alert`, `coaching_tip`, `exemplar_added`
 
 notification_reference_type:  `call`, `alert`, `coaching_tip`, `exemplar_call`
@@ -356,7 +354,7 @@ notification_reference_type:  `call`, `alert`, `coaching_tip`, `exemplar_call`
 - [ ] Calls currently are tied to a team meaning that if the user changes team that information starts to seem redundant
 - [ ] Decide on whether to add ended_at from the calls since that can be calculated using the started_at + duration
 - [ ] Thoughts on having call analysis as a separate table.
-- [ ] For alerts status, just realized a boolean might even be simpler like is_read
+- [x] For alerts status, just realized a boolean might even be simpler like is_read (RESOLVED)
 - [ ] It does indeed seem like a lot of tables, so i'd love to hear thoughts and alternatives.
 
 ---
