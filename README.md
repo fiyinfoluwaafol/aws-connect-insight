@@ -204,6 +204,40 @@ npm run dev      # Start dev server
 npm run build    # Production build
 npm run preview  # Preview production build
 npm run lint     # Run ESLint
+npm run test     # Run unit/component tests
+npm run typecheck # TypeScript check
+```
+
+### Testing
+
+**Frontend** (from `frontend/`):
+```bash
+npm run test         # Run Vitest tests
+npm run test:watch  # Watch mode
+npm run test:coverage # With coverage
+npm run typecheck   # TypeScript
+npm run lint        # ESLint
+```
+
+**Backend** (from `backend/`):
+```bash
+pip install -e ".[dev]"
+pytest                    # Run tests
+pytest --cov=app          # With coverage
+ruff check .              # Lint
+ruff format --check .     # Format check
+```
+
+**E2E** (from `e2e/`):
+```bash
+npm ci && npx playwright install --with-deps
+npx playwright test
+```
+
+**DB integration** (Phase 2):
+```bash
+docker compose -f docker-compose.test.yml up -d
+cd backend && pytest tests/integration/
 ```
 
 ### Adding New Features

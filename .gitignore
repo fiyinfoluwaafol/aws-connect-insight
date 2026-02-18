@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# E2E
+e2e/test-results/
+e2e/playwright-report/
+
+# Environment
+.env
