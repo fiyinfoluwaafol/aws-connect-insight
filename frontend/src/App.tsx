@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { seedInitialData } from "@/lib/seed";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Pages
 import Index from "./pages/Index";
@@ -37,53 +38,55 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/signin" element={<SignIn />} />
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/signin" element={<SignIn />} />
 
-            {/* Supervisor routes */}
-            <Route
-              path="/supervisor"
-              element={
-                <ProtectedRoute allowedRole="supervisor">
-                  <SupervisorLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<SupervisorOverview />} />
-              <Route path="overview" element={<SupervisorOverview />} />
-              <Route path="alerts" element={<SupervisorAlerts />} />
-              <Route path="search" element={<SupervisorSearch />} />
-              <Route path="briefs" element={<SupervisorBriefs />} />
-              <Route path="settings" element={<SupervisorSettings />} />
-            </Route>
+              {/* Supervisor routes */}
+              <Route
+                path="/supervisor"
+                element={
+                  <ProtectedRoute allowedRole="supervisor">
+                    <SupervisorLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<SupervisorOverview />} />
+                <Route path="overview" element={<SupervisorOverview />} />
+                <Route path="alerts" element={<SupervisorAlerts />} />
+                <Route path="search" element={<SupervisorSearch />} />
+                <Route path="briefs" element={<SupervisorBriefs />} />
+                <Route path="settings" element={<SupervisorSettings />} />
+              </Route>
 
-            {/* Agent routes */}
-            <Route
-              path="/agent"
-              element={
-                <ProtectedRoute allowedRole="agent">
-                  <AgentLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AgentHome />} />
-              <Route path="home" element={<AgentHome />} />
-              <Route path="performance" element={<AgentPerformance />} />
-              <Route path="exemplars" element={<AgentExemplars />} />
-              <Route path="notifications" element={<AgentNotifications />} />
-            </Route>
+              {/* Agent routes */}
+              <Route
+                path="/agent"
+                element={
+                  <ProtectedRoute allowedRole="agent">
+                    <AgentLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<AgentHome />} />
+                <Route path="home" element={<AgentHome />} />
+                <Route path="performance" element={<AgentPerformance />} />
+                <Route path="exemplars" element={<AgentExemplars />} />
+                <Route path="notifications" element={<AgentNotifications />} />
+              </Route>
 
-            {/* Catch-all 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+              {/* Catch-all 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
