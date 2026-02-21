@@ -31,6 +31,8 @@ __pycache__/
 .coverage
 htmlcov/
 .ruff_cache/
+*.egg-info/
+*.egg
 
 # Environment
 .env
