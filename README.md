@@ -223,21 +223,9 @@ npm run lint        # ESLint
 ```bash
 pip install -e ".[dev]"
 pytest                    # Run tests
-pytest --cov=app          # With coverage
+pytest --cov=api          # With coverage
 ruff check .              # Lint
 ruff format --check .     # Format check
-```
-
-**E2E** (from `e2e/`):
-```bash
-npm ci && npx playwright install --with-deps
-npx playwright test
-```
-
-**DB integration** (Phase 2):
-```bash
-docker compose -f docker-compose.test.yml up -d
-cd backend && pytest tests/integration/
 ```
 
 ### Adding New Features
