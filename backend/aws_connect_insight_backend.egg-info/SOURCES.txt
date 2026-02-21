@@ -1,11 +1,11 @@
 README.md
 pyproject.toml
-app/__init__.py
-app/config.py
-app/dependencies.py
-app/main.py
-app/routers/__init__.py
-app/routers/health.py
+api/__init__.py
+api/config.py
+api/dependencies.py
+api/main.py
+api/routers/__init__.py
+api/routers/health.py
 aws_connect_insight_backend.egg-info/PKG-INFO
 aws_connect_insight_backend.egg-info/SOURCES.txt
 aws_connect_insight_backend.egg-info/dependency_links.txt

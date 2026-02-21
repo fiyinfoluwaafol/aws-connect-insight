@@ -26,7 +26,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*"]
+include = ["api*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -40,7 +40,7 @@ target-version = "py39"
 select = ["E", "F", "I", "W"]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["api"]
 omit = ["tests/*"]
 
 [tool.coverage.report]

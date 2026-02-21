@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from app.config import Settings, get_settings
+from api.config import Settings, get_settings
 
 
 def test_settings_defaults_when_env_empty(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -3,7 +3,7 @@
 from collections.abc import Generator
 from typing import Any
 
-from app.config import Settings, get_settings
+from api.config import Settings, get_settings
 
 
 def get_supabase_client() -> Generator[Any, None, None]:
@@ -17,8 +17,3 @@ def get_supabase_client() -> Generator[Any, None, None]:
 
     client = create_client(settings.supabase_url, settings.supabase_key)
     yield client
-
-
-def get_settings() -> Settings:
-    """Return application settings."""
-    return Settings()

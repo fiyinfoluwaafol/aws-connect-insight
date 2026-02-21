@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import create_app
+from api.main import create_app
 
 
 @pytest.fixture
@@ -18,12 +18,12 @@ def mock_supabase() -> MagicMock:
 @pytest.fixture
 def app(mock_supabase: MagicMock):
     """FastAPI app with Supabase dependency overridden."""
-    from app.main import app as _app
+    from api.main import app as _app
 
     def _override_get_supabase_client():
         yield mock_supabase
 
-    from app import dependencies
+    from api import dependencies
 
     _app.dependency_overrides[dependencies.get_supabase_client] = _override_get_supabase_client
     return _app
