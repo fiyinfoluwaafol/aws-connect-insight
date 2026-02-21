@@ -19,7 +19,7 @@ supabase = create_client(
     os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 )
 
-# STEP 1: CREATE ACCOUNTS: This simulates a user signing in
+# STEP 1: CREATE ACCOUNTS: This simulates a user registering their account
 supervisor_auth = supabase.auth.admin.create_user({
     'email': 'supervisor@example.com',
     'password': 'securepassword',
