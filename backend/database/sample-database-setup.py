@@ -1,10 +1,13 @@
-# STUFF TO REMEMBER
-#   - Make sure to replace all names and emails to new values when testing to avoid duplicates. You could have an AI model do this for the most part.
-#   - Make sure to install the modules in the requirements file.
-#   - Add your env to the project root not this backend folder since load_dotenv calls from there and make sure to cd into the examples folder and run the code from there, 
-#       otherwise you can use load_dotenv('.env') and run it using python3 backend/examples/sample-database-setup.py from the base folder instead.
-#   - Also use the SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY as the env variable names since that's used here also.
-#   - Test then check the changes in supabase.
+# SETUP INSTRUCTIONS
+# 1. Copy .env.example to .env in the project root:
+#       cp .env.example .env
+# 2. Replace the placeholder values in .env with the actual Supabase credentials
+# 3. Install dependencies: pip install -r backend/requirements.txt
+# 4. Run from the database folder: cd backend/database && python sample-database-setup.py
+#
+# NOTES
+# - Replace names and emails below when testing to avoid duplicates
+# - Verify the changes in your Supabase dashboard after running
 
 
 import os
