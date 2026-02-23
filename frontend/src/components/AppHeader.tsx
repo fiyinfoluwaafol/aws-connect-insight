@@ -2,6 +2,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,7 @@ export function AppHeader({ title, subtitle, actions }: AppHeaderProps) {
           </div>
           <div className="flex items-center gap-3">
             {actions}
+            <ThemeToggle className="h-9 w-9" />
             <Badge variant="secondary" className="px-3 py-1.5">
               <Activity className="h-3 w-3 mr-1.5 inline-block" />
               Demo Mode

@@ -34,5 +34,5 @@ htmlcov/
 *.egg-info/
 *.egg
 
-# Environment
+# Environmental variables
 .env
