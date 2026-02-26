@@ -204,6 +204,28 @@ npm run dev      # Start dev server
 npm run build    # Production build
 npm run preview  # Preview production build
 npm run lint     # Run ESLint
+npm run test     # Run unit/component tests
+npm run typecheck # TypeScript check
+```
+
+### Testing
+
+**Frontend** (from `frontend/`):
+```bash
+npm run test         # Run Vitest tests
+npm run test:watch  # Watch mode
+npm run test:coverage # With coverage
+npm run typecheck   # TypeScript
+npm run lint        # ESLint
+```
+
+**Backend** (from `backend/`):
+```bash
+pip install -e ".[dev]"
+pytest                    # Run tests
+pytest --cov=api          # With coverage
+ruff check .              # Lint
+ruff format --check .     # Format check
 ```
 
 ### Adding New Features

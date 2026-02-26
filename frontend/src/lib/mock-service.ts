@@ -32,7 +32,7 @@ export const MockService = {
     
     const { page = 1, pageSize = 20 } = params;
     
-    let filtered = mockData.calls.filter((call) => {
+    const filtered = mockData.calls.filter((call) => {
       if (params.keyword) {
         const keyword = params.keyword.toLowerCase();
         const summary = mockData.getSummary(call.id);
@@ -152,7 +152,7 @@ export const MockService = {
     return brief;
   },
 
-  exportCSV(data: any[], filename: string) {
+  exportCSV(data: Record<string, unknown>[], filename: string) {
     if (data.length === 0) return;
     
     const headers = Object.keys(data[0]);
