@@ -1,6 +1,5 @@
 """Unit tests for config loading."""
 
-
 import pytest
 
 from api.config import Settings, get_settings
