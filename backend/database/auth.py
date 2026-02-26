@@ -1,16 +1,14 @@
 """Authentication helpers."""
 
-from .exceptions import DatabaseError, AuthenticationError
+from .exceptions import AuthenticationError, DatabaseError
 
 
 def create_auth_user(client, email: str, password: str) -> dict:
     """Create a new Supabase Auth user. Returns {id, email}."""
     try:
-        response = client.auth.admin.create_user({
-            "email": email,
-            "password": password,
-            "email_confirm": True
-        })
+        response = client.auth.admin.create_user(
+            {"email": email, "password": password, "email_confirm": True}
+        )
         return {"id": response.user.id, "email": response.user.email}
     except Exception as e:
         raise DatabaseError(f"Failed to create auth user: {e}")
@@ -19,10 +17,7 @@ def create_auth_user(client, email: str, password: str) -> dict:
 def authenticate_user(client, email: str, password: str) -> dict:
     """Authenticate user. Returns {user, session}."""
     try:
-        response = client.auth.sign_in_with_password({
-            "email": email,
-            "password": password
-        })
+        response = client.auth.sign_in_with_password({"email": email, "password": password})
         return {"user": response.user, "session": response.session}
     except Exception as e:
         raise AuthenticationError(f"Authentication failed: {e}")

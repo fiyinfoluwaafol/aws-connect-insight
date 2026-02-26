@@ -3,7 +3,15 @@
 from .exceptions import DatabaseError, NotFoundError
 
 
-def create_user(client, user_id: str, email: str, first_name: str, last_name: str, role: str, team_id: str = None) -> dict:
+def create_user(
+    client,
+    user_id: str,
+    email: str,
+    first_name: str,
+    last_name: str,
+    role: str,
+    team_id: str = None,
+) -> dict:
     """Create a user profile."""
     try:
         data = {
@@ -11,7 +19,7 @@ def create_user(client, user_id: str, email: str, first_name: str, last_name: st
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
-            "role": role
+            "role": role,
         }
         if team_id:
             data["team_id"] = team_id
@@ -27,7 +35,7 @@ def get_user_by_id(client, user_id: str) -> dict:
     try:
         result = client.table("users").select("*").eq("id", user_id).single().execute()
         return result.data
-    except Exception as e:
+    except Exception:
         raise NotFoundError(f"User {user_id} not found")
 
 
@@ -36,7 +44,7 @@ def get_user_by_email(client, email: str) -> dict:
     try:
         result = client.table("users").select("*").eq("email", email).single().execute()
         return result.data
-    except Exception as e:
+    except Exception:
         raise NotFoundError(f"User with email {email} not found")
 
 

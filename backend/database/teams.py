@@ -6,10 +6,9 @@ from .exceptions import DatabaseError, NotFoundError
 def create_team(client, name: str, supervisor_id: str) -> dict:
     """Create a new team with a supervisor."""
     try:
-        result = client.table("teams").insert({
-            "name": name,
-            "supervisor_id": supervisor_id
-        }).execute()
+        result = (
+            client.table("teams").insert({"name": name, "supervisor_id": supervisor_id}).execute()
+        )
         return result.data[0]
     except Exception as e:
         raise DatabaseError(f"Failed to create team: {e}")
@@ -20,7 +19,7 @@ def get_team_by_id(client, team_id: str) -> dict:
     try:
         result = client.table("teams").select("*").eq("id", team_id).single().execute()
         return result.data
-    except Exception as e:
+    except Exception:
         raise NotFoundError(f"Team {team_id} not found")
 
 
