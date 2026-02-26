@@ -3,7 +3,7 @@
 from collections.abc import Generator
 from typing import Any
 
-from api.config import Settings, get_settings
+from api.config import get_settings
 
 
 def get_supabase_client() -> Generator[Any, None, None]:

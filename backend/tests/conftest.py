@@ -6,8 +6,6 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from api.main import create_app
-
 
 @pytest.fixture
 def mock_supabase() -> MagicMock:

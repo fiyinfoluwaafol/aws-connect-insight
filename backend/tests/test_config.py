@@ -1,6 +1,5 @@
 """Unit tests for config loading."""
 
-import os
 
 import pytest
 

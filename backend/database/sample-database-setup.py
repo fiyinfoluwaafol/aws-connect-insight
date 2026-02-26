@@ -11,6 +11,7 @@
 
 
 import os
+
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -35,8 +36,8 @@ agent_auth = supabase.auth.admin.create_user({
     'email_confirm': True
 })
 
-# STEP 2: ADD USER AND SUPERVISOR TO DATABASE: 
-# Supabase generates an ID from step one above so we use that as the user id, 
+# STEP 2: ADD USER AND SUPERVISOR TO DATABASE:
+# Supabase generates an ID from step one above so we use that as the user id,
 #   that would help us with authentication.
 supervisor = supabase.table('users').insert({
     'id': supervisor_auth.user.id,
@@ -54,7 +55,7 @@ agent = supabase.table('users').insert({
     'role': 'agent'
 }).execute().data[0]
 
-# STEP 3: Create Team and Assign Supervisor 
+# STEP 3: Create Team and Assign Supervisor
 team = supabase.table('teams').insert({
     'name': 'Support Team A',
     'supervisor_id': supervisor['id']
