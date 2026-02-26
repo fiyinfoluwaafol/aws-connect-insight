@@ -50,7 +50,7 @@ def get_calls_by_team(team_id: str, limit: int = 10) -> list:
         raise DatabaseError(f"Failed to get team calls: {e}")
 
 
-def get_recent_calls(team_id: str, since: str) -> list:
+def get_recent_calls_by_team(team_id: str, since: str) -> list:
     """Get calls for a team after a timestamp."""
     try:
         supabase = get_client()
@@ -60,7 +60,7 @@ def get_recent_calls(team_id: str, since: str) -> list:
         raise DatabaseError(f"Failed to get recent calls: {e}")
 
 
-def get_calls_in_range(team_id: str, start_date: str, end_date: str) -> list:
+def get_calls_in_range_by_team(team_id: str, start_date: str, end_date: str) -> list:
     """Get calls for a team within a date range."""
     try:
         supabase = get_client()
