@@ -4,7 +4,10 @@ from .exceptions import AuthenticationError, DatabaseError
 
 
 def create_auth_user(client, email: str, password: str) -> dict:
-    """Create a new Supabase Auth user. Returns {id, email}."""
+    """
+    Create a new Supabase Auth user. Returns {id, email}.
+    Emails are confirmed by default
+    """
     try:
         response = client.auth.admin.create_user(
             {"email": email, "password": password, "email_confirm": True}

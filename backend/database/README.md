@@ -2,7 +2,7 @@
 
 ## Setup
 
-Set these environment variables for the `get_supabase_client`in the api dependencies:
+Set these environment variables for the `get_supabase_client`in the api dependencies folder:
 
 ```
 SUPABASE_URL=xxxx

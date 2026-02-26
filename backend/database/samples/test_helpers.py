@@ -1,5 +1,5 @@
 """
-Test helpers with client param
+Script to test the database helpers
 Run: python test_helpers.py
 """
 
