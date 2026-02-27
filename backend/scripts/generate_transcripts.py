@@ -92,7 +92,9 @@ def parse_args() -> argparse.Namespace:
         description="Generate call transcripts with OpenAI and save into sentiment JSON files."
     )
     parser.add_argument("--count", type=int, default=20, help="Number of transcripts to generate.")
-    parser.add_argument("--seed", type=str, default=None, help="Optional seed for deterministic specs.")
+    parser.add_argument(
+        "--seed", type=str, default=None, help="Optional seed for deterministic specs."
+    )
     parser.add_argument(
         "--date-range-days",
         type=int,
@@ -191,7 +193,7 @@ def load_dotenv(dotenv_path: Path) -> None:
         if not key:
             continue
 
-        if value and value[0] in {"\"", "'"} and value[-1] == value[0]:
+        if value and value[0] in {'"', "'"} and value[-1] == value[0]:
             value = value[1:-1]
 
         if key not in os.environ:
@@ -238,7 +240,9 @@ def format_iso_z(dt: datetime) -> str:
 def parse_risk_split(raw: str) -> dict[str, float]:
     parts = [part.strip() for part in raw.split(",") if part.strip()]
     if len(parts) != 4:
-        raise ValueError("--risk-split must have 4 comma-separated values (normal,mild,high,coaching).")
+        raise ValueError(
+            "--risk-split must have 4 comma-separated values (normal,mild,high,coaching)."
+        )
 
     values: list[float] = []
     for part in parts:
@@ -373,14 +377,12 @@ def build_prompt(spec: dict[str, Any]) -> str:
 
     normal_keyword_warning = ""
     if spec["riskClass"] == "normal":
-        normal_keyword_warning = (
-            "Avoid using these escalation words unless absolutely necessary: cancel, chargeback, dispute, lawsuit."
-        )
+        normal_keyword_warning = "Avoid using these escalation words unless absolutely necessary: cancel, chargeback, dispute, lawsuit."
 
     return (
         "Generate a realistic customer support call transcript.\n"
         "Return ONLY a top-level JSON array, with no markdown and no extra text.\n"
-        "Every array item must be exactly: {\"speaker\":\"Customer\"|\"Agent\",\"text\":\"...\"}.\n"
+        'Every array item must be exactly: {"speaker":"Customer"|"Agent","text":"..."}.\n'
         f"Use exactly {spec['targetTurns']} turns.\n"
         "Turns must alternate speakers and start with Customer.\n"
         f"Topic: {spec['topic']}.\n"
@@ -733,7 +735,10 @@ def main() -> int:
     load_dotenv(Path(".env"))
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
-        print("ERROR: OPENAI_API_KEY is not set. Add it to your environment or .env file.", file=sys.stderr)
+        print(
+            "ERROR: OPENAI_API_KEY is not set. Add it to your environment or .env file.",
+            file=sys.stderr,
+        )
         return 1
 
     try:
@@ -773,7 +778,9 @@ def main() -> int:
 
     print("Starting generation with settings:")
     print(f"  count={args.count}, model={args.model}, temperature={args.temperature}")
-    print(f"  seed={args.seed!r}, date_range_days={args.date_range_days}, anchor={format_iso_z(anchor)}")
+    print(
+        f"  seed={args.seed!r}, date_range_days={args.date_range_days}, anchor={format_iso_z(anchor)}"
+    )
     print(f"  risk_split={args.risk_split} -> counts={risk_counts}")
     print(f"  output_dir={output_dir}")
     print(f"  id_start=call_{start_id_index:06d}")
