@@ -15,10 +15,10 @@ Expose a single REST endpoint that returns all the aggregated metrics the **Supe
 | **Method** | `GET` |
 | **Path** | `/api/dashboard/metrics` |
 | **Auth** | Supervisor role required (to be implemented later) |
-| **Query Params** | `days` — integer, optional, default `14`. Accepted values: `7`, `14`, `30` |
+| **Query Params** | `days` — integer, optional, default `14`. Accepted range: `7`–`30` (inclusive) |
 | **Success Response** | `200 OK` — JSON body (see §3) |
 | **Empty Dataset** | `200 OK` — JSON body with zeroed values (see §5) |
-| **Error Responses** | `422` — invalid `days` value · `401/403` — unauthorized (future) |
+| **Error Responses** | `422` — invalid `days` value (non-integer or out of range `7`–`30`) · `401/403` — unauthorized (future) |
 
 **Example request:**
 ```
