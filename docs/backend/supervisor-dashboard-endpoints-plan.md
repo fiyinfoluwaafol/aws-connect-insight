@@ -43,17 +43,18 @@ This is the exact JSON shape the frontend should expect. Each field maps to some
 
   // ── Sentiment Trend (line/area chart) ───────────────────
   // Maps to the "Trends" tab → AreaChart in Overview.tsx
-  // One entry per day within the date range, ordered chronologically
+  // One entry per calendar day within the date range, ordered chronologically.
+  // Days with no calls MUST still be present with zeroed metrics (e.g., call_count = 0, avg_sentiment = 0).
 
   "daily_metrics": [
     {
-      "date": "2026-02-13",        // ISO date string
-      "avg_sentiment": 0.35,       // float: daily mean sentiment
-      "call_count": 14,            // int:   calls that day
-      "avg_duration": 312,         // int:   mean duration_seconds
-      "negative_percent": 28.6     // float: % negative that day
+      "date": "2026-02-13",        // ISO date string (every day in range appears exactly once)
+      "avg_sentiment": 0.35,       // float: daily mean sentiment (0 if no calls)
+      "call_count": 14,            // int:   calls that day (0 if no calls)
+      "avg_duration": 312,         // int:   mean duration_seconds (0 if no calls)
+      "negative_percent": 28.6     // float: % negative that day (0 if no calls)
     }
-    // ... one per day
+    // ... one object per day in the requested range, including days with zero calls
   ],
 
   // ── Topic Distribution (bar chart) ──────────────────────
