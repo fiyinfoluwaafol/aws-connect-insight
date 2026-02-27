@@ -1,0 +1,724 @@
+[
+  {
+    "id": "call_000001",
+    "createdAt": "2026-02-21T02:14:19.103Z",
+    "topic": "technical",
+    "riskClass": "coaching",
+    "sentimentScore": -0.6,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I recently bought your software, but it keeps crashing every time I try to open it."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm sorry to hear that. Can you tell me exactly when the crashes happen?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, it happens right after I log in. The program just freezes and then closes."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, have you tried reinstalling the software? That usually fixes most issues."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I did, but the problem is still there. It’s really frustrating because I need it for work."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I understand. Let me check your account details quickly. One moment, please."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, but can you also tell me if I’m eligible for a refund if this keeps happening?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, we do offer refunds under certain conditions, but first, let’s see if we can fix the issue."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I appreciate that. What else can I try before we talk about a refund?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Um, well, you could try updating your operating system. Sometimes that helps."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I already have the latest OS update, so that’s not the problem."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, thanks for letting me know. Can you tell me if any error messages pop up?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No error messages, it just crashes silently. That’s why it’s so hard to figure out."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Got it. Let me run a remote diagnostic on your machine now."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Wait, can you explain what that involves? I’m a bit nervous about remote access."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Oh, it’s just a quick scan to check for software conflicts. No worries, it’s safe."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, if you say so. I just wish someone had been more empathetic earlier in this call."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry if I seemed rushed. I really want to get this sorted for you as soon as possible."
+        }
+      ],
+      "fullText": "Customer: Hi, I recently bought your software, but it keeps crashing every time I try to open it.\nAgent: I'm sorry to hear that. Can you tell me exactly when the crashes happen?\nCustomer: Yeah, it happens right after I log in. The program just freezes and then closes.\nAgent: Alright, have you tried reinstalling the software? That usually fixes most issues.\nCustomer: I did, but the problem is still there. It’s really frustrating because I need it for work.\nAgent: Okay, I understand. Let me check your account details quickly. One moment, please.\nCustomer: Sure, but can you also tell me if I’m eligible for a refund if this keeps happening?\nAgent: Yes, we do offer refunds under certain conditions, but first, let’s see if we can fix the issue.\nCustomer: Alright, I appreciate that. What else can I try before we talk about a refund?\nAgent: Um, well, you could try updating your operating system. Sometimes that helps.\nCustomer: I already have the latest OS update, so that’s not the problem.\nAgent: Okay, thanks for letting me know. Can you tell me if any error messages pop up?\nCustomer: No error messages, it just crashes silently. That’s why it’s so hard to figure out.\nAgent: Got it. Let me run a remote diagnostic on your machine now.\nCustomer: Wait, can you explain what that involves? I’m a bit nervous about remote access.\nAgent: Oh, it’s just a quick scan to check for software conflicts. No worries, it’s safe.\nCustomer: Okay, if you say so. I just wish someone had been more empathetic earlier in this call.\nAgent: I’m sorry if I seemed rushed. I really want to get this sorted for you as soon as possible."
+    }
+  },
+  {
+    "id": "call_000006",
+    "createdAt": "2026-02-09T13:00:22.266Z",
+    "topic": "technical",
+    "riskClass": "high",
+    "sentimentScore": -0.6,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m really frustrated right now. My internet’s been dropping constantly for the past week, and I’m just about done with this."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear you’re experiencing this issue. I’d like to help get this sorted out for you as quickly as possible. Can you tell me when the problem first started?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Like I said, it’s been happening all week. I’ve called before, but nothing’s changed. This is seriously impacting my work from home."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand how important a stable connection is, especially for work. Have you tried restarting your modem or checking the cables recently?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I’ve done all that multiple times. It’s not a simple fix. I’m honestly at the point where I want to cancel my service if this keeps up."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I get that, and I don’t want you to feel stuck. Let me check your account and the network status in your area to see if there’s an ongoing issue."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Please do, because the last time I called, they said the network was fine. Clearly, it’s not."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m reviewing your area now, and there doesn’t seem to be an outage reported. However, I can schedule a technician to come out and inspect your connection."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Scheduling a technician is fine, but I need this fixed fast. I can’t afford to keep losing hours every day waiting around for a repair."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand the urgency, and I’ll prioritize your appointment. The earliest available slot is tomorrow afternoon. Would that work for you?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Tomorrow afternoon is better than nothing, but honestly, I’m worried this won’t solve the problem. It’s been one thing after another."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I hear your frustration, and I want to make sure we get to the bottom of this. If the technician can’t resolve the issue, we can explore other options, including a service review."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Look, I don’t want to waste more time. If this doesn’t get fixed after the technician visit, I want to escalate this and seriously consider canceling."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That’s totally understandable. I’ll make a note on your account about your concerns and the potential escalation. We want to keep you as a customer, so we’ll do everything we can."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I appreciate that, but right now, I’m just really disappointed. I’ve been loyal for years, and this service is not what I signed up for."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for your loyalty. We value you as a customer and want to restore your confidence. After the technician visit, please reach out if the issue persists, and I’ll personally assist with escalation."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I’ll wait for the technician, but I’m holding you to that. If things don’t improve, I’m moving forward with canceling."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m really frustrated right now. My internet’s been dropping constantly for the past week, and I’m just about done with this.\nAgent: I’m sorry to hear you’re experiencing this issue. I’d like to help get this sorted out for you as quickly as possible. Can you tell me when the problem first started?\nCustomer: Like I said, it’s been happening all week. I’ve called before, but nothing’s changed. This is seriously impacting my work from home.\nAgent: I understand how important a stable connection is, especially for work. Have you tried restarting your modem or checking the cables recently?\nCustomer: Yeah, I’ve done all that multiple times. It’s not a simple fix. I’m honestly at the point where I want to cancel my service if this keeps up.\nAgent: I get that, and I don’t want you to feel stuck. Let me check your account and the network status in your area to see if there’s an ongoing issue.\nCustomer: Please do, because the last time I called, they said the network was fine. Clearly, it’s not.\nAgent: I’m reviewing your area now, and there doesn’t seem to be an outage reported. However, I can schedule a technician to come out and inspect your connection.\nCustomer: Scheduling a technician is fine, but I need this fixed fast. I can’t afford to keep losing hours every day waiting around for a repair.\nAgent: I understand the urgency, and I’ll prioritize your appointment. The earliest available slot is tomorrow afternoon. Would that work for you?\nCustomer: Tomorrow afternoon is better than nothing, but honestly, I’m worried this won’t solve the problem. It’s been one thing after another.\nAgent: I hear your frustration, and I want to make sure we get to the bottom of this. If the technician can’t resolve the issue, we can explore other options, including a service review.\nCustomer: Look, I don’t want to waste more time. If this doesn’t get fixed after the technician visit, I want to escalate this and seriously consider canceling.\nAgent: That’s totally understandable. I’ll make a note on your account about your concerns and the potential escalation. We want to keep you as a customer, so we’ll do everything we can.\nCustomer: I appreciate that, but right now, I’m just really disappointed. I’ve been loyal for years, and this service is not what I signed up for.\nAgent: Thank you for your loyalty. We value you as a customer and want to restore your confidence. After the technician visit, please reach out if the issue persists, and I’ll personally assist with escalation.\nCustomer: Alright, I’ll wait for the technician, but I’m holding you to that. If things don’t improve, I’m moving forward with canceling."
+    }
+  },
+  {
+    "id": "call_000017",
+    "createdAt": "2026-02-05T10:07:37.391Z",
+    "topic": "subscription",
+    "riskClass": "high",
+    "sentimentScore": -0.667,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m really frustrated right now. I was charged twice for my subscription this month, and I need this fixed immediately."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re experiencing this issue. Let me pull up your account details to see what happened with the charges."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, please do. Because I don’t want to keep paying for something I didn’t agree to. If this isn’t sorted out, I’ll have to file a chargeback with my bank."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. From what I can see, there was a billing error that caused the duplicate charge. I can initiate a refund for the extra payment right now."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, but how long will the refund take? I can’t afford to wait weeks for my money back, especially since this has happened before."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Refunds typically take 5-7 business days to process, but I will mark this as urgent to try and expedite it for you."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That’s not good enough. This is the third time I’ve had billing issues with you guys. I want someone higher up to handle this because I’m losing trust in your service."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize for the repeated inconvenience. I can escalate this case to our billing supervisor who can review your account and hopefully prevent this from happening again."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Fine, but I want written confirmation that the duplicate charge will be reversed and that my subscription won’t be renewed without my consent."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, I will send you an email confirmation summarizing the refund and the subscription status once I submit the escalation."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I’m holding you to that. If I don’t get the confirmation or the refund, I will have no choice but to proceed with the chargeback."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m really frustrated right now. I was charged twice for my subscription this month, and I need this fixed immediately.\nAgent: I’m sorry to hear that you’re experiencing this issue. Let me pull up your account details to see what happened with the charges.\nCustomer: Yeah, please do. Because I don’t want to keep paying for something I didn’t agree to. If this isn’t sorted out, I’ll have to file a chargeback with my bank.\nAgent: I understand your concern. From what I can see, there was a billing error that caused the duplicate charge. I can initiate a refund for the extra payment right now.\nCustomer: Okay, but how long will the refund take? I can’t afford to wait weeks for my money back, especially since this has happened before.\nAgent: Refunds typically take 5-7 business days to process, but I will mark this as urgent to try and expedite it for you.\nCustomer: That’s not good enough. This is the third time I’ve had billing issues with you guys. I want someone higher up to handle this because I’m losing trust in your service.\nAgent: I apologize for the repeated inconvenience. I can escalate this case to our billing supervisor who can review your account and hopefully prevent this from happening again.\nCustomer: Fine, but I want written confirmation that the duplicate charge will be reversed and that my subscription won’t be renewed without my consent.\nAgent: Absolutely, I will send you an email confirmation summarizing the refund and the subscription status once I submit the escalation.\nCustomer: Alright, I’m holding you to that. If I don’t get the confirmation or the refund, I will have no choice but to proceed with the chargeback."
+    }
+  },
+  {
+    "id": "call_000028",
+    "createdAt": "2026-02-13T21:25:47.100Z",
+    "topic": "technical",
+    "riskClass": "mild",
+    "sentimentScore": -1.0,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I was trying to install the software I bought last week, but it keeps giving me an error code and won’t complete the setup."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re having trouble with the installation. Can you please tell me the exact error code you’re seeing?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, it’s error 504. I’ve tried restarting my computer and everything, but no luck so far."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for sharing that. Error 504 usually relates to a timeout issue during installation. Can you confirm if you have a stable internet connection while installing?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I’m pretty sure my internet’s fine. Other stuff works perfectly. I’m just frustrated because I expected this to be straightforward."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your frustration. Let’s try one more thing: could you temporarily disable any antivirus software and then try installing again? Sometimes security settings interfere with setup."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I’ll give that a shot. Okay, I turned off the antivirus and the installation actually went through this time."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great to hear that it worked! Do you need any help with activating the product now?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, activation went smoothly. But since this was such a hassle, is there any chance I could get a partial refund or credit for the trouble?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I appreciate your patience. While I can’t promise a refund right now, I can escalate this to our billing team who will review your case and get back to you shortly."
+        }
+      ],
+      "fullText": "Customer: Hi, I was trying to install the software I bought last week, but it keeps giving me an error code and won’t complete the setup.\nAgent: I’m sorry to hear that you’re having trouble with the installation. Can you please tell me the exact error code you’re seeing?\nCustomer: Yeah, it’s error 504. I’ve tried restarting my computer and everything, but no luck so far.\nAgent: Thanks for sharing that. Error 504 usually relates to a timeout issue during installation. Can you confirm if you have a stable internet connection while installing?\nCustomer: I’m pretty sure my internet’s fine. Other stuff works perfectly. I’m just frustrated because I expected this to be straightforward.\nAgent: I completely understand your frustration. Let’s try one more thing: could you temporarily disable any antivirus software and then try installing again? Sometimes security settings interfere with setup.\nCustomer: Alright, I’ll give that a shot. Okay, I turned off the antivirus and the installation actually went through this time.\nAgent: Great to hear that it worked! Do you need any help with activating the product now?\nCustomer: No, activation went smoothly. But since this was such a hassle, is there any chance I could get a partial refund or credit for the trouble?\nAgent: I appreciate your patience. While I can’t promise a refund right now, I can escalate this to our billing team who will review your case and get back to you shortly."
+    }
+  },
+  {
+    "id": "call_000029",
+    "createdAt": "2026-02-24T07:30:35.587Z",
+    "topic": "technical",
+    "riskClass": "coaching",
+    "sentimentScore": -1.0,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I'm having trouble connecting my laptop to the office Wi-Fi."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, let me help you with that. Have you tried restarting your laptop yet?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, I did restart it, but it still won't connect."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, can you tell me what error message you’re seeing?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It just says 'Unable to connect to this network'."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Hmm, that usually means there’s an issue with the network settings. Are you sure you’re entering the right password?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, I double-checked the password, and it’s definitely correct."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, let me run a quick diagnostic on your connection."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, take your time."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, the diagnostic says your network adapter might be disabled. Can you check it in your device manager?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I’m not very tech-savvy. Could you guide me through that?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Sure. Open the start menu, type 'Device Manager,' and open it. Then look for 'Network Adapters.'"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I found Network Adapters. What next?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Right-click on your Wi-Fi adapter and see if there’s an option to enable it."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Oh, it was disabled! I enabled it, but still no connection."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, try forgetting the Wi-Fi network and reconnecting."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I did that, but it still won’t connect. I’m getting frustrated."
+        }
+      ],
+      "fullText": "Customer: Hi, I'm having trouble connecting my laptop to the office Wi-Fi.\nAgent: Okay, let me help you with that. Have you tried restarting your laptop yet?\nCustomer: Yes, I did restart it, but it still won't connect.\nAgent: Alright, can you tell me what error message you’re seeing?\nCustomer: It just says 'Unable to connect to this network'.\nAgent: Hmm, that usually means there’s an issue with the network settings. Are you sure you’re entering the right password?\nCustomer: Yes, I double-checked the password, and it’s definitely correct.\nAgent: Okay, let me run a quick diagnostic on your connection.\nCustomer: Sure, take your time.\nAgent: Alright, the diagnostic says your network adapter might be disabled. Can you check it in your device manager?\nCustomer: I’m not very tech-savvy. Could you guide me through that?\nAgent: Sure. Open the start menu, type 'Device Manager,' and open it. Then look for 'Network Adapters.'\nCustomer: Okay, I found Network Adapters. What next?\nAgent: Right-click on your Wi-Fi adapter and see if there’s an option to enable it.\nCustomer: Oh, it was disabled! I enabled it, but still no connection.\nAgent: Alright, try forgetting the Wi-Fi network and reconnecting.\nCustomer: Okay, I did that, but it still won’t connect. I’m getting frustrated."
+    }
+  },
+  {
+    "id": "call_000034",
+    "createdAt": "2026-02-17T06:25:54.813Z",
+    "topic": "fraud",
+    "riskClass": "high",
+    "sentimentScore": -1.0,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I just noticed some really suspicious charges on my account, and I’m pretty upset about it."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. I understand how concerning this must be. Can you please provide me with the details of the charges you’re referring to?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, there are at least three transactions I didn’t make, and they’re all pretty big. I want to cancel my card immediately."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, we can proceed with canceling your card right away to prevent any further unauthorized use. I’ll also start an investigation on these charges."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, but honestly, this is unacceptable. How did this even happen? I need to know your security measures are actually working."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your frustration. We use multiple layers of security, but sometimes fraudsters find a way. That’s why we monitor transactions and encourage customers to report anything unusual promptly."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Well, I did report it, so what’s next? How long will this investigation take? I can’t have my money tied up for weeks."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Typically, investigations can take up to 7 to 10 business days. We do our best to expedite cases like yours, especially since this is a high-risk situation."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Seven to ten days? That’s a long time! I’m not sure I can wait that long without some sort of guarantee I’ll get my money back."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. While we can’t guarantee outcomes immediately, we prioritize high-risk fraud cases and keep you updated throughout the process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I want this escalated to a supervisor. I’m not satisfied with just waiting around and being told everything is being done."
+        }
+      ],
+      "fullText": "Customer: Hi, I just noticed some really suspicious charges on my account, and I’m pretty upset about it.\nAgent: I’m sorry to hear that. I understand how concerning this must be. Can you please provide me with the details of the charges you’re referring to?\nCustomer: Yeah, there are at least three transactions I didn’t make, and they’re all pretty big. I want to cancel my card immediately.\nAgent: Absolutely, we can proceed with canceling your card right away to prevent any further unauthorized use. I’ll also start an investigation on these charges.\nCustomer: Okay, but honestly, this is unacceptable. How did this even happen? I need to know your security measures are actually working.\nAgent: I completely understand your frustration. We use multiple layers of security, but sometimes fraudsters find a way. That’s why we monitor transactions and encourage customers to report anything unusual promptly.\nCustomer: Well, I did report it, so what’s next? How long will this investigation take? I can’t have my money tied up for weeks.\nAgent: Typically, investigations can take up to 7 to 10 business days. We do our best to expedite cases like yours, especially since this is a high-risk situation.\nCustomer: Seven to ten days? That’s a long time! I’m not sure I can wait that long without some sort of guarantee I’ll get my money back.\nAgent: I understand your concern. While we can’t guarantee outcomes immediately, we prioritize high-risk fraud cases and keep you updated throughout the process.\nCustomer: Alright, I want this escalated to a supervisor. I’m not satisfied with just waiting around and being told everything is being done."
+    }
+  },
+  {
+    "id": "call_000050",
+    "createdAt": "2026-01-30T17:00:16.772Z",
+    "topic": "account",
+    "riskClass": "high",
+    "sentimentScore": -0.429,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I've been trying to get my account issues sorted for days now, and honestly, I'm just fed up at this point."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm really sorry to hear that you're experiencing these issues. Could you please tell me what specifically is going wrong with your account?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Well, for starters, I noticed unauthorized charges that I never approved. This is completely unacceptable."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. Let me pull up your account details to investigate these charges further."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Please do, because if this isn't fixed, I want to cancel everything. I can't trust this service anymore."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I appreciate your patience. I see the charges you're referring to. It looks like they were made from a different device. We can start a dispute process right away."
+        },
+        {
+          "speaker": "Customer",
+          "text": "A dispute? I've already done that twice! Why hasn't anything been resolved yet? This is ridiculous."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize for the delay. Let me escalate this to our fraud department to prioritize your case."
+        },
+        {
+          "speaker": "Customer",
+          "text": "You keep saying that, but nothing changes. I need a real solution, not promises. This is high risk for me."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand the urgency and am escalating your case right now. Meanwhile, would you like me to temporarily lock your account to prevent further unauthorized access?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, lock it immediately. I don't want any more surprises. And I want confirmation that the charges will be reversed."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’ve locked your account for you. As for the charges, the dispute process will take up to 7 business days, but I will follow up personally."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Seven days? That's way too long! I need this sorted now. I'm seriously considering canceling because of how poorly this is handled."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand how frustrating this delay is. I’ll do everything I can to expedite the process and keep you updated regularly."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Honestly, I’m not holding my breath. This whole situation has been a nightmare, and your team hasn’t been helpful so far."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m truly sorry for your experience. If you want, I can connect you with a supervisor who might be able to offer additional assistance."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, put me through to a supervisor. I want to make sure someone higher up knows how bad this is."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Please hold for a moment while I transfer you to my supervisor. Thank you for your patience."
+        }
+      ],
+      "fullText": "Customer: Hi, I've been trying to get my account issues sorted for days now, and honestly, I'm just fed up at this point.\nAgent: I'm really sorry to hear that you're experiencing these issues. Could you please tell me what specifically is going wrong with your account?\nCustomer: Well, for starters, I noticed unauthorized charges that I never approved. This is completely unacceptable.\nAgent: I understand your concern. Let me pull up your account details to investigate these charges further.\nCustomer: Please do, because if this isn't fixed, I want to cancel everything. I can't trust this service anymore.\nAgent: I appreciate your patience. I see the charges you're referring to. It looks like they were made from a different device. We can start a dispute process right away.\nCustomer: A dispute? I've already done that twice! Why hasn't anything been resolved yet? This is ridiculous.\nAgent: I apologize for the delay. Let me escalate this to our fraud department to prioritize your case.\nCustomer: You keep saying that, but nothing changes. I need a real solution, not promises. This is high risk for me.\nAgent: I completely understand the urgency and am escalating your case right now. Meanwhile, would you like me to temporarily lock your account to prevent further unauthorized access?\nCustomer: Yes, lock it immediately. I don't want any more surprises. And I want confirmation that the charges will be reversed.\nAgent: I’ve locked your account for you. As for the charges, the dispute process will take up to 7 business days, but I will follow up personally.\nCustomer: Seven days? That's way too long! I need this sorted now. I'm seriously considering canceling because of how poorly this is handled.\nAgent: I understand how frustrating this delay is. I’ll do everything I can to expedite the process and keep you updated regularly.\nCustomer: Honestly, I’m not holding my breath. This whole situation has been a nightmare, and your team hasn’t been helpful so far.\nAgent: I’m truly sorry for your experience. If you want, I can connect you with a supervisor who might be able to offer additional assistance.\nCustomer: Yeah, put me through to a supervisor. I want to make sure someone higher up knows how bad this is.\nAgent: Please hold for a moment while I transfer you to my supervisor. Thank you for your patience."
+    }
+  },
+  {
+    "id": "call_000054",
+    "createdAt": "2026-02-20T01:25:46.568Z",
+    "topic": "billing",
+    "riskClass": "coaching",
+    "sentimentScore": -0.333,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m calling because I noticed a charge on my bill that I don’t recognize."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, let me pull up your account. Can you please provide your account number?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s 123456789. But before you check, I just want to say this is actually a complaint because this charge seems wrong."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I see the charge here. It’s for the premium service subscription."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, but I never signed up for that. So I’m not sure why it’s on my bill."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand, but according to our records, it was activated last month."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Right, but I honestly don’t remember doing that. Can you help me figure out how to get this removed?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I can help you with that. I’m going to go ahead and cancel the subscription now."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, thanks. Also, will I get a refund for this charge?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Refunds are handled automatically and usually take 5 to 7 business days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I guess. Can you also explain why I wasn’t informed about this subscription before it was charged?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Our system sends out emails when subscriptions are activated. Maybe you missed the notification."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Hmm, I didn’t get any email, so that’s a bit frustrating."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m calling because I noticed a charge on my bill that I don’t recognize.\nAgent: Alright, let me pull up your account. Can you please provide your account number?\nCustomer: Sure, it’s 123456789. But before you check, I just want to say this is actually a complaint because this charge seems wrong.\nAgent: Okay, I see the charge here. It’s for the premium service subscription.\nCustomer: Yeah, but I never signed up for that. So I’m not sure why it’s on my bill.\nAgent: I understand, but according to our records, it was activated last month.\nCustomer: Right, but I honestly don’t remember doing that. Can you help me figure out how to get this removed?\nAgent: I can help you with that. I’m going to go ahead and cancel the subscription now.\nCustomer: Okay, thanks. Also, will I get a refund for this charge?\nAgent: Refunds are handled automatically and usually take 5 to 7 business days.\nCustomer: Okay, I guess. Can you also explain why I wasn’t informed about this subscription before it was charged?\nAgent: Our system sends out emails when subscriptions are activated. Maybe you missed the notification.\nCustomer: Hmm, I didn’t get any email, so that’s a bit frustrating."
+    }
+  },
+  {
+    "id": "call_000064",
+    "createdAt": "2026-02-01T19:42:51.212Z",
+    "topic": "subscription",
+    "riskClass": "high",
+    "sentimentScore": -0.778,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m really upset right now because I just saw a charge on my credit card for a subscription I never agreed to."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Let me pull up your account and see what’s going on with the subscription charges."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, please do. I don’t even remember signing up for this, and I want it canceled immediately."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. Can you please confirm the email address associated with your account so I can verify the subscription details?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s john.doe@example.com. Honestly, I’m frustrated because I’ve tried to cancel this before, but it’s like nobody listens."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for that information. I see an active subscription under your account. I’m going to cancel it right now to prevent further charges."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Finally. But what about the charge I just saw? I want a refund for that, or I’m going to have to do a chargeback through my bank."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand. I can’t guarantee a refund immediately, but I will submit a request for you. It usually takes 5-7 business days to process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Five to seven days? That’s not good enough. I shouldn’t have to wait after being charged without my consent."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize for the inconvenience. I’ll escalate this to our billing team to try to speed up the refund process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Look, I don’t want to escalate it to my bank, but if you don’t fix this soon, I have no choice. This whole situation is ridiculous."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your frustration, and I’m really sorry for the trouble. I’ll make sure the escalation is flagged as urgent."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, but I want something in writing that my subscription is canceled and that the refund is being processed."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, I will send you a confirmation email within the next hour outlining the cancellation and the refund request."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Fine. I’m still not happy about this. If I see any more charges, I’m going to file a chargeback and maybe even report this."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand, and I appreciate you bringing this to our attention. We’ll do our best to resolve it quickly, but I understand why you’re upset."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m really upset right now because I just saw a charge on my credit card for a subscription I never agreed to.\nAgent: I’m sorry to hear that. Let me pull up your account and see what’s going on with the subscription charges.\nCustomer: Yeah, please do. I don’t even remember signing up for this, and I want it canceled immediately.\nAgent: I understand your concern. Can you please confirm the email address associated with your account so I can verify the subscription details?\nCustomer: It’s john.doe@example.com. Honestly, I’m frustrated because I’ve tried to cancel this before, but it’s like nobody listens.\nAgent: Thank you for that information. I see an active subscription under your account. I’m going to cancel it right now to prevent further charges.\nCustomer: Finally. But what about the charge I just saw? I want a refund for that, or I’m going to have to do a chargeback through my bank.\nAgent: I understand. I can’t guarantee a refund immediately, but I will submit a request for you. It usually takes 5-7 business days to process.\nCustomer: Five to seven days? That’s not good enough. I shouldn’t have to wait after being charged without my consent.\nAgent: I apologize for the inconvenience. I’ll escalate this to our billing team to try to speed up the refund process.\nCustomer: Look, I don’t want to escalate it to my bank, but if you don’t fix this soon, I have no choice. This whole situation is ridiculous.\nAgent: I completely understand your frustration, and I’m really sorry for the trouble. I’ll make sure the escalation is flagged as urgent.\nCustomer: Okay, but I want something in writing that my subscription is canceled and that the refund is being processed.\nAgent: Absolutely, I will send you a confirmation email within the next hour outlining the cancellation and the refund request.\nCustomer: Fine. I’m still not happy about this. If I see any more charges, I’m going to file a chargeback and maybe even report this.\nAgent: I understand, and I appreciate you bringing this to our attention. We’ll do our best to resolve it quickly, but I understand why you’re upset."
+    }
+  },
+  {
+    "id": "call_000068",
+    "createdAt": "2026-02-21T19:30:45.825Z",
+    "topic": "billing",
+    "riskClass": "high",
+    "sentimentScore": -0.333,
+    "sentimentLabel": "negative",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’ve been looking at my bill and I’m really upset about these extra charges that I never agreed to."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re seeing unexpected charges. Let me take a look at your account and see what’s going on."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, because this is ridiculous. I want to know why I’m being charged for services I didn’t even use."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your frustration. According to our records, there was an additional service added last month. Did you authorize any changes recently?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, absolutely not! I never asked for anything extra. This is why I’m thinking about canceling altogether."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I see. If you’d like, I can review the charges in detail and possibly issue a refund if there was an error."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Well, you better, because I’m not paying for something I didn’t sign up for. I need this fixed now."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m pulling up the details now. It looks like the charge comes from a premium package upgrade on your account."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That’s wrong. I never requested any upgrade. Someone must have made a mistake on your end."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize for the confusion. We can reverse the upgrade and refund the extra amount, but it may take a few business days to process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "A few days? I don’t have time for this. I want confirmation that the cancelation of that package is immediate."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’ll make sure the package is canceled today, and you won’t be charged moving forward."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, but what about the money I already paid? I want that refunded before I consider staying with you."
+        },
+        {
+          "speaker": "Agent",
+          "text": "The refund is being processed, but as I mentioned, it can take up to 5 business days to reflect on your statement."
+        },
+        {
+          "speaker": "Customer",
+          "text": "This is unacceptable. I’ve been a customer for years and now I’m treated like this? I want to escalate this issue."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your concern. I will escalate your case to our billing supervisor who can review it further."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Fine. But honestly, if this isn’t resolved quickly, I’m definitely going to cancel everything and switch providers."
+        }
+      ],
+      "fullText": "Customer: Hi, I’ve been looking at my bill and I’m really upset about these extra charges that I never agreed to.\nAgent: I’m sorry to hear that you’re seeing unexpected charges. Let me take a look at your account and see what’s going on.\nCustomer: Yeah, because this is ridiculous. I want to know why I’m being charged for services I didn’t even use.\nAgent: I understand your frustration. According to our records, there was an additional service added last month. Did you authorize any changes recently?\nCustomer: No, absolutely not! I never asked for anything extra. This is why I’m thinking about canceling altogether.\nAgent: I see. If you’d like, I can review the charges in detail and possibly issue a refund if there was an error.\nCustomer: Well, you better, because I’m not paying for something I didn’t sign up for. I need this fixed now.\nAgent: I’m pulling up the details now. It looks like the charge comes from a premium package upgrade on your account.\nCustomer: That’s wrong. I never requested any upgrade. Someone must have made a mistake on your end.\nAgent: I apologize for the confusion. We can reverse the upgrade and refund the extra amount, but it may take a few business days to process.\nCustomer: A few days? I don’t have time for this. I want confirmation that the cancelation of that package is immediate.\nAgent: I’ll make sure the package is canceled today, and you won’t be charged moving forward.\nCustomer: Alright, but what about the money I already paid? I want that refunded before I consider staying with you.\nAgent: The refund is being processed, but as I mentioned, it can take up to 5 business days to reflect on your statement.\nCustomer: This is unacceptable. I’ve been a customer for years and now I’m treated like this? I want to escalate this issue.\nAgent: I completely understand your concern. I will escalate your case to our billing supervisor who can review it further.\nCustomer: Fine. But honestly, if this isn’t resolved quickly, I’m definitely going to cancel everything and switch providers."
+    }
+  }
+]

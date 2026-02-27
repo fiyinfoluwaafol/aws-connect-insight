@@ -38,6 +38,7 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+per-file-ignores = { "scripts/generate_transcripts.py" = ["E501"] }
 
 [tool.coverage.run]
 source = ["api"]
