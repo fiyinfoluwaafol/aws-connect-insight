@@ -186,14 +186,14 @@ class DashboardMetricsResponse(BaseModel):
 from fastapi import APIRouter, Query, Depends
 from api.schemas.dashboard import DashboardMetricsResponse
 from services.dashboard import get_dashboard_metrics
-from api.dependencies import get_supabase   # existing DI for Supabase client
+from api.dependencies import get_supabase_client   # existing DI for Supabase client
 
 router = APIRouter()
 
 @router.get("/metrics", response_model=DashboardMetricsResponse)
 async def dashboard_metrics(
     days: int = Query(default=14, ge=7, le=30),       # validate: 7 ≤ days ≤ 30
-    supabase=Depends(get_supabase),                    # injected Supabase client
+    supabase=Depends(get_supabase_client),             # injected Supabase client
 ):
     """
     Return aggregated dashboard metrics for the supervisor overview page.
