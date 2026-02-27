@@ -1,0 +1,1265 @@
+[
+  {
+    "id": "call_000002",
+    "createdAt": "2026-02-05T06:08:06.032Z",
+    "topic": "account",
+    "riskClass": "mild",
+    "sentimentScore": 0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I was checking my account and noticed a charge that I don’t recognize. Can you help me with that?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Of course, I’d be happy to look into that for you. Can you please provide me with the date and amount of the charge?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, it was on the 5th of this month, for $45. I didn’t authorize anything like that."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for that info. Let me pull up your account details. Just a moment please."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I appreciate it. I’m just a bit worried because I don’t want to be charged for something I didn’t buy."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your concern. After reviewing, it looks like the charge is linked to a subscription service you signed up for last month. Does that ring a bell?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Hmm, I guess I might have signed up, but I didn’t realize it was still active. I want to cancel that and request a refund for this charge."
+        },
+        {
+          "speaker": "Agent",
+          "text": "No problem, I can help you cancel the subscription right now. As for the refund, I’ll initiate the request and it should be processed within 5 to 7 business days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, thank you. I just want to make sure this doesn’t happen again."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, I’ll also make a note on your account to prevent any further charges from this service. Is there anything else I can assist you with today?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, that’s all. Thanks for your help and for explaining everything clearly."
+        }
+      ],
+      "fullText": "Customer: Hi, I was checking my account and noticed a charge that I don’t recognize. Can you help me with that?\nAgent: Of course, I’d be happy to look into that for you. Can you please provide me with the date and amount of the charge?\nCustomer: Yeah, it was on the 5th of this month, for $45. I didn’t authorize anything like that.\nAgent: Thank you for that info. Let me pull up your account details. Just a moment please.\nCustomer: Okay, I appreciate it. I’m just a bit worried because I don’t want to be charged for something I didn’t buy.\nAgent: I completely understand your concern. After reviewing, it looks like the charge is linked to a subscription service you signed up for last month. Does that ring a bell?\nCustomer: Hmm, I guess I might have signed up, but I didn’t realize it was still active. I want to cancel that and request a refund for this charge.\nAgent: No problem, I can help you cancel the subscription right now. As for the refund, I’ll initiate the request and it should be processed within 5 to 7 business days.\nCustomer: Alright, thank you. I just want to make sure this doesn’t happen again.\nAgent: Absolutely, I’ll also make a note on your account to prevent any further charges from this service. Is there anything else I can assist you with today?\nCustomer: No, that’s all. Thanks for your help and for explaining everything clearly."
+    }
+  },
+  {
+    "id": "call_000012",
+    "createdAt": "2026-02-12T21:02:46.139Z",
+    "topic": "technical",
+    "riskClass": "normal",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I'm having some trouble with my laptop. It keeps freezing randomly, and it's really slowing me down."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm sorry to hear that. Let's see if we can get this sorted out. How long has this been happening?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It's been going on for about a week now. I thought maybe it was just a one-time thing, but it keeps happening several times a day."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Got it. Have you noticed if it freezes when you're using a specific program or doing something particular?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Not really. Sometimes it's when I'm browsing the internet, other times when I'm working on documents or even just idling."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, thanks for that info. Let's try a quick step. Can you please restart your laptop and tell me if it freezes again after reboot?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, give me a second to do that... Alright, it's back on. So far, it seems fine."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Good to hear. Sometimes a restart can clear up temporary issues. If it freezes again, we might need to check for software updates or run a diagnostic scan."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I can do that. How do I check for updates?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Just go to your settings, then to the update section. There should be an option to check for and install updates automatically."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I see it now. I'll install any updates that are available and keep an eye on it."
+        }
+      ],
+      "fullText": "Customer: Hi, I'm having some trouble with my laptop. It keeps freezing randomly, and it's really slowing me down.\nAgent: I'm sorry to hear that. Let's see if we can get this sorted out. How long has this been happening?\nCustomer: It's been going on for about a week now. I thought maybe it was just a one-time thing, but it keeps happening several times a day.\nAgent: Got it. Have you noticed if it freezes when you're using a specific program or doing something particular?\nCustomer: Not really. Sometimes it's when I'm browsing the internet, other times when I'm working on documents or even just idling.\nAgent: Okay, thanks for that info. Let's try a quick step. Can you please restart your laptop and tell me if it freezes again after reboot?\nCustomer: Sure, give me a second to do that... Alright, it's back on. So far, it seems fine.\nAgent: Good to hear. Sometimes a restart can clear up temporary issues. If it freezes again, we might need to check for software updates or run a diagnostic scan.\nCustomer: Okay, I can do that. How do I check for updates?\nAgent: Just go to your settings, then to the update section. There should be an option to check for and install updates automatically.\nCustomer: Alright, I see it now. I'll install any updates that are available and keep an eye on it."
+    }
+  },
+  {
+    "id": "call_000024",
+    "createdAt": "2026-02-01T16:53:36.234Z",
+    "topic": "technical",
+    "riskClass": "normal",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I'm having trouble connecting my laptop to the office Wi-Fi. It keeps saying the network is unavailable."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm sorry to hear that. Let's see if we can get this sorted out. Are you able to see the Wi-Fi network listed on your laptop?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I can see the network, but when I try to connect, it just fails every time."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, thanks for letting me know. Can you tell me if any other devices are connecting to the same Wi-Fi without issues?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, my phone and another laptop are connected just fine, so it seems to be just this device."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Got it. Let's try a quick step. Could you please forget the Wi-Fi network on your laptop and then try to reconnect?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I’ve forgotten the network and now I’m trying to connect again, but it’s still not working."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for trying that. Can you check if your laptop’s Wi-Fi adapter is enabled? Sometimes it can get turned off accidentally."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Let me see... okay, it looks like the adapter is enabled."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great. Next, let's try restarting the network adapter. You can do this by disabling it and then enabling it again in the network settings."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I disabled it and now enabled it again. Trying to connect... still no luck."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, thanks for checking that. Could you please restart your laptop and then try connecting once it’s back on?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, I’ll do that now. Okay, I’m back up and I connected successfully this time."
+        }
+      ],
+      "fullText": "Customer: Hi, I'm having trouble connecting my laptop to the office Wi-Fi. It keeps saying the network is unavailable.\nAgent: I'm sorry to hear that. Let's see if we can get this sorted out. Are you able to see the Wi-Fi network listed on your laptop?\nCustomer: Yeah, I can see the network, but when I try to connect, it just fails every time.\nAgent: Okay, thanks for letting me know. Can you tell me if any other devices are connecting to the same Wi-Fi without issues?\nCustomer: Yes, my phone and another laptop are connected just fine, so it seems to be just this device.\nAgent: Got it. Let's try a quick step. Could you please forget the Wi-Fi network on your laptop and then try to reconnect?\nCustomer: Alright, I’ve forgotten the network and now I’m trying to connect again, but it’s still not working.\nAgent: Thanks for trying that. Can you check if your laptop’s Wi-Fi adapter is enabled? Sometimes it can get turned off accidentally.\nCustomer: Let me see... okay, it looks like the adapter is enabled.\nAgent: Great. Next, let's try restarting the network adapter. You can do this by disabling it and then enabling it again in the network settings.\nCustomer: Okay, I disabled it and now enabled it again. Trying to connect... still no luck.\nAgent: Alright, thanks for checking that. Could you please restart your laptop and then try connecting once it’s back on?\nCustomer: Sure, I’ll do that now. Okay, I’m back up and I connected successfully this time."
+    }
+  },
+  {
+    "id": "call_000033",
+    "createdAt": "2026-02-19T09:50:20.406Z",
+    "topic": "technical",
+    "riskClass": "coaching",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having trouble connecting my printer to my laptop. It keeps showing an error."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, let me help you with that. What kind of error message are you seeing?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It says 'Unable to establish connection.' I’ve tried restarting both devices but no luck."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, have you checked if the printer is turned on and properly plugged in?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, it’s definitely on and plugged in. I also verified the Wi-Fi is working for other devices."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Good. Now, can you tell me the model of your printer?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s an HP DeskJet 3755."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks. I’ll guide you through reinstalling the printer drivers. Please open the control panel on your laptop."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I have it open now."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great. Click on 'Devices and Printers' and remove the HP DeskJet from the list."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Done. Should I download the drivers from the HP website now?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, exactly. Go ahead and install the latest drivers. Let me know if you face any issues."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having trouble connecting my printer to my laptop. It keeps showing an error.\nAgent: Okay, let me help you with that. What kind of error message are you seeing?\nCustomer: It says 'Unable to establish connection.' I’ve tried restarting both devices but no luck.\nAgent: Alright, have you checked if the printer is turned on and properly plugged in?\nCustomer: Yes, it’s definitely on and plugged in. I also verified the Wi-Fi is working for other devices.\nAgent: Good. Now, can you tell me the model of your printer?\nCustomer: It’s an HP DeskJet 3755.\nAgent: Thanks. I’ll guide you through reinstalling the printer drivers. Please open the control panel on your laptop.\nCustomer: Okay, I have it open now.\nAgent: Great. Click on 'Devices and Printers' and remove the HP DeskJet from the list.\nCustomer: Done. Should I download the drivers from the HP website now?\nAgent: Yes, exactly. Go ahead and install the latest drivers. Let me know if you face any issues."
+    }
+  },
+  {
+    "id": "call_000037",
+    "createdAt": "2026-02-14T15:40:24.550Z",
+    "topic": "account",
+    "riskClass": "normal",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having some trouble accessing my account. It keeps saying my password is incorrect."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Let me help you with that. Can you please confirm your email address associated with the account?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s john.doe@example.com."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks, John. I’ve pulled up your account. Just to confirm, have you tried resetting your password using the 'Forgot Password' link?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I tried that, but I didn’t get the reset email."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, sometimes those emails can land in the spam folder. Could you please check there and let me know?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Let me check... Ah, yes, it was in the spam folder. I didn’t think to look there."
+        },
+        {
+          "speaker": "Agent",
+          "text": "No worries, that happens quite often. Were you able to reset your password now?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, I just reset it and I can log in now."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great! Is there anything else I can assist you with regarding your account today?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Actually, yes. I wanted to update my phone number on the account. How do I do that?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I can help you update that right now. Can you please provide me with your new phone number?"
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having some trouble accessing my account. It keeps saying my password is incorrect.\nAgent: I’m sorry to hear that. Let me help you with that. Can you please confirm your email address associated with the account?\nCustomer: Sure, it’s john.doe@example.com.\nAgent: Thanks, John. I’ve pulled up your account. Just to confirm, have you tried resetting your password using the 'Forgot Password' link?\nCustomer: Yeah, I tried that, but I didn’t get the reset email.\nAgent: Okay, sometimes those emails can land in the spam folder. Could you please check there and let me know?\nCustomer: Let me check... Ah, yes, it was in the spam folder. I didn’t think to look there.\nAgent: No worries, that happens quite often. Were you able to reset your password now?\nCustomer: Yes, I just reset it and I can log in now.\nAgent: Great! Is there anything else I can assist you with regarding your account today?\nCustomer: Actually, yes. I wanted to update my phone number on the account. How do I do that?\nAgent: I can help you update that right now. Can you please provide me with your new phone number?"
+    }
+  },
+  {
+    "id": "call_000039",
+    "createdAt": "2026-02-01T00:31:10.281Z",
+    "topic": "billing",
+    "riskClass": "high",
+    "sentimentScore": 0.143,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m really frustrated right now because I just saw a charge on my bill that I definitely didn’t authorize."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Let me take a look at your account and see what’s going on with this charge."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thank you, but honestly I don’t want to wait around. This is a big amount and it’s really stressing me out."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. Can you please confirm the date and amount of the charge you’re referring to?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It was on the 14th, for $350. I have no idea what that’s for, and I never approved anything close to that."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, I see the transaction here. It appears to be a purchase from one of our partners. Sometimes these charges show up if a subscription renews."
+        },
+        {
+          "speaker": "Customer",
+          "text": "A subscription? I never signed up for anything like that! And if I did, I’d expect a heads-up before you just bill me."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand. I can start a chargeback process for you if this was unauthorized. That usually takes about 7 to 10 business days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, please do that. But honestly, I’m worried this isn’t going to get resolved quickly enough, and I can’t afford to be out this money."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’ll escalate this to our billing department so they can prioritize your case. In the meantime, I recommend monitoring your account closely."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Escalate? I hope so, because I’m really losing patience here. This kind of billing error shouldn’t happen in the first place."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your frustration, and I assure you we’re taking this seriously. You’ll receive an update within 48 hours about the chargeback status."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I’ll wait for the update, but I want to be clear—I expect a full refund and a proper explanation. This is unacceptable."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m really frustrated right now because I just saw a charge on my bill that I definitely didn’t authorize.\nAgent: I’m sorry to hear that. Let me take a look at your account and see what’s going on with this charge.\nCustomer: Thank you, but honestly I don’t want to wait around. This is a big amount and it’s really stressing me out.\nAgent: I understand your concern. Can you please confirm the date and amount of the charge you’re referring to?\nCustomer: It was on the 14th, for $350. I have no idea what that’s for, and I never approved anything close to that.\nAgent: Alright, I see the transaction here. It appears to be a purchase from one of our partners. Sometimes these charges show up if a subscription renews.\nCustomer: A subscription? I never signed up for anything like that! And if I did, I’d expect a heads-up before you just bill me.\nAgent: I completely understand. I can start a chargeback process for you if this was unauthorized. That usually takes about 7 to 10 business days.\nCustomer: Yeah, please do that. But honestly, I’m worried this isn’t going to get resolved quickly enough, and I can’t afford to be out this money.\nAgent: I’ll escalate this to our billing department so they can prioritize your case. In the meantime, I recommend monitoring your account closely.\nCustomer: Escalate? I hope so, because I’m really losing patience here. This kind of billing error shouldn’t happen in the first place.\nAgent: I understand your frustration, and I assure you we’re taking this seriously. You’ll receive an update within 48 hours about the chargeback status.\nCustomer: Alright, I’ll wait for the update, but I want to be clear—I expect a full refund and a proper explanation. This is unacceptable."
+    }
+  },
+  {
+    "id": "call_000042",
+    "createdAt": "2026-02-15T13:06:14.432Z",
+    "topic": "returns",
+    "riskClass": "mild",
+    "sentimentScore": 0.143,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I received my order yesterday but one of the items is damaged. I want to make a complaint about that."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm really sorry to hear that your item arrived damaged. I can definitely help you with the return process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks. I just don’t understand how something could get broken in shipping. It’s pretty frustrating."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand, and we want to make sure this is sorted out quickly for you. Can you tell me which item was damaged?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s the glass vase I ordered. The box looked fine, but the vase inside was cracked."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for that info. We’ll get you a replacement or a refund, whichever you prefer. Would you like to exchange it or get your money back?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I think I’d prefer a refund this time. I’m a bit worried it might happen again if I get a replacement."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That’s totally understandable. I’ll start the refund process for you right now. Could you please confirm your order number?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s 987654321. I just want this sorted out soon, honestly."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Got it, thank you. I’ve initiated the refund, and you should see the amount back in your account within 5-7 business days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, that sounds good. Do I need to send the damaged vase back or anything?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "No need to send it back. You can keep or dispose of it as you wish. We just want to make this as easy as possible for you."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I appreciate that. I’ll keep an eye on my account for the refund then."
+        }
+      ],
+      "fullText": "Customer: Hi, I received my order yesterday but one of the items is damaged. I want to make a complaint about that.\nAgent: I'm really sorry to hear that your item arrived damaged. I can definitely help you with the return process.\nCustomer: Thanks. I just don’t understand how something could get broken in shipping. It’s pretty frustrating.\nAgent: I completely understand, and we want to make sure this is sorted out quickly for you. Can you tell me which item was damaged?\nCustomer: It’s the glass vase I ordered. The box looked fine, but the vase inside was cracked.\nAgent: Thank you for that info. We’ll get you a replacement or a refund, whichever you prefer. Would you like to exchange it or get your money back?\nCustomer: I think I’d prefer a refund this time. I’m a bit worried it might happen again if I get a replacement.\nAgent: That’s totally understandable. I’ll start the refund process for you right now. Could you please confirm your order number?\nCustomer: Sure, it’s 987654321. I just want this sorted out soon, honestly.\nAgent: Got it, thank you. I’ve initiated the refund, and you should see the amount back in your account within 5-7 business days.\nCustomer: Alright, that sounds good. Do I need to send the damaged vase back or anything?\nAgent: No need to send it back. You can keep or dispose of it as you wish. We just want to make this as easy as possible for you.\nCustomer: Okay, I appreciate that. I’ll keep an eye on my account for the refund then."
+    }
+  },
+  {
+    "id": "call_000047",
+    "createdAt": "2026-02-11T19:54:44.941Z",
+    "topic": "loyalty",
+    "riskClass": "high",
+    "sentimentScore": -0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m really upset about my loyalty points. I was told I had over 5,000 points, but now it shows way less, and no one can explain why."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re having trouble with your points. Let me take a look at your account and see what’s going on with your loyalty balance."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, please do. I’ve been a loyal customer for years, and this sudden drop feels like a mistake or worse, some sort of dispute that wasn’t handled properly."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your frustration. It appears there was a recent adjustment on your account due to a dispute on some transactions. I can provide details if you'd like."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I do want details. But honestly, I’m not happy that this wasn’t communicated earlier. I feel like I’m being punished without any notice."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize for the lack of communication. The dispute was resolved last month, and the points were deducted accordingly. I can escalate this to our loyalty department for a further review."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Escalate it, please. Because right now, I feel this is unfair. I want a full explanation and maybe a reversal if this was handled incorrectly."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, I’m flagging this as a high-priority case. It might take a few days to get a full response, but we will keep you updated throughout the process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, but I’m expecting quick feedback. If this isn’t resolved soon, I’ll have to consider other options, including filing a formal complaint."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand, and we want to resolve this for you as quickly as possible. Thank you for your patience, and again, I apologize for the inconvenience caused."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m really upset about my loyalty points. I was told I had over 5,000 points, but now it shows way less, and no one can explain why.\nAgent: I’m sorry to hear that you’re having trouble with your points. Let me take a look at your account and see what’s going on with your loyalty balance.\nCustomer: Yeah, please do. I’ve been a loyal customer for years, and this sudden drop feels like a mistake or worse, some sort of dispute that wasn’t handled properly.\nAgent: I completely understand your frustration. It appears there was a recent adjustment on your account due to a dispute on some transactions. I can provide details if you'd like.\nCustomer: I do want details. But honestly, I’m not happy that this wasn’t communicated earlier. I feel like I’m being punished without any notice.\nAgent: I apologize for the lack of communication. The dispute was resolved last month, and the points were deducted accordingly. I can escalate this to our loyalty department for a further review.\nCustomer: Escalate it, please. Because right now, I feel this is unfair. I want a full explanation and maybe a reversal if this was handled incorrectly.\nAgent: Absolutely, I’m flagging this as a high-priority case. It might take a few days to get a full response, but we will keep you updated throughout the process.\nCustomer: Alright, but I’m expecting quick feedback. If this isn’t resolved soon, I’ll have to consider other options, including filing a formal complaint.\nAgent: I understand, and we want to resolve this for you as quickly as possible. Thank you for your patience, and again, I apologize for the inconvenience caused."
+    }
+  },
+  {
+    "id": "call_000067",
+    "createdAt": "2026-02-23T06:58:03.293Z",
+    "topic": "technical",
+    "riskClass": "mild",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open it."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Could you tell me which version of the software you’re using and what device it’s installed on?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s version 3.2.1, and I’m running it on a Windows 10 laptop."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for that info. Have you tried reinstalling the software or updating your Windows to the latest version?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I did both. It still crashes after about 30 seconds of opening the program."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I understand how frustrating that can be. Let me check if there’s a patch or known issue with this version."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Please do. I was really expecting this to work smoothly, but it’s been a hassle."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely get that. While I’m checking, can you tell me if any error messages pop up when it crashes?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It just says ‘unexpected error occurred’ and then closes. No specific code or anything."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Got it. I found a recent update addressing similar crashes. I can guide you through installing it now."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, let’s try that. Though, if it keeps crashing, I might want to talk about a refund."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Understood. Let’s see if this update resolves the issue first, and if not, I’ll help you with the refund process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I appreciate that. I’m ready to follow your instructions."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great. I’ll send you a link to download the patch and walk you through the installation step-by-step."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open it.\nAgent: I’m sorry to hear that. Could you tell me which version of the software you’re using and what device it’s installed on?\nCustomer: Sure, it’s version 3.2.1, and I’m running it on a Windows 10 laptop.\nAgent: Thanks for that info. Have you tried reinstalling the software or updating your Windows to the latest version?\nCustomer: Yeah, I did both. It still crashes after about 30 seconds of opening the program.\nAgent: Okay, I understand how frustrating that can be. Let me check if there’s a patch or known issue with this version.\nCustomer: Please do. I was really expecting this to work smoothly, but it’s been a hassle.\nAgent: I completely get that. While I’m checking, can you tell me if any error messages pop up when it crashes?\nCustomer: It just says ‘unexpected error occurred’ and then closes. No specific code or anything.\nAgent: Got it. I found a recent update addressing similar crashes. I can guide you through installing it now.\nCustomer: Alright, let’s try that. Though, if it keeps crashing, I might want to talk about a refund.\nAgent: Understood. Let’s see if this update resolves the issue first, and if not, I’ll help you with the refund process.\nCustomer: Okay, I appreciate that. I’m ready to follow your instructions.\nAgent: Great. I’ll send you a link to download the patch and walk you through the installation step-by-step."
+    }
+  },
+  {
+    "id": "call_000086",
+    "createdAt": "2026-02-11T02:50:13.525Z",
+    "topic": "technical",
+    "riskClass": "normal",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having some trouble connecting my new router to the internet."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Let’s see if we can get this sorted out quickly. Can you tell me what model your router is?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s the NetGear Nighthawk R7000."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Great, thanks. Have you already plugged it in and powered it on?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, it’s all powered on, but my devices just won’t connect."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, do you see any lights blinking on the router? Specifically, the internet or WAN light?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "The internet light is flashing orange."
+        },
+        {
+          "speaker": "Agent",
+          "text": "A flashing orange light usually indicates a connection issue with your ISP. Have you tried restarting the modem and router?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I haven’t yet, but I can do that now."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Please go ahead and unplug both devices, wait about 30 seconds, then plug the modem back in first. Wait for it to fully start up, then plug in the router."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I’ve done that. The lights are coming back on."
+        },
+        {
+          "speaker": "Agent",
+          "text": "How does the internet light look now?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s solid white now."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That’s a good sign. Can you try connecting your device to the Wi-Fi again?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I’m connected now, and the internet seems to be working fine."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having some trouble connecting my new router to the internet.\nAgent: I’m sorry to hear that. Let’s see if we can get this sorted out quickly. Can you tell me what model your router is?\nCustomer: It’s the NetGear Nighthawk R7000.\nAgent: Great, thanks. Have you already plugged it in and powered it on?\nCustomer: Yes, it’s all powered on, but my devices just won’t connect.\nAgent: Alright, do you see any lights blinking on the router? Specifically, the internet or WAN light?\nCustomer: The internet light is flashing orange.\nAgent: A flashing orange light usually indicates a connection issue with your ISP. Have you tried restarting the modem and router?\nCustomer: I haven’t yet, but I can do that now.\nAgent: Please go ahead and unplug both devices, wait about 30 seconds, then plug the modem back in first. Wait for it to fully start up, then plug in the router.\nCustomer: Okay, I’ve done that. The lights are coming back on.\nAgent: How does the internet light look now?\nCustomer: It’s solid white now.\nAgent: That’s a good sign. Can you try connecting your device to the Wi-Fi again?\nCustomer: I’m connected now, and the internet seems to be working fine."
+    }
+  },
+  {
+    "id": "call_000089",
+    "createdAt": "2026-02-10T21:34:33.446Z",
+    "topic": "technical",
+    "riskClass": "mild",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’ve been having some trouble with the software I bought last week. It keeps crashing whenever I try to open my project."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m really sorry to hear that you’re experiencing crashes. Let’s see if we can get this sorted out for you. Can you tell me what version of the software you’re using?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, it’s the latest version, I updated it just yesterday. But honestly, it’s been unstable since I installed it."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for that info. Sometimes, issues like this happen if there’s a conflict with other programs. Have you installed any new software recently that might interfere?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Not really, no new software. I just want to know if I’m eligible for a refund if this can’t be fixed soon."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern about the refund. Our goal is to resolve the issue first, but if we can’t, we do have a refund policy in place. Let’s try a quick troubleshooting step first—can you try reinstalling the software?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I guess I can try that. Hopefully it works because I don’t want to waste more time on this."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely get that, and I appreciate your patience. While you reinstall, I’ll stay on the line to guide you through any steps if needed."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I reinstalled it, and it seems to be opening now. It hasn’t crashed yet, so fingers crossed."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That’s great news! Sometimes a fresh install can clear up those issues. If you do run into any more problems, please don’t hesitate to reach out."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks for your help. I’m feeling a bit better about this now. I’ll keep an eye on it and contact you if it crashes again."
+        }
+      ],
+      "fullText": "Customer: Hi, I’ve been having some trouble with the software I bought last week. It keeps crashing whenever I try to open my project.\nAgent: I’m really sorry to hear that you’re experiencing crashes. Let’s see if we can get this sorted out for you. Can you tell me what version of the software you’re using?\nCustomer: Yeah, it’s the latest version, I updated it just yesterday. But honestly, it’s been unstable since I installed it.\nAgent: Thanks for that info. Sometimes, issues like this happen if there’s a conflict with other programs. Have you installed any new software recently that might interfere?\nCustomer: Not really, no new software. I just want to know if I’m eligible for a refund if this can’t be fixed soon.\nAgent: I understand your concern about the refund. Our goal is to resolve the issue first, but if we can’t, we do have a refund policy in place. Let’s try a quick troubleshooting step first—can you try reinstalling the software?\nCustomer: Alright, I guess I can try that. Hopefully it works because I don’t want to waste more time on this.\nAgent: I completely get that, and I appreciate your patience. While you reinstall, I’ll stay on the line to guide you through any steps if needed.\nCustomer: Okay, I reinstalled it, and it seems to be opening now. It hasn’t crashed yet, so fingers crossed.\nAgent: That’s great news! Sometimes a fresh install can clear up those issues. If you do run into any more problems, please don’t hesitate to reach out.\nCustomer: Thanks for your help. I’m feeling a bit better about this now. I’ll keep an eye on it and contact you if it crashes again."
+    }
+  },
+  {
+    "id": "call_000091",
+    "createdAt": "2026-02-26T21:08:09.590Z",
+    "topic": "technical",
+    "riskClass": "mild",
+    "sentimentScore": 0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open a project."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re experiencing crashes. Can you tell me which version of the software you’re using and what kind of project you’re trying to open?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It’s the latest version, 5.3, and I’m just trying to open a simple text file project. It shouldn’t be this unstable."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for that info. Sometimes the latest update can have some bugs. Have you tried reinstalling the software or updating your operating system?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I already reinstalled it twice and my OS is fully updated. I’m getting pretty frustrated because I paid for this and it’s not working right."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your frustration, and I appreciate you trying those steps. Let me check if there’s a patch or workaround available for this issue."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I’d appreciate that. Honestly, if this keeps up, I might have to ask for a refund because I can’t use it like this."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely get that. Let me assure you, we want to get this sorted so you don’t feel the need to request a refund. One moment while I look into it."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks, I hope there’s a fix soon. It’s just disappointing when a product doesn’t work as expected right out of the box."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely, and thank you for your patience. I’ve found a known issue with version 5.3 that causes crashes with certain file types. We have a beta patch that should fix it."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That sounds promising. How do I get this patch? Is it easy to install?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, I’ll send you a direct download link and step-by-step instructions. If you run into any trouble, just call us back and we’ll assist you right away."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open a project.\nAgent: I’m sorry to hear that you’re experiencing crashes. Can you tell me which version of the software you’re using and what kind of project you’re trying to open?\nCustomer: It’s the latest version, 5.3, and I’m just trying to open a simple text file project. It shouldn’t be this unstable.\nAgent: Thanks for that info. Sometimes the latest update can have some bugs. Have you tried reinstalling the software or updating your operating system?\nCustomer: Yeah, I already reinstalled it twice and my OS is fully updated. I’m getting pretty frustrated because I paid for this and it’s not working right.\nAgent: I understand your frustration, and I appreciate you trying those steps. Let me check if there’s a patch or workaround available for this issue.\nCustomer: Okay, I’d appreciate that. Honestly, if this keeps up, I might have to ask for a refund because I can’t use it like this.\nAgent: I completely get that. Let me assure you, we want to get this sorted so you don’t feel the need to request a refund. One moment while I look into it.\nCustomer: Thanks, I hope there’s a fix soon. It’s just disappointing when a product doesn’t work as expected right out of the box.\nAgent: Absolutely, and thank you for your patience. I’ve found a known issue with version 5.3 that causes crashes with certain file types. We have a beta patch that should fix it.\nCustomer: That sounds promising. How do I get this patch? Is it easy to install?\nAgent: Yes, I’ll send you a direct download link and step-by-step instructions. If you run into any trouble, just call us back and we’ll assist you right away."
+    }
+  },
+  {
+    "id": "call_000093",
+    "createdAt": "2026-02-01T23:03:53.396Z",
+    "topic": "loyalty",
+    "riskClass": "mild",
+    "sentimentScore": 0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’ve been trying to figure out why my loyalty points didn’t get added after my last purchase."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Let me check your account details and see what happened with your points."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks. It’s a bit frustrating because I was really counting on those points for a discount."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand. I see here that the purchase was made, but the points weren’t credited due to a system glitch."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, so what can be done about it? I don’t want to lose out on the rewards I earned."
+        },
+        {
+          "speaker": "Agent",
+          "text": "We can manually add the points for you right now, and I’ll also make sure this glitch is reported to our tech team."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That sounds better. Also, I was wondering if it’s possible to get a refund on an item I returned last week?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, I can check the status of your refund for that return. Can you give me the order number?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s 458293. I returned the jacket because it didn’t fit, but I haven’t seen the refund yet."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for that. It looks like the refund was processed but might take a few more days to appear on your statement."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I guess I’ll wait a bit longer then. Just wish these things were quicker."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand the wait can be inconvenient. I’ll note this feedback and see if we can expedite refunds in the future."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks. And about the loyalty points, how soon will they be added to my account?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m adding them right now, so you should see the updated balance within the next hour."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, that helps. I appreciate you sorting this out."
+        },
+        {
+          "speaker": "Agent",
+          "text": "You’re very welcome! If you have any other questions or concerns, feel free to reach out anytime."
+        }
+      ],
+      "fullText": "Customer: Hi, I’ve been trying to figure out why my loyalty points didn’t get added after my last purchase.\nAgent: I’m sorry to hear that. Let me check your account details and see what happened with your points.\nCustomer: Thanks. It’s a bit frustrating because I was really counting on those points for a discount.\nAgent: I completely understand. I see here that the purchase was made, but the points weren’t credited due to a system glitch.\nCustomer: Okay, so what can be done about it? I don’t want to lose out on the rewards I earned.\nAgent: We can manually add the points for you right now, and I’ll also make sure this glitch is reported to our tech team.\nCustomer: That sounds better. Also, I was wondering if it’s possible to get a refund on an item I returned last week?\nAgent: Yes, I can check the status of your refund for that return. Can you give me the order number?\nCustomer: Sure, it’s 458293. I returned the jacket because it didn’t fit, but I haven’t seen the refund yet.\nAgent: Thanks for that. It looks like the refund was processed but might take a few more days to appear on your statement.\nCustomer: Alright, I guess I’ll wait a bit longer then. Just wish these things were quicker.\nAgent: I understand the wait can be inconvenient. I’ll note this feedback and see if we can expedite refunds in the future.\nCustomer: Thanks. And about the loyalty points, how soon will they be added to my account?\nAgent: I’m adding them right now, so you should see the updated balance within the next hour.\nCustomer: Okay, that helps. I appreciate you sorting this out.\nAgent: You’re very welcome! If you have any other questions or concerns, feel free to reach out anytime."
+    }
+  },
+  {
+    "id": "call_000096",
+    "createdAt": "2026-02-10T06:39:18.148Z",
+    "topic": "technical",
+    "riskClass": "mild",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open a file."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that you’re experiencing crashes. Could you tell me which version of the software you’re using and what kind of file you’re trying to open?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s version 3.2 on my Windows laptop, and I’m trying to open a PDF file. It just freezes and then closes without any warning."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for that info. Have you tried updating the software to the latest patch? Sometimes that fixes issues like crashing."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I thought it was up to date because it said so when I installed it. But maybe I missed something?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "No problem, I can guide you through checking for updates. Just open the software, go to the Help menu, and click on Check for Updates."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I did that, and it says I’m running the latest version. So, what else could be causing the crash?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Sometimes conflicts with other programs or corrupted files can cause crashes. Have you tried opening a different PDF or restarting your computer?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "I restarted, and I tried another file, but the same thing happens. It’s really frustrating because I need this for work."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand how important it is to have this working. Let’s try reinstalling the software to see if that clears up the problem."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I can do that. But if this doesn’t work, can I get a refund? I’m not sure this product is reliable enough."
+        },
+        {
+          "speaker": "Agent",
+          "text": "If reinstalling doesn’t fix the issue, we can definitely discuss a refund according to our policy. Let’s try this first and see how it goes."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I uninstalled and reinstalled it. Seems like it’s working now, the file opened without crashing."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That’s great to hear! Sometimes a fresh installation clears out hidden glitches. Is there anything else I can assist you with today?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, that’s all for now. Thanks for your help and patience."
+        }
+      ],
+      "fullText": "Customer: Hi, I’m having some trouble with the software I bought last week. It keeps crashing every time I try to open a file.\nAgent: I’m sorry to hear that you’re experiencing crashes. Could you tell me which version of the software you’re using and what kind of file you’re trying to open?\nCustomer: Sure, it’s version 3.2 on my Windows laptop, and I’m trying to open a PDF file. It just freezes and then closes without any warning.\nAgent: Thanks for that info. Have you tried updating the software to the latest patch? Sometimes that fixes issues like crashing.\nCustomer: I thought it was up to date because it said so when I installed it. But maybe I missed something?\nAgent: No problem, I can guide you through checking for updates. Just open the software, go to the Help menu, and click on Check for Updates.\nCustomer: Okay, I did that, and it says I’m running the latest version. So, what else could be causing the crash?\nAgent: Sometimes conflicts with other programs or corrupted files can cause crashes. Have you tried opening a different PDF or restarting your computer?\nCustomer: I restarted, and I tried another file, but the same thing happens. It’s really frustrating because I need this for work.\nAgent: I understand how important it is to have this working. Let’s try reinstalling the software to see if that clears up the problem.\nCustomer: Alright, I can do that. But if this doesn’t work, can I get a refund? I’m not sure this product is reliable enough.\nAgent: If reinstalling doesn’t fix the issue, we can definitely discuss a refund according to our policy. Let’s try this first and see how it goes.\nCustomer: Okay, I uninstalled and reinstalled it. Seems like it’s working now, the file opened without crashing.\nAgent: That’s great to hear! Sometimes a fresh installation clears out hidden glitches. Is there anything else I can assist you with today?\nCustomer: No, that’s all for now. Thanks for your help and patience."
+    }
+  },
+  {
+    "id": "call_000097",
+    "createdAt": "2026-02-12T17:09:59.746Z",
+    "topic": "returns",
+    "riskClass": "mild",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I need to talk about a return I tried to make but it didn’t go through properly."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry to hear that. Can you please tell me what happened with your return?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I sent the item back last week, but I haven’t seen any refund or update on my account."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thanks for letting me know. Do you have the order number handy so I can look it up for you?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it’s 4589237. Honestly, it’s frustrating because I thought this would be a straightforward process."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand. Let me check the status of your return with that number right now."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I appreciate that. I just want to make sure this complaint is addressed because it’s been a hassle."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I see here that the return was received, but the refund hasn’t been processed yet. It looks like it’s still in review."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Why is it still in review? I followed all the instructions exactly as they were given."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Sometimes it takes a few days for the review to complete, especially if the item needs inspection. I apologize for the delay."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I get that, but I wish I had been notified earlier about the status."
+        },
+        {
+          "speaker": "Agent",
+          "text": "That makes sense, and I’m sorry for the lack of communication. I’ll make a note to improve that process."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks. So, when can I realistically expect the refund to show up?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Typically, it takes 3 to 5 business days after the review is complete. I’ll escalate your case to speed it up."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, that sounds better. I just want to get this sorted without more back and forth."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Absolutely. I’ll follow up with you by email with an update within the next two days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, I appreciate your help. Hopefully, this complaint gets resolved soon."
+        }
+      ],
+      "fullText": "Customer: Hi, I need to talk about a return I tried to make but it didn’t go through properly.\nAgent: I’m sorry to hear that. Can you please tell me what happened with your return?\nCustomer: Yeah, I sent the item back last week, but I haven’t seen any refund or update on my account.\nAgent: Thanks for letting me know. Do you have the order number handy so I can look it up for you?\nCustomer: Sure, it’s 4589237. Honestly, it’s frustrating because I thought this would be a straightforward process.\nAgent: I completely understand. Let me check the status of your return with that number right now.\nCustomer: Okay, I appreciate that. I just want to make sure this complaint is addressed because it’s been a hassle.\nAgent: I see here that the return was received, but the refund hasn’t been processed yet. It looks like it’s still in review.\nCustomer: Why is it still in review? I followed all the instructions exactly as they were given.\nAgent: Sometimes it takes a few days for the review to complete, especially if the item needs inspection. I apologize for the delay.\nCustomer: Alright, I get that, but I wish I had been notified earlier about the status.\nAgent: That makes sense, and I’m sorry for the lack of communication. I’ll make a note to improve that process.\nCustomer: Thanks. So, when can I realistically expect the refund to show up?\nAgent: Typically, it takes 3 to 5 business days after the review is complete. I’ll escalate your case to speed it up.\nCustomer: Okay, that sounds better. I just want to get this sorted without more back and forth.\nAgent: Absolutely. I’ll follow up with you by email with an update within the next two days.\nCustomer: Alright, I appreciate your help. Hopefully, this complaint gets resolved soon."
+    }
+  },
+  {
+    "id": "call_000101",
+    "createdAt": "2026-01-29T01:23:27.014Z",
+    "topic": "subscription",
+    "riskClass": "mild",
+    "sentimentScore": 0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I signed up for the premium subscription last week, but I think I was charged twice. Can you help me with that?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I'm sorry to hear that. Let me check your account details to see what happened with the charges."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Thanks. It’s just frustrating because I didn’t expect to pay double, and I’m not sure if I should cancel or wait it out."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand, and I appreciate you reaching out. I see here that there was a billing error, and you were charged twice for the same subscription period."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, so does that mean I can get a refund for the extra charge?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, absolutely. We can process a refund for the duplicate payment right away. It should reflect back on your payment method within 5 to 7 business days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, that sounds good. Is there anything else I need to do from my side?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "No, I’ll take care of everything on my end. Just keep an eye on your account, and if the refund doesn’t show up, feel free to contact us again."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I appreciate your help. Hopefully, this won’t happen again."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I completely understand your concern. We’re working to make sure billing issues like this don’t happen. Thanks for your patience today!"
+        }
+      ],
+      "fullText": "Customer: Hi, I signed up for the premium subscription last week, but I think I was charged twice. Can you help me with that?\nAgent: I'm sorry to hear that. Let me check your account details to see what happened with the charges.\nCustomer: Thanks. It’s just frustrating because I didn’t expect to pay double, and I’m not sure if I should cancel or wait it out.\nAgent: I understand, and I appreciate you reaching out. I see here that there was a billing error, and you were charged twice for the same subscription period.\nCustomer: Okay, so does that mean I can get a refund for the extra charge?\nAgent: Yes, absolutely. We can process a refund for the duplicate payment right away. It should reflect back on your payment method within 5 to 7 business days.\nCustomer: Alright, that sounds good. Is there anything else I need to do from my side?\nAgent: No, I’ll take care of everything on my end. Just keep an eye on your account, and if the refund doesn’t show up, feel free to contact us again.\nCustomer: Okay, I appreciate your help. Hopefully, this won’t happen again.\nAgent: I completely understand your concern. We’re working to make sure billing issues like this don’t happen. Thanks for your patience today!"
+    }
+  },
+  {
+    "id": "call_000105",
+    "createdAt": "2026-02-05T04:16:58.005Z",
+    "topic": "subscription",
+    "riskClass": "coaching",
+    "sentimentScore": -0.2,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I was hoping you could help me with something about my subscription."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Sure, I’d be happy to assist you with that. What seems to be the issue with your subscription?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Well, I was charged twice this month, and I’m not sure why."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I see. Let me check your account details. Can you please confirm your subscription ID?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, it’s 12345. But honestly, I just want to know if I can get a refund for the extra charge."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, I’m looking at your account now. I see two charges, but those are for different services."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I don’t think I signed up for two services. Maybe there’s been a mistake."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I understand your concern. However, the charges are for the monthly subscription and an add-on feature you selected."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Oh, I didn’t realize I had the add-on. That’s kind of frustrating. Can I cancel that part at least?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "Yes, I can cancel the add-on for you. Would you like me to proceed with that now?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, please. And about the refund, is there any way to get it for the duplicate charge?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry, but since both charges are for active services, refunds aren’t usually issued."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That’s disappointing. I feel like I wasn’t clearly informed about the add-on charges."
+        },
+        {
+          "speaker": "Agent",
+          "text": "I apologize if the information wasn’t clear. Next time, please review the subscription details carefully."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, I guess. But it’d be nicer if you guys made it more obvious. Anyway, thanks for canceling the add-on."
+        },
+        {
+          "speaker": "Agent",
+          "text": "You’re welcome. Is there anything else I can help you with today?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, that’s all for now. Thanks for your help."
+        }
+      ],
+      "fullText": "Customer: Hi, I was hoping you could help me with something about my subscription.\nAgent: Sure, I’d be happy to assist you with that. What seems to be the issue with your subscription?\nCustomer: Well, I was charged twice this month, and I’m not sure why.\nAgent: Okay, I see. Let me check your account details. Can you please confirm your subscription ID?\nCustomer: Yeah, it’s 12345. But honestly, I just want to know if I can get a refund for the extra charge.\nAgent: Alright, I’m looking at your account now. I see two charges, but those are for different services.\nCustomer: I don’t think I signed up for two services. Maybe there’s been a mistake.\nAgent: I understand your concern. However, the charges are for the monthly subscription and an add-on feature you selected.\nCustomer: Oh, I didn’t realize I had the add-on. That’s kind of frustrating. Can I cancel that part at least?\nAgent: Yes, I can cancel the add-on for you. Would you like me to proceed with that now?\nCustomer: Yes, please. And about the refund, is there any way to get it for the duplicate charge?\nAgent: I’m sorry, but since both charges are for active services, refunds aren’t usually issued.\nCustomer: That’s disappointing. I feel like I wasn’t clearly informed about the add-on charges.\nAgent: I apologize if the information wasn’t clear. Next time, please review the subscription details carefully.\nCustomer: Yeah, I guess. But it’d be nicer if you guys made it more obvious. Anyway, thanks for canceling the add-on.\nAgent: You’re welcome. Is there anything else I can help you with today?\nCustomer: No, that’s all for now. Thanks for your help."
+    }
+  },
+  {
+    "id": "call_000106",
+    "createdAt": "2026-02-26T01:16:22.108Z",
+    "topic": "fraud",
+    "riskClass": "coaching",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I just noticed some strange charges on my credit card and I think it might be fraud."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for reaching out. Can you please provide the transaction details so I can verify them for you?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, there’s a charge for $150 from a store I’ve never heard of, and it happened yesterday."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I see that charge here. I will need your full card number and address to proceed."
+        },
+        {
+          "speaker": "Customer",
+          "text": "I’m a bit uncomfortable giving all that over the phone. Isn’t there another way?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "For security reasons, I must have that information to help you."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, it’s 1234 5678 9012 3456, and my address is 789 Elm Street."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you. I’m pulling up your account now. Just a moment."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, I’m worried this might happen again. What can I do to protect myself?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "We will block your card and issue a new one. Please wait for the new card to arrive in 7 to 10 days."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Is there anything I can do in the meantime to avoid more fraud?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "No, just wait for the new card and monitor your statements."
+        },
+        {
+          "speaker": "Customer",
+          "text": "That sounds a bit risky. Can’t you offer some immediate protection or alerts?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I’m sorry, but that’s the standard procedure. Your card is now blocked."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Alright, but it would be helpful if you could explain the steps more clearly next time."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Noted. Is there anything else I can assist you with?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "No, that’s all for now. Thanks for your help."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you for contacting us. Have a good day."
+        }
+      ],
+      "fullText": "Customer: Hi, I just noticed some strange charges on my credit card and I think it might be fraud.\nAgent: Thank you for reaching out. Can you please provide the transaction details so I can verify them for you?\nCustomer: Sure, there’s a charge for $150 from a store I’ve never heard of, and it happened yesterday.\nAgent: Okay, I see that charge here. I will need your full card number and address to proceed.\nCustomer: I’m a bit uncomfortable giving all that over the phone. Isn’t there another way?\nAgent: For security reasons, I must have that information to help you.\nCustomer: Alright, it’s 1234 5678 9012 3456, and my address is 789 Elm Street.\nAgent: Thank you. I’m pulling up your account now. Just a moment.\nCustomer: Okay, I’m worried this might happen again. What can I do to protect myself?\nAgent: We will block your card and issue a new one. Please wait for the new card to arrive in 7 to 10 days.\nCustomer: Is there anything I can do in the meantime to avoid more fraud?\nAgent: No, just wait for the new card and monitor your statements.\nCustomer: That sounds a bit risky. Can’t you offer some immediate protection or alerts?\nAgent: I’m sorry, but that’s the standard procedure. Your card is now blocked.\nCustomer: Alright, but it would be helpful if you could explain the steps more clearly next time.\nAgent: Noted. Is there anything else I can assist you with?\nCustomer: No, that’s all for now. Thanks for your help.\nAgent: Thank you for contacting us. Have a good day."
+    }
+  },
+  {
+    "id": "call_000107",
+    "createdAt": "2026-02-03T01:19:10.979Z",
+    "topic": "account",
+    "riskClass": "coaching",
+    "sentimentScore": 0.0,
+    "sentimentLabel": "neutral",
+    "transcript": {
+      "turns": [
+        {
+          "speaker": "Customer",
+          "text": "Hi, I was trying to update my billing information on my account, but it keeps giving me an error message."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I see. Can you please tell me the error message you're getting exactly?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "It says something like 'payment method not accepted,' but I double-checked, and my card should be valid."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Alright, let me check your account details. Can I have your full name and account number please?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Sure, it's Sarah Thompson, and my account number is 5478123."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Thank you. One moment. I’m pulling up your account now. So, you want to update your billing info, right?"
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yes, exactly. I tried adding a new card, but it keeps failing."
+        },
+        {
+          "speaker": "Agent",
+          "text": "Okay, I see the problem. The system is rejecting the card because it’s not matching the address we have on file."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Oh, I didn’t realize that. I moved recently, so that might be why."
+        },
+        {
+          "speaker": "Agent",
+          "text": "You should update your address first, then try adding the card again."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Yeah, that makes sense. Can you help me update the address now?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "I can’t do that directly. You need to go to the website and update it yourself under account settings."
+        },
+        {
+          "speaker": "Customer",
+          "text": "Okay, but I’m already having trouble with the site. Is there no way you can do it for me over the phone?"
+        },
+        {
+          "speaker": "Agent",
+          "text": "No, it’s a security policy. You have to do it online. Anything else I can help with?"
+        }
+      ],
+      "fullText": "Customer: Hi, I was trying to update my billing information on my account, but it keeps giving me an error message.\nAgent: Okay, I see. Can you please tell me the error message you're getting exactly?\nCustomer: It says something like 'payment method not accepted,' but I double-checked, and my card should be valid.\nAgent: Alright, let me check your account details. Can I have your full name and account number please?\nCustomer: Sure, it's Sarah Thompson, and my account number is 5478123.\nAgent: Thank you. One moment. I’m pulling up your account now. So, you want to update your billing info, right?\nCustomer: Yes, exactly. I tried adding a new card, but it keeps failing.\nAgent: Okay, I see the problem. The system is rejecting the card because it’s not matching the address we have on file.\nCustomer: Oh, I didn’t realize that. I moved recently, so that might be why.\nAgent: You should update your address first, then try adding the card again.\nCustomer: Yeah, that makes sense. Can you help me update the address now?\nAgent: I can’t do that directly. You need to go to the website and update it yourself under account settings.\nCustomer: Okay, but I’m already having trouble with the site. Is there no way you can do it for me over the phone?\nAgent: No, it’s a security policy. You have to do it online. Anything else I can help with?"
+    }
+  }
+]
