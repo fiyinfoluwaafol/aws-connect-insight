@@ -1,6 +1,6 @@
 """Authentication helpers."""
 
-from .exceptions import AuthenticationError, DatabaseError
+from .exceptions import AuthenticationError, ClientError, DatabaseError
 
 
 def create_auth_user(client, email: str, password: str) -> dict:
@@ -8,6 +8,8 @@ def create_auth_user(client, email: str, password: str) -> dict:
     Create a new Supabase Auth user. Returns {id, email}.
     Emails are confirmed by default
     """
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         response = client.auth.admin.create_user(
             {"email": email, "password": password, "email_confirm": True}
@@ -19,6 +21,8 @@ def create_auth_user(client, email: str, password: str) -> dict:
 
 def authenticate_user(client, email: str, password: str) -> dict:
     """Authenticate user. Returns {user, session}."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         response = client.auth.sign_in_with_password({"email": email, "password": password})
         return {"user": response.user, "session": response.session}
@@ -28,6 +32,8 @@ def authenticate_user(client, email: str, password: str) -> dict:
 
 def get_current_user(client, access_token: str) -> dict:
     """Verify token and return user. Returns {id, email}."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         response = client.auth.get_user(access_token)
     except Exception as e:
@@ -40,6 +46,8 @@ def get_current_user(client, access_token: str) -> dict:
 
 def sign_out(client, access_token: str) -> bool:
     """End user session."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         client.auth.admin.sign_out(access_token)
         return True
