@@ -7,6 +7,12 @@ class DatabaseError(Exception):
     pass
 
 
+class ClientError(Exception):
+    """Issues with the client object that's been passed into the helper function"""
+
+    pass
+
+
 class NotFoundError(DatabaseError):
     """Record not found."""
 
