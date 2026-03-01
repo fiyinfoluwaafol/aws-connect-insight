@@ -3,7 +3,7 @@
 #       cp .env.example .env
 # 2. Replace the placeholder values in .env with the actual Supabase credentials
 # 3. Install dependencies: pip install -r backend/requirements.txt
-# 4. Run from the database folder: cd backend/database && python sample-database-setup.py
+# 4. Run from backend folder: python database/samples/sample-database-setup.py
 #
 # NOTES
 # - Replace names and emails below when testing to avoid duplicates
