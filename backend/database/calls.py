@@ -1,12 +1,14 @@
 """Call record helpers."""
 
-from .exceptions import DatabaseError, NotFoundError
+from .exceptions import ClientError, DatabaseError, NotFoundError
 
 
 def create_call(
     client, agent_id: str, team_id: str, recording_url: str, duration_seconds: int, started_at: str
 ) -> dict:
     """Create a new call record."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         result = (
             client.table("calls")
@@ -28,15 +30,23 @@ def create_call(
 
 def get_call_by_id(client, call_id: str) -> dict:
     """Get call by ID."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
-        result = client.table("calls").select("*").eq("id", call_id).single().execute()
-        return result.data
-    except Exception:
-        raise NotFoundError(f"Call {call_id} not found")
+        result = client.table("calls").select("*").eq("id", call_id).execute()
+        if not result.data:
+            raise NotFoundError(f"Call {call_id} not found")
+        return result.data[0]
+    except NotFoundError:
+        raise
+    except Exception as e:
+        raise DatabaseError(f"Failed to fetch call: {e}")
 
 
 def get_calls_by_agent(client, agent_id: str, limit: int = 10) -> list:
     """Get calls for an agent, most recent first."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         result = (
             client.table("calls")
@@ -53,6 +63,8 @@ def get_calls_by_agent(client, agent_id: str, limit: int = 10) -> list:
 
 def get_calls_by_team(client, team_id: str, limit: int = 10) -> list:
     """Get calls for a team, most recent first."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         result = (
             client.table("calls")
@@ -69,6 +81,8 @@ def get_calls_by_team(client, team_id: str, limit: int = 10) -> list:
 
 def get_recent_calls_by_team(client, team_id: str, since: str) -> list:
     """Get calls for a team after a timestamp."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         result = (
             client.table("calls")
@@ -85,6 +99,8 @@ def get_recent_calls_by_team(client, team_id: str, since: str) -> list:
 
 def get_calls_in_range_by_team(client, team_id: str, start_date: str, end_date: str) -> list:
     """Get calls for a team within a date range."""
+    if client is None:
+        raise ClientError("Database client is not initialized")
     try:
         result = (
             client.table("calls")
