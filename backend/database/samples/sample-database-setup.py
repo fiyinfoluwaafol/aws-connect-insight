@@ -12,6 +12,7 @@
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 from supabase import create_client
 
