@@ -11,11 +11,13 @@
 
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 
-# KINDLY READ THE COMMENTS ABOVE
-load_dotenv("../../.env")
+# Load .env from project root (works regardless of where script is run from)
+project_root = Path(__file__).resolve().parent.parent.parent.parent
+load_dotenv(project_root / ".env")
 
 supabase = create_client(
     os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
