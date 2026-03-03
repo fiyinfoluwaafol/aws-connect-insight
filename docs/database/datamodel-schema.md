@@ -92,6 +92,7 @@ For insertion, we'd do the following:
 | `agent_id` | **Foreign Key** → users | Agent who took the call |
 | `team_id` | **Foreign Key** → teams | Denormalized for fast queries |
 | `recording_url` | TEXT | Audio file location |
+| `transcript` | JSONB | Array of `{speaker, text}` objects |
 | `duration_seconds` | INTEGER | Call length |
 | `started_at` | TIMESTAMP | Call start time |
 | `created_at` | TIMESTAMP |  |
@@ -99,6 +100,8 @@ For insertion, we'd do the following:
 💡 Team ID does seem redundant since we have agent ID and can get the information from the agent table but it could cause issues if the agent changes teams. This way all call history remains on the team.
 
 💡 We also may not need an 'ended_at' field since we can just use calculate that on the frontend using duration + started_at
+
+💡 Note: Transcript is now stored here (not in `call_analyses`) so we can re-run analysis without re-transcribing.
 
 ---
 
@@ -110,13 +113,14 @@ For insertion, we'd do the following:
 |--------|------|-------------|
 | `id` | UUID, **Primary key** |  |
 | `call_id` | **Foreign Key** → calls, UNIQUE | One analysis per call |
-| `transcript` | TEXT | Full transcript |
 | `summary` | TEXT | AI summary |
 | `sentiment_score` | DECIMAL | -1.0 (negative) to 1.0 (positive) |
 | `sentiment_label` | ENUM | `positive` · `neutral` · `negative` |
 | `is_resolved` | BOOLEAN | Was issue resolved? |
 | `created_at` | TIMESTAMP |  |
 | `updated_at` | TIMESTAMP |  |
+
+💡 See `calls` table above as transcript has been moved there.
 
 💡 Another option is adding these fields directly in the calls table. The issue with that though would be that if we decide to change something major about our analysis, that would probably mess with our call records. So it might be better to have the call record separate and then store any analysis on it separately also.
 
@@ -235,7 +239,10 @@ For insertion, we'd do the following:
 | `team_id` | **Foreign Key** → teams | Visible to this team |
 | `marked_by` | **Foreign Key** → users | Supervisor who marked it |
 | `note` | TEXT | Why it's a good example |
+| `key_moves` | JSONB | Array of strings describing what made the call great |
 | `created_at` | TIMESTAMP | |
+
+💡 We can get examplar calls transcript using a join on `call_id` → `calls.transcript`.
 
 💡 Again, this could also be part of the calls table and is very much up for discussion but in light of trying to treat the calls table as the source of truth, this might be the better option since we also might want to add more content as to why the call is an examplar later on.
 
@@ -249,12 +256,16 @@ For insertion, we'd do the following:
 |--------|------|-------------|
 | `id` | UUID, **Primary key** |  |
 | `agent_id` | **Foreign Key** → users | Recipient |
-| `content` | TEXT | The tip |
+| `content` | JSONB | Array of tip strings |
+| `reason` | TEXT | Why the tip was generated |
 | `based_on_call_id` | **Foreign Key** → calls | Source call (optional) |
 | `is_read` | BOOLEAN | Read status |
+| `helpful` | BOOLEAN | Agent feedback - was tip useful? |
+| `bookmarked` | BOOLEAN DEFAULT false | Agent can save tips |
+| `dismissed` | BOOLEAN DEFAULT false | Agent can dismiss tips |
 | `created_at` | TIMESTAMP |  |
 
-💡 We'd have to discuss the formatting of the text content since it'd be AI generated and could generate a wrong format.
+💡 Content is stored as JSONB array to support multiple tips per coaching session.
 
 ---
 
