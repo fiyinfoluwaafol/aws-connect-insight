@@ -50,7 +50,6 @@ interface Settings {
   sentimentThreshold: number;
   keywords: string[];
   dataRetentionDays: number;
-  slackWebhook: string;
 }
 
 interface AppState {
@@ -101,7 +100,6 @@ const defaultSettings: Settings = {
   sentimentThreshold: -0.5,
   keywords: ['refund', 'cancel', 'supervisor', 'complaint', 'chargeback'],
   dataRetentionDays: 30,
-  slackWebhook: '',
 };
 
 export const useAppStore = create<AppState>()(

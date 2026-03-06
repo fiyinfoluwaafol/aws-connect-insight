@@ -21,7 +21,6 @@ import {
   Settings as SettingsIcon,
   Bell,
   Database,
-  Link,
   Mail,
   Trash2,
   Plus,
@@ -32,7 +31,6 @@ import {
 export default function Settings() {
   const { settings, updateSettings, sentEmails } = useAppStore();
   const [newKeyword, setNewKeyword] = useState('');
-  const [testSlackLoading, setTestSlackLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
   const handleAddKeyword = () => {
@@ -62,24 +60,6 @@ export default function Settings() {
     toast({
       title: 'Keyword Removed',
       description: `"${keyword}" has been removed from alert keywords.`,
-    });
-  };
-
-  const handleTestSlack = async () => {
-    if (!settings.slackWebhook) {
-      toast({
-        title: 'No Webhook URL',
-        description: 'Please enter a Slack webhook URL first.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    setTestSlackLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setTestSlackLoading(false);
-    toast({
-      title: 'Test Ping Sent',
-      description: 'A test message was sent to your Slack channel (mocked).',
     });
   };
 
@@ -197,35 +177,6 @@ export default function Settings() {
                   <SelectItem value="90">90 days</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </Card>
-
-          {/* Integrations */}
-          <Card className="p-6">
-            <h3 className="font-semibold flex items-center gap-2 mb-4">
-              <Link className="h-4 w-4" />
-              Integrations
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <Label className="mb-2 block">Slack Webhook URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="https://hooks.slack.com/services/..."
-                    value={settings.slackWebhook}
-                    onChange={(e) =>
-                      updateSettings({ slackWebhook: e.target.value })
-                    }
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={handleTestSlack}
-                    disabled={testSlackLoading}
-                  >
-                    {testSlackLoading ? 'Sending...' : 'Test Ping'}
-                  </Button>
-                </div>
-              </div>
             </div>
           </Card>
 
