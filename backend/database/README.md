@@ -52,7 +52,7 @@ All helpers raise exceptions on failure:
 | `get_user_by_email(client, email)` | user dict |
 | `get_users_by_team(client, team_id)` | list |
 
-> **Note:** `role` accepts `Role.AGENT` or `Role.SUPERVISOR` from `database.enums`
+> **Note:** `role` accepts `Role.AGENT` or `Role.SUPERVISOR` from `database.constants`
 
 ## calls
 

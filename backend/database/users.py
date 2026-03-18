@@ -2,8 +2,7 @@
 
 from supabase import Client
 
-from .constants import Tables
-from .enums import Role
+from .constants import Role, Tables
 from .exceptions import NotFoundError
 from .utils import with_db_client
 
