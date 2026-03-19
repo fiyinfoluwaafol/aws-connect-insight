@@ -40,7 +40,7 @@ def create_call(
 
 
 @db_operation
-def update_call(client: Client, call_id: str, transcript: list[dict]) -> dict:
+def update_call_transcript(client: Client, call_id: str, transcript: list[dict]) -> dict:
     """
     Update a call with transcript.
 

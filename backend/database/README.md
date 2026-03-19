@@ -65,7 +65,7 @@ Other exceptions:
 | Function | Returns |
 |----------|---------|
 | `create_call(client, agent_id, team_id, recording_url, duration_seconds, started_at)` | call dict |
-| `update_call(client, call_id, transcript)` | call dict |
+| `update_call_transcript(client, call_id, transcript)` | call dict |
 | `get_call_by_id(client, call_id)` | call dict + `call_analyses` |
 | `search_calls(client, team_id, ...)` | `{calls, total}` |
 
