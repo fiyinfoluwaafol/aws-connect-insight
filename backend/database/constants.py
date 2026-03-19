@@ -7,6 +7,7 @@ class Tables:
     """Table names."""
 
     CALLS = "calls"
+    CALL_ANALYSES = "call_analyses"
     USERS = "users"
     TEAMS = "teams"
 
@@ -16,3 +17,10 @@ class Role(Enum):
 
     AGENT = "agent"
     SUPERVISOR = "supervisor"
+
+
+class SortOrder(Enum):
+    """Sort options for search."""
+
+    RECENT = "recent"
+    OLDEST = "oldest"
