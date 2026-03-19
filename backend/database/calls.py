@@ -107,7 +107,7 @@ def search_calls(
     if sort == SortOrder.OLDEST:
         query = query.order("started_at", desc=False)
     else:
-        # Defaults to recent order 
+        # Defaults to recent order
         query = query.order("started_at", desc=True)
 
     offset = (page - 1) * per_page

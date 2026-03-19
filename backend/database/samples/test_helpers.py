@@ -19,11 +19,11 @@ backend = Path(__file__).parent.parent.parent
 project_root = backend.parent
 sys.path.insert(0, str(backend))
 
-from dotenv import load_dotenv
-from supabase import create_client
+from dotenv import load_dotenv  # noqa: E402
+from supabase import create_client  # noqa: E402
 
-from database import auth, calls, teams, users
-from database.constants import Role, SortOrder, Tables
+from database import auth, calls, teams, users  # noqa: E402
+from database.constants import Role, SortOrder, Tables  # noqa: E402
 
 load_dotenv(project_root / ".env")
 
