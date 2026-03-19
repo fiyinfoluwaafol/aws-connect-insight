@@ -26,15 +26,22 @@ def signup(email: str, password: str, client = Depends(get_supabase_client)):
 
 ## Error Handling
 
-All helpers raise exceptions on failure:
+Helpers raise specific exceptions on failure:
+
+| Module | Decorator | Exception |
+|--------|-----------|-----------|
+| `auth` | `@auth_operation` | `AuthenticationError` |
+| `users`, `calls`, `teams` | `@db_operation` | `DatabaseError` |
+
+Other exceptions:
 - `NotFoundError` — Record doesn't exist
-- `AuthenticationError` — Invalid credentials or token
-- `DatabaseError` — Other database errors
 - `ClientError` — Supabase client not initialized
 
 ---
 
 ## auth
+
+> All auth functions raise `AuthenticationError` on failure.
 
 | Function | Returns |
 |----------|---------|
@@ -49,7 +56,6 @@ All helpers raise exceptions on failure:
 |----------|---------|
 | `create_user(client, user_id, email, first_name, last_name, role, team_id?)` | user dict |
 | `get_user_by_id(client, user_id)` | user dict |
-| `get_user_by_email(client, email)` | user dict |
 | `get_users_by_team(client, team_id)` | list |
 
 > **Note:** `role` accepts `Role.AGENT` or `Role.SUPERVISOR` from `database.constants`
@@ -59,26 +65,30 @@ All helpers raise exceptions on failure:
 | Function | Returns |
 |----------|---------|
 | `create_call(client, agent_id, team_id, recording_url, duration_seconds, started_at)` | call dict |
-| `get_call_by_id(client, call_id)` | call dict |
+| `update_call(client, call_id, transcript)` | call dict |
+| `get_call_by_id(client, call_id)` | call dict + `call_analyses` |
 | `search_calls(client, team_id, ...)` | `{calls, total}` |
+
+> **Note:** `transcript` is a list of `{speaker, text}` dicts. Add it via `update_call` after transcription completes.
 
 ### search_calls options
 
 ```python
 search_calls(
     client,
-    team_id,                # required
-    agent_id=None,          # filter by agent
-    sentiment=None,         # "positive", "neutral", "negative"
-    date_from=None,         # ISO date
-    date_to=None,           # ISO date
-    topic=None,             # filter by topic
-    q=None,                 # keyword search in transcript
-    sort="recent",          # "recent", "oldest", "sentiment_asc", "sentiment_desc"
+    team_id,                      # required
+    agent_id=None,                # filter by agent
+    date_from=None,               # ISO date
+    date_to=None,                 # ISO date
+    sort=SortOrder.RECENT,        # SortOrder.RECENT or SortOrder.OLDEST
     page=1,
-    per_page=20,
+    per_page=20,                  # max 100
 )
+# TODO: sentiment filter/sort (needs calls_with_analysis view)
+# TODO: topic filter, keyword search
 ```
+
+> **Note:** `SortOrder` is imported from `database.constants`
 
 ## teams
 
@@ -86,3 +96,4 @@ search_calls(
 |----------|---------|
 | `create_team(client, name, supervisor_id)` | team dict |
 | `get_team_by_id(client, team_id)` | team dict |
+| `add_agent_to_team(client, agent_id, team_id)` | user dict |
