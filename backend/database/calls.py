@@ -2,12 +2,14 @@
 
 from supabase import Client
 
-from .constants import Tables
+from .constants import SortOrder, Tables
+from .decorators import db_operation
 from .exceptions import NotFoundError
-from .utils import with_db_client
+
+MAX_PER_PAGE = 100
 
 
-@with_db_client
+@db_operation
 def create_call(
     client: Client,
     agent_id: str,
@@ -16,7 +18,11 @@ def create_call(
     duration_seconds: int,
     started_at: str,
 ) -> dict:
-    """Create a new call record."""
+    """
+    Create a new call record (without transcript).
+
+    started_at: ISO timestamp
+    """
     result = (
         client.table(Tables.CALLS)
         .insert(
@@ -33,60 +39,77 @@ def create_call(
     return result.data[0]
 
 
-@with_db_client
-def get_call_by_id(client: Client, call_id: str) -> dict:
-    """Get call by ID."""
-    result = client.table(Tables.CALLS).select("*").eq("id", call_id).execute()
+@db_operation
+def update_call(client: Client, call_id: str, transcript: list[dict]) -> dict:
+    """
+    Update a call with transcript.
+
+    transcript: List of {speaker, text} dicts
+    """
+    result = (
+        client.table(Tables.CALLS).update({"transcript": transcript}).eq("id", call_id).execute()
+    )
     if not result.data:
         raise NotFoundError(f"Call {call_id} not found")
     return result.data[0]
 
 
-@with_db_client
+@db_operation
+def get_call_by_id(client: Client, call_id: str) -> dict:
+    """Get a call by ID with its analysis (null if not yet analyzed)."""
+    result = (
+        client.table(Tables.CALLS)
+        .select(f"*, {Tables.CALL_ANALYSES}(*)")
+        .eq("id", call_id)
+        .execute()
+    )
+    if not result.data:
+        raise NotFoundError(f"Call {call_id} not found")
+    return result.data[0]
+
+
+@db_operation
 def search_calls(
     client: Client,
     team_id: str,
     agent_id: str = None,
-    sentiment: str = None,
     date_from: str = None,
     date_to: str = None,
-    topic: str = None,
-    q: str = None,
-    sort: str = "recent",
+    sort: SortOrder = SortOrder.RECENT,
     page: int = 1,
     per_page: int = 20,
 ) -> dict:
-    """Search calls with optional filters."""
+    """
+    Search calls with filters. Returns {calls, total}.
+
+    page: min 1
+    per_page: max 100
+
+    TODO: sentiment filter/sort (needs calls_with_analysis view)
+    """
+    if page < 1:
+        page = 1
+    per_page = min(per_page, MAX_PER_PAGE)
+
     query = (
         client.table(Tables.CALLS)
-        .select("*", count="exact")
+        .select(f"*, {Tables.CALL_ANALYSES}(*)", count="exact")
         .eq("team_id", team_id)
     )
 
-    if agent_id:
+    if agent_id is not None:
         query = query.eq("agent_id", agent_id)
-    if sentiment:
-        query = query.eq("sentiment_label", sentiment)
-    if date_from:
+    if date_from is not None:
         query = query.gte("started_at", date_from)
-    if date_to:
+    if date_to is not None:
         query = query.lte("started_at", date_to)
-    if topic:
-        query = query.contains("topics", [topic])
-    if q:
-        query = query.ilike("transcript", f"%{q}%")
 
-    # Sorting
-    if sort == "recent":
-        query = query.order("started_at", desc=True)
-    elif sort == "oldest":
+    if sort == SortOrder.OLDEST:
         query = query.order("started_at", desc=False)
-    elif sort == "sentiment_asc":
-        query = query.order("sentiment_score", desc=False)
-    elif sort == "sentiment_desc":
-        query = query.order("sentiment_score", desc=True)
+    else:
+        # Defaults to recent order 
+        query = query.order("started_at", desc=True)
 
-    # Pagination
     offset = (page - 1) * per_page
     query = query.range(offset, offset + per_page - 1)
 
