@@ -31,7 +31,8 @@ Create a new user account.
 ```json
 {
   "email": "marcus@example.com",
-  "full_name": "Marcus Johnson",
+  "first_name": "Marcus",
+  "last_name": "Johnson",
   "password": "securePass123",
   "role": "agent",
   "team_id": "uuid"
@@ -264,7 +265,8 @@ Dashboard overview stats, charts, and agent performance.
   "agent_stats": [
     {
       "agent_id": "uuid",
-      "name": "Jane",
+      "first_name": "Sarah",
+      "last_name": "Chen",
       "avg_sentiment": 0.71,
       "call_count": 28
     }
@@ -488,7 +490,7 @@ Full detail for a single call. Used by the `CallDetailDrawer` component when a s
   "topics": ["billing", "refund"],
   "summary": "Customer called about an incorrect charge...",
   "key_moves": ["Acknowledged frustration early", "Offered clear next steps"],
-  "key_phrases": ["billing", "customer service", "resolution", "account"],
+  "keywords": ["billing", "customer service", "resolution", "account"],
   "transcript": [
     {
       "speaker": "customer",
@@ -501,7 +503,7 @@ Full detail for a single call. Used by the `CallDetailDrawer` component when a s
       "timestamp": "00:00:15"
     }
   ],
-  "audio_url": null
+  "recording_url": null
 }
 ```
 
@@ -713,11 +715,9 @@ Get current supervisor/team settings.
 ```json
 {
   "sentiment_thresholds": {
-    "negative_below": -0.3,
-    "positive_above": 0.3
+    "negative_below": -0.3
   },
   "tracked_keywords": ["cancel", "refund", "escalate", "manager", "complaint"],
-  "slack_webhook_url": "https://hooks.slack.com/services/T00/B00/xxx",
   "data_retention_days": 90
 }
 ```
@@ -733,11 +733,9 @@ Update one or more settings. All fields optional.
 ```json
 {
   "sentiment_thresholds": {
-    "negative_below": -0.25,
-    "positive_above": 0.25
+    "negative_below": -0.25
   },
   "tracked_keywords": ["cancel", "refund", "escalate", "angry"],
-  "slack_webhook_url": "https://hooks.slack.com/services/T00/B00/new",
   "data_retention_days": 60
 }
 ```
@@ -884,7 +882,7 @@ Personal KPIs, weekly trend, and anonymized team comparison.
       "timestamp": "00:00:12"
     }
   ],
-  "audio_url": null,
+  "recording_url": null,
   "created_at": "2026-02-20T10:00:00Z"
 }
 ```
