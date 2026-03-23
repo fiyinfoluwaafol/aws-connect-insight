@@ -8,6 +8,10 @@ class Tables:
 
     CALLS = "calls"
     CALL_ANALYSES = "call_analyses"
+    CALL_ANALYSIS_TOPICS = "call_analysis_topics"
+    CALL_ANALYSIS_KEYWORDS = "call_analysis_keywords"
+    TOPICS = "topics"
+    KEYWORDS = "keywords"
     USERS = "users"
     TEAMS = "teams"
 
