@@ -4,7 +4,7 @@ from supabase import Client
 
 from .constants import Tables
 from .decorators import db_operation
-from .exceptions import NotFoundError
+from .exceptions import DatabaseError, NotFoundError
 
 
 @db_operation
@@ -14,7 +14,7 @@ def create_analysis(
     summary: str,
     sentiment_score: float,
     sentiment_label: str,
-    key_moves: list,
+    key_moves: list[str],
     is_resolved: bool,
 ) -> dict:
     """Create analysis for a call."""
@@ -32,6 +32,8 @@ def create_analysis(
         )
         .execute()
     )
+    if not result.data:
+        raise DatabaseError("Failed to create analysis")
     return result.data[0]
 
 
@@ -90,6 +92,8 @@ def create_topic(client: Client, name: str) -> dict:
         .upsert({"name": normalized}, on_conflict="name")
         .execute()
     )
+    if not result.data:
+        raise DatabaseError(f"Failed to create topic: {normalized}")
     return result.data[0]
 
 
@@ -103,11 +107,13 @@ def create_keyword(client: Client, word: str) -> dict:
         .upsert({"word": normalized}, on_conflict="word")
         .execute()
     )
+    if not result.data:
+        raise DatabaseError(f"Failed to create keyword: {normalized}")
     return result.data[0]
 
 
 @db_operation
-def add_topics_to_analysis(client: Client, analysis_id: str, topic_names: list) -> list:
+def add_topics_to_analysis(client: Client, analysis_id: str, topic_names: list[str]) -> list[dict]:
     """Add topics to an analysis. Creates topics if they don't exist."""
     # Normalize and remove duplicates
     unique_names = list(set(name.strip().lower() for name in topic_names))
@@ -117,15 +123,16 @@ def add_topics_to_analysis(client: Client, analysis_id: str, topic_names: list) 
         topic = create_topic(client, name)
         topics.append(topic)
 
-        client.table(Tables.CALL_ANALYSIS_TOPICS).insert(
-            {"call_analysis_id": analysis_id, "topic_id": topic["id"]}
+        client.table(Tables.CALL_ANALYSIS_TOPICS).upsert(
+            {"call_analysis_id": analysis_id, "topic_id": topic["id"]},
+            on_conflict="call_analysis_id,topic_id"
         ).execute()
 
     return topics
 
 
 @db_operation
-def add_keywords_to_analysis(client: Client, analysis_id: str, keywords: list) -> list:
+def add_keywords_to_analysis(client: Client, analysis_id: str, keywords: list[str]) -> list[dict]:
     """Add keywords to an analysis. Creates keywords if they don't exist."""
     # Normalize and remove duplicates
     unique_words = list(set(word.strip().lower() for word in keywords))
@@ -135,8 +142,9 @@ def add_keywords_to_analysis(client: Client, analysis_id: str, keywords: list) -
         keyword = create_keyword(client, word)
         keyword_records.append(keyword)
 
-        client.table(Tables.CALL_ANALYSIS_KEYWORDS).insert(
-            {"call_analysis_id": analysis_id, "keyword_id": keyword["id"]}
+        client.table(Tables.CALL_ANALYSIS_KEYWORDS).upsert(
+            {"call_analysis_id": analysis_id, "keyword_id": keyword["id"]},
+            on_conflict="call_analysis_id,keyword_id"
         ).execute()
 
     return keyword_records
