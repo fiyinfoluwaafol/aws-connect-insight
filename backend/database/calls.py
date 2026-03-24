@@ -1,5 +1,7 @@
 """Call record helpers."""
 
+from datetime import datetime, timedelta
+
 from supabase import Client
 
 from .constants import SortOrder, Tables
@@ -102,7 +104,8 @@ def search_calls(
     if date_from is not None:
         query = query.gte("started_at", date_from)
     if date_to is not None:
-        query = query.lte("started_at", date_to)
+        next_day = (datetime.fromisoformat(date_to) + timedelta(days=1)).strftime("%Y-%m-%d")
+        query = query.lt("started_at", next_day)
 
     if sort == SortOrder.OLDEST:
         query = query.order("started_at", desc=False)

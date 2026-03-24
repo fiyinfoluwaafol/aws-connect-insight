@@ -33,10 +33,10 @@ client = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_
 ########################################
 # TEST CONFIGURATION - Change these for each run
 ########################################
-TEST_EMAIL = "test_user_10@example.com"
-TEST_SUPERVISOR_EMAIL = "supervisor10@test.io"
+TEST_EMAIL = "test_user_11@example.com"
+TEST_SUPERVISOR_EMAIL = "supervisor11@test.io"
 TEST_PASSWORD = "password123"
-TEST_TEAM_NAME = "Test Team India"
+TEST_TEAM_NAME = "Test Team Kilo"
 AUTH_DELAY = 5  # seconds between auth user creations
 ########################################
 
@@ -238,14 +238,37 @@ try:
     wait()
 
     # Search calls (by date range)
-    print("\n  → Testing: search_calls (date range)")
+    # This tests that date_to is INCLUSIVE of the full day
+    # call1 = March 1st 10:30 AM, call2 = March 2nd 2:00 PM
+    # Both should be included when searching March 1 to March 2
+    print("\n  → Testing: search_calls (date range - both days)")
     results = calls.search_calls(
         client,
         team_id=team["id"],
         date_from="2026-03-01",
         date_to="2026-03-02",
     )
-    print_step(f"search_calls (date range) → count: {results['total']}")
+    expected = 2
+    actual = results["total"]
+    if actual != expected:
+        raise AssertionError(f"date range test failed: expected {expected}, got {actual}")
+    print_step(f"search_calls (date range) → count: {actual} (expected {expected})")
+    wait()
+
+    # Search calls (date_to edge case - end of day inclusion)
+    # Searching only March 2nd should include call2 (which is at 2:00 PM)
+    print("\n  → Testing: search_calls (date_to includes full day)")
+    results = calls.search_calls(
+        client,
+        team_id=team["id"],
+        date_from="2026-03-02",
+        date_to="2026-03-02",
+    )
+    expected = 1
+    actual = results["total"]
+    if actual != expected:
+        raise AssertionError(f"date_to edge case failed: expected {expected}, got {actual}")
+    print_step(f"search_calls (single day) → count: {actual} (expected {expected})")
     wait()
 
     # Search calls (sorted oldest first)
