@@ -5,7 +5,7 @@
 Set environment variables:
 ```
 SUPABASE_URL=your-project-url
-SUPABASE_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ## Quick Start
