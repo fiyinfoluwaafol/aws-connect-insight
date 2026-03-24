@@ -71,12 +71,7 @@ def update_analysis(client: Client, analysis_id: str, **fields) -> dict:
     if not fields:
         raise ValueError("No fields to update")
 
-    result = (
-        client.table(Tables.CALL_ANALYSES)
-        .update(fields)
-        .eq("id", analysis_id)
-        .execute()
-    )
+    result = client.table(Tables.CALL_ANALYSES).update(fields).eq("id", analysis_id).execute()
     if not result.data:
         raise NotFoundError(f"Analysis {analysis_id} not found")
     return result.data[0]
@@ -87,11 +82,7 @@ def create_topic(client: Client, name: str) -> dict:
     """Create or get existing topic. Name is normalized to lowercase."""
     normalized = name.strip().lower()
 
-    result = (
-        client.table(Tables.TOPICS)
-        .upsert({"name": normalized}, on_conflict="name")
-        .execute()
-    )
+    result = client.table(Tables.TOPICS).upsert({"name": normalized}, on_conflict="name").execute()
     if not result.data:
         raise DatabaseError(f"Failed to create topic: {normalized}")
     return result.data[0]
@@ -103,9 +94,7 @@ def create_keyword(client: Client, word: str) -> dict:
     normalized = word.strip().lower()
 
     result = (
-        client.table(Tables.KEYWORDS)
-        .upsert({"word": normalized}, on_conflict="word")
-        .execute()
+        client.table(Tables.KEYWORDS).upsert({"word": normalized}, on_conflict="word").execute()
     )
     if not result.data:
         raise DatabaseError(f"Failed to create keyword: {normalized}")
@@ -125,7 +114,7 @@ def add_topics_to_analysis(client: Client, analysis_id: str, topic_names: list[s
 
         client.table(Tables.CALL_ANALYSIS_TOPICS).upsert(
             {"call_analysis_id": analysis_id, "topic_id": topic["id"]},
-            on_conflict="call_analysis_id,topic_id"
+            on_conflict="call_analysis_id,topic_id",
         ).execute()
 
     return topics
@@ -144,7 +133,7 @@ def add_keywords_to_analysis(client: Client, analysis_id: str, keywords: list[st
 
         client.table(Tables.CALL_ANALYSIS_KEYWORDS).upsert(
             {"call_analysis_id": analysis_id, "keyword_id": keyword["id"]},
-            on_conflict="call_analysis_id,keyword_id"
+            on_conflict="call_analysis_id,keyword_id",
         ).execute()
 
     return keyword_records

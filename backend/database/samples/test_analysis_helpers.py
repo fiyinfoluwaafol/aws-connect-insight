@@ -21,16 +21,13 @@ sys.path.insert(0, str(backend))
 from dotenv import load_dotenv  # noqa: E402
 from supabase import create_client  # noqa: E402
 
-from database import analysis, calls  # noqa: E402
+from database import analysis  # noqa: E402
 from database.constants import Tables  # noqa: E402
 
 load_dotenv(project_root / ".env")
 
 # Create client
-client = create_client(
-    os.environ.get("SUPABASE_URL"),
-    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-)
+client = create_client(os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
 
 
 def print_step(msg):
@@ -74,7 +71,7 @@ try:
     result = analysis.create_analysis(
         client,
         call_id=call_id,
-        summary="Customer called about a billing issue. Agent acknowledged the problem and offered a refund.",
+        summary="Customer called about billing. Agent offered a refund.",
         sentiment_score=0.45,
         sentiment_label="neutral",
         key_moves=["Acknowledged frustration", "Offered refund", "Confirmed resolution"],
@@ -108,7 +105,7 @@ try:
     topics = analysis.add_topics_to_analysis(
         client,
         created["analysis_id"],
-        ["Billing", "Refund", "ACCOUNT"]  # mixed case to test normalization
+        ["Billing", "Refund", "ACCOUNT"],  # mixed case to test normalization
     )
     print_step(f"add_topics_to_analysis → added {len(topics)} topics")
     print_step(f"  topics: {[t['name'] for t in topics]}")
@@ -117,7 +114,7 @@ try:
     keywords = analysis.add_keywords_to_analysis(
         client,
         created["analysis_id"],
-        ["frustrated", "MANAGER", "Complaint"]  # mixed case
+        ["frustrated", "MANAGER", "Complaint"],  # mixed case
     )
     print_step(f"add_keywords_to_analysis → added {len(keywords)} keywords")
     print_step(f"  keywords: {[k['word'] for k in keywords]}")
@@ -157,6 +154,7 @@ try:
 except Exception as e:
     print(f"\n❌ ERROR: {e}")
     import traceback
+
     traceback.print_exc()
     print("\nCreated records before failure:")
     for key, value in created.items():
