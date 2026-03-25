@@ -1,22 +1,13 @@
 import { useState } from 'react';
-import { mockData, Call } from '@/lib/mock-data';
+import { mockData } from '@/lib/mock-data';
+import type { Call } from '@/lib/mock-data';
 import { MockService, SearchResult } from '@/lib/mock-service';
-import { SentimentBadge } from '@/components/SentimentBadge';
 import { CallDetailDrawer } from '@/components/CallDetailDrawer';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
-import { Search, Download, Clock, User, Loader2, ChevronDown, X } from 'lucide-react';
+import { Search as SearchIcon } from 'lucide-react';
+import { SearchFilters } from './components/SearchFilters';
+import { SearchResults } from './components/SearchResults';
 
 export default function CallSearch() {
   const [keyword, setKeyword] = useState('');
@@ -118,231 +109,49 @@ export default function CallSearch() {
 
   const selectedAgentNames = selectedAgentIds
     .map((id) => mockData.agents.find((a) => a.id === id)?.name)
-    .filter(Boolean);
+    .filter((n): n is string => Boolean(n));
 
   return (
     <div className="container mx-auto px-6 py-8">
-      {/* Search Filters */}
-      <Card className="p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Search Calls</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Keyword</Label>
-            <Input
-              placeholder="Search transcripts, topics..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Agents</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between font-normal"
-                >
-                  {selectedAgentIds.length === 0 ? (
-                    <span className="text-muted-foreground">Select agents...</span>
-                  ) : (
-                    <span className="truncate">
-                      {selectedAgentIds.length} agent{selectedAgentIds.length !== 1 ? 's' : ''} selected
-                    </span>
-                  )}
-                  <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-0" align="start">
-                <div className="p-2 border-b">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Select Agents</span>
-                    {selectedAgentIds.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-1 text-xs"
-                        onClick={clearAgentSelection}
-                      >
-                        Clear all
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="max-h-64 overflow-y-auto p-2">
-                  {mockData.agents.map((agent) => (
-                    <label
-                      key={agent.id}
-                      className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={selectedAgentIds.includes(agent.id)}
-                        onCheckedChange={() => handleAgentToggle(agent.id)}
-                      />
-                      <span className="text-sm">{agent.name}</span>
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        {agent.team}
-                      </Badge>
-                    </label>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-            {selectedAgentIds.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {selectedAgentNames.slice(0, 3).map((name) => (
-                  <Badge key={name} variant="secondary" className="text-xs">
-                    {name}
-                  </Badge>
-                ))}
-                {selectedAgentIds.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{selectedAgentIds.length - 3} more
-                  </Badge>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>
-              Sentiment Range: [{sentimentRange[0].toFixed(1)}, {sentimentRange[1].toFixed(1)}]
-            </Label>
-            <Slider
-              min={-1}
-              max={1}
-              step={0.1}
-              value={sentimentRange}
-              onValueChange={(value) => setSentimentRange(value as [number, number])}
-              className="py-4"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>From Date</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>To Date</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
-          </div>
-          <div className="flex items-end gap-2">
-            <Button onClick={() => handleSearch()} disabled={loading} className="flex-1">
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Search className="h-4 w-4 mr-2" />
-              )}
-              Search
-            </Button>
-            {results && results.calls.length > 0 && (
-              <Button variant="outline" onClick={handleExportCSV}>
-                <Download className="h-4 w-4 mr-2" />
-                CSV
-              </Button>
-            )}
-          </div>
-        </div>
-      </Card>
+      <SearchFilters
+        keyword={keyword}
+        selectedAgentIds={selectedAgentIds}
+        selectedAgentNames={selectedAgentNames}
+        agents={mockData.agents}
+        sentimentRange={sentimentRange}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        loading={loading}
+        canExport={!!(results && results.calls.length > 0)}
+        onKeywordChange={setKeyword}
+        onAgentToggle={handleAgentToggle}
+        onClearAgents={clearAgentSelection}
+        onSentimentRangeChange={setSentimentRange}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        onSearch={() => handleSearch()}
+        onExportCSV={handleExportCSV}
+      />
 
-      {/* Results */}
       {results && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Found {results.total} calls (page {results.page} of {results.totalPages})
-            </p>
-            {results.totalPages > 1 && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={results.page <= 1}
-                  onClick={() => handleSearch(results.page - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={results.page >= results.totalPages}
-                  onClick={() => handleSearch(results.page + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {results.calls.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No calls match your search criteria.</p>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {results.calls.map((call) => {
-                const snippet = getSnippet(call);
-                return (
-                  <Card
-                    key={call.id}
-                    className="p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setSelectedCall(call);
-                      setDrawerOpen(true);
-                    }}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <SentimentBadge sentiment={call.sentimentLabel} />
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {call.agentName}
-                          </span>
-                          <span className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDuration(call.durationSec)}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(call.startedAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {call.topics.map((topic) => (
-                            <Badge key={topic} variant="secondary" className="text-xs">
-                              {highlightKeyword(topic.replace(/-/g, ' '))}
-                            </Badge>
-                          ))}
-                        </div>
-                        {snippet && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {highlightKeyword(snippet)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-lg font-semibold">{call.sentimentScore.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground">sentiment</p>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <SearchResults
+          results={results}
+          keyword={keyword}
+          loading={loading}
+          onPageChange={handleSearch}
+          onSelectCall={(call) => {
+            setSelectedCall(call);
+            setDrawerOpen(true);
+          }}
+          getSnippet={getSnippet}
+          highlightKeyword={highlightKeyword}
+          formatDuration={formatDuration}
+        />
       )}
 
-      {/* Empty state */}
       {!results && !loading && (
         <Card className="p-12 text-center">
-          <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <SearchIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">Search Calls</h3>
           <p className="text-muted-foreground">
             Use the filters above to search through call transcripts, agents, and topics.
