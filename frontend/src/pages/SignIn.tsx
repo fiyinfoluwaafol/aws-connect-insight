@@ -32,6 +32,7 @@ export default function SignIn() {
         navigate(user?.role === 'supervisor' ? '/supervisor' : '/agent', { replace: true });
       }
     } catch {
+      // Error is handled by the store.
     }
   };
 
