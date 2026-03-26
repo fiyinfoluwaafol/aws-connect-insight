@@ -1,55 +1,38 @@
 """Authentication helpers."""
 
-from .exceptions import AuthenticationError, ClientError, DatabaseError
+from supabase import Client
+
+from .decorators import auth_operation
+from .exceptions import AuthenticationError
 
 
-def create_auth_user(client, email: str, password: str) -> dict:
-    """
-    Create a new Supabase Auth user. Returns {id, email}.
-    Emails are confirmed by default
-    """
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        response = client.auth.admin.create_user(
-            {"email": email, "password": password, "email_confirm": True}
-        )
-        return {"id": response.user.id, "email": response.user.email}
-    except Exception as e:
-        raise DatabaseError(f"Failed to create auth user: {e}")
+@auth_operation
+def create_auth_user(client: Client, email: str, password: str) -> dict:
+    """Create a Supabase Auth user. Email is auto-confirmed."""
+    response = client.auth.admin.create_user(
+        {"email": email, "password": password, "email_confirm": True}
+    )
+    return {"id": response.user.id, "email": response.user.email}
 
 
-def authenticate_user(client, email: str, password: str) -> dict:
-    """Authenticate user. Returns {user, session}."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        response = client.auth.sign_in_with_password({"email": email, "password": password})
-        return {"user": response.user, "session": response.session}
-    except Exception as e:
-        raise AuthenticationError(f"Authentication failed: {e}")
+@auth_operation
+def authenticate_user(client: Client, email: str, password: str) -> dict:
+    """Sign in with email and password. Returns {user, session}."""
+    response = client.auth.sign_in_with_password({"email": email, "password": password})
+    return {"user": response.user, "session": response.session}
 
 
-def get_current_user(client, access_token: str) -> dict:
-    """Verify token and return user. Returns {id, email}."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        response = client.auth.get_user(access_token)
-    except Exception as e:
-        raise AuthenticationError(f"Token verification failed: {e}")
-
+@auth_operation
+def get_current_user(client: Client, access_token: str) -> dict:
+    """Verify token and return user info."""
+    response = client.auth.get_user(access_token)
     if not response.user:
         raise AuthenticationError("Invalid or expired token")
     return {"id": response.user.id, "email": response.user.email}
 
 
-def sign_out(client, access_token: str) -> bool:
-    """End user session."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        client.auth.admin.sign_out(access_token)
-        return True
-    except Exception as e:
-        raise DatabaseError(f"Sign out failed: {e}")
+@auth_operation
+def sign_out(client: Client, access_token: str) -> bool:
+    """End a user session."""
+    client.auth.admin.sign_out(access_token)
+    return True
