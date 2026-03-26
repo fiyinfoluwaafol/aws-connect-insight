@@ -27,7 +27,6 @@ def get_current_user(
     client: Any = Depends(get_supabase_client),
 ) -> dict:
     """Validate access token from cookie and return current user.
-    
     Use as a dependency on protected routes.
     Raises 401 if token is missing/invalid.
     """
@@ -36,7 +35,6 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    
     if client is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

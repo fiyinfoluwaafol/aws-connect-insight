@@ -9,7 +9,8 @@ def test_settings_defaults_when_env_empty(monkeypatch: pytest.MonkeyPatch) -> No
     """Settings use empty strings when env vars not set."""
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
-    settings = Settings()
+    # Use _env_file=None to prevent Pydantic from reading the actual .env file during this test
+    settings = Settings(_env_file=None)
     assert settings.supabase_url == ""
     assert settings.supabase_service_role_key == ""
 
@@ -18,7 +19,7 @@ def test_settings_load_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Settings load SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from environment."""
     monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key")
-    settings = Settings()
+    settings = Settings(_env_file=None)
     assert settings.supabase_url == "https://test.supabase.co"
     assert settings.supabase_service_role_key == "test-service-role-key"
 

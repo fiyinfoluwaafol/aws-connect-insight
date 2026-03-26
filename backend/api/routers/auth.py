@@ -322,8 +322,7 @@ def reset_password(
 
         # Update password using admin API
         client.auth.admin.update_user_by_id(
-            user_response.user.id,
-            {"password": request.new_password}
+            user_response.user.id, {"password": request.new_password}
         )
         return MessageResponse(message="Password reset successfully")
     except HTTPException:
@@ -356,10 +355,12 @@ def change_password(
 
     try:
         # Verify current password by attempting sign in
-        client.auth.sign_in_with_password({
-            "email": current_user["email"],
-            "password": request.current_password,
-        })
+        client.auth.sign_in_with_password(
+            {
+                "email": current_user["email"],
+                "password": request.current_password,
+            }
+        )
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -368,10 +369,7 @@ def change_password(
 
     try:
         # Update to new password
-        client.auth.admin.update_user_by_id(
-            current_user["id"],
-            {"password": request.new_password}
-        )
+        client.auth.admin.update_user_by_id(current_user["id"], {"password": request.new_password})
         return MessageResponse(message="Password changed successfully")
     except Exception:
         raise HTTPException(
