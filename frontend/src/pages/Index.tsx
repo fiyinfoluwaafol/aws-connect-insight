@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth-store";
 
 const Index = () => {
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const location = useLocation();
 
   if (location.hash || location.search) {
@@ -18,6 +18,10 @@ const Index = () => {
       const suffix = location.hash || location.search;
       return <Navigate to={`/reset-password${suffix}`} replace />;
     }
+  }
+  
+  if (isLoading) {
+    return null; // Wait for auth hydration to complete
   }
   
   if (!user) {

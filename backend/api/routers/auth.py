@@ -1,5 +1,7 @@
 """Authentication endpoints."""
 
+import base64
+import json
 from enum import Enum
 from typing import Annotated, Any
 
@@ -90,6 +92,21 @@ def _clear_auth_cookies(response: Response, settings: Settings) -> None:
     response.delete_cookie(key="refresh_token", **cookie_settings)
 
 
+def _is_recovery_or_otp_token(token: str) -> bool:
+    """Check if a JWT is a recovery or OTP token by inspecting its 'amr' claim."""
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return False
+        payload_b64 = parts[1]
+        payload_b64 += "=" * (4 - len(payload_b64) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+        amr = payload.get("amr", [])
+        return any(x.get("method") in ("recovery", "otp") for x in amr)
+    except Exception:
+        return False
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(
     request: RegisterRequest,
@@ -118,7 +135,12 @@ def register(
         if request.team_id:
             user_data["team_id"] = request.team_id
 
-        client.table("users").insert(user_data).execute()
+        try:
+            client.table("users").insert(user_data).execute()
+        except Exception as e:
+            # Rollback: delete the created auth user
+            client.auth.admin.delete_user(user_id)
+            raise DatabaseError("Failed to create user profile") from e
 
         return UserResponse(
             id=user_id,
@@ -312,6 +334,12 @@ def reset_password(
         )
 
     try:
+        if not _is_recovery_or_otp_token(request.token):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type. Only recovery tokens are allowed.",
+            )
+
         # Use the access_token from recovery email to get user and update password
         user_response = client.auth.get_user(request.token)
         if not user_response.user:
