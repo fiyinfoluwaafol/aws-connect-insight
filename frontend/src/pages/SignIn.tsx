@@ -1,22 +1,39 @@
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore, MOCK_USERS, User } from '@/stores/auth-store';
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuthStore } from '@/stores/auth-store';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { User as UserIcon, Shield, Headphones } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { signIn } = useAuthStore();
+  const location = useLocation();
+  const { signIn, isLoading, error, clearError } = useAuthStore();
 
-  const supervisors = MOCK_USERS.filter((u) => u.role === 'supervisor');
-  const agents = MOCK_USERS.filter((u) => u.role === 'agent');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSignIn = (user: User) => {
-    signIn(user);
-    navigate(user.role === 'supervisor' ? '/supervisor' : '/agent');
+  const from = location.state?.from?.pathname || '/';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+
+    try {
+      await signIn(email, password);
+
+      const user = useAuthStore.getState().user;
+      if (from !== '/' && from !== '/signin') {
+        navigate(from, { replace: true });
+      } else {
+        navigate(user?.role === 'supervisor' ? '/supervisor' : '/agent', { replace: true });
+      }
+    } catch {
+      // Error is handled by the store.
+    }
   };
 
   return (
@@ -28,78 +45,73 @@ export default function SignIn() {
             Amazon Connect Insights
           </h1>
           <p className="text-muted-foreground">
-            Sign in to access the supervisor dashboard or agent helper
+            Sign in to access your dashboard
           </p>
         </div>
 
         <Card className="p-6">
-          <Tabs defaultValue="supervisor" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="supervisor" className="gap-2">
-                <Shield className="h-4 w-4" />
-                Supervisor
-              </TabsTrigger>
-              <TabsTrigger value="agent" className="gap-2">
-                <Headphones className="h-4 w-4" />
-                Agent
-              </TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
-            <TabsContent value="supervisor" className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
-                Select a supervisor account to sign in:
-              </p>
-              {supervisors.map((user) => (
-                <Button
-                  key={user.id}
-                  variant="outline"
-                  className="w-full justify-start h-auto py-4"
-                  onClick={() => handleSignIn(user)}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
                 >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <UserIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                    <Badge variant="secondary">Team {user.team}</Badge>
-                  </div>
-                </Button>
-              ))}
-            </TabsContent>
+                  Forgot password?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+                autoComplete="current-password"
+              />
+            </div>
 
-            <TabsContent value="agent" className="space-y-3">
-              <p className="text-sm text-muted-foreground mb-4">
-                Select an agent account to sign in:
-              </p>
-              {agents.map((user) => (
-                <Button
-                  key={user.id}
-                  variant="outline"
-                  className="w-full justify-start h-auto py-4"
-                  onClick={() => handleSignIn(user)}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center">
-                      <Headphones className="h-5 w-5 text-accent" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                  </div>
-                </Button>
-              ))}
-            </TabsContent>
-          </Tabs>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </Button>
 
-          <div className="mt-6 pt-6 border-t">
-            <p className="text-xs text-muted-foreground text-center">
-              This is a demo application. All data is mocked and stored locally.
-            </p>
-          </div>
+            <div className="text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </div>
+          </form>
         </Card>
       </div>
     </div>
