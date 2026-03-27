@@ -27,7 +27,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["api*"]
+include = ["api*", "database*", "services*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
