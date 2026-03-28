@@ -75,6 +75,30 @@ def test_register_returns_created_user(
     )
 
 
+def test_register_rejects_public_supervisor_signup(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /api/auth/register forbids self-signup for supervisor accounts."""
+    register_mock = MagicMock()
+    monkeypatch.setattr(auth_router, "register_user", register_mock)
+
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "supervisor@example.com",
+            "password": "password123",
+            "first_name": "Test",
+            "last_name": "Supervisor",
+            "role": "supervisor",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Supervisor accounts must be created by an administrator"}
+    register_mock.assert_not_called()
+
+
 def test_login_sets_auth_cookies(
     client: TestClient,
     mock_supabase: MagicMock,
@@ -225,10 +249,28 @@ def test_forgot_password_returns_success_message(
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "If the email exists, a reset link has been sent"
-    }
+    assert response.json() == {"message": "If the email exists, a reset link has been sent"}
     forgot_password_mock.assert_called_once_with(mock_supabase, "test@example.com")
+
+
+def test_forgot_password_returns_503_for_delivery_failures(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /api/auth/forgot-password surfaces real delivery failures."""
+    monkeypatch.setattr(
+        auth_router,
+        "request_password_reset",
+        MagicMock(side_effect=AuthenticationError("supabase unavailable")),
+    )
+
+    response = client.post(
+        "/api/auth/forgot-password",
+        json={"email": "test@example.com"},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Password reset is temporarily unavailable"}
 
 
 def test_reset_password_returns_success_message(
@@ -263,9 +305,7 @@ def test_reset_password_returns_auth_error_detail(
         auth_router,
         "reset_user_password",
         MagicMock(
-            side_effect=AuthenticationError(
-                "Invalid token type. Only recovery tokens are allowed."
-            )
+            side_effect=AuthenticationError("Invalid token type. Only recovery tokens are allowed.")
         ),
     )
 
@@ -275,9 +315,7 @@ def test_reset_password_returns_auth_error_detail(
     )
 
     assert response.status_code == 401
-    assert response.json() == {
-        "detail": "Invalid token type. Only recovery tokens are allowed."
-    }
+    assert response.json() == {"detail": "Invalid token type. Only recovery tokens are allowed."}
 
 
 def test_change_password_returns_success_message(

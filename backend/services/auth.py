@@ -180,11 +180,8 @@ def refresh_user_tokens(client: Client, refresh_token: str) -> AuthTokens:
 
 
 def request_password_reset(client: Client, email: str) -> None:
-    """Request a password reset email without leaking account existence."""
-    try:
-        send_password_reset_email(client, email)
-    except AuthenticationError:
-        return
+    """Request a password reset email."""
+    send_password_reset_email(client, email)
 
 
 def reset_user_password(client: Client, token: str, new_password: str) -> None:

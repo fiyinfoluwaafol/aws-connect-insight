@@ -138,6 +138,12 @@ def register(
     """Register a new user."""
     auth_client = _require_client(client)
 
+    if request.role is not UserRole.agent:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Supervisor accounts must be created by an administrator",
+        )
+
     try:
         user = register_user(
             auth_client,
@@ -245,7 +251,15 @@ def forgot_password(
 ) -> MessageResponse:
     """Request a password reset email."""
     auth_client = _require_client(client)
-    request_password_reset(auth_client, request.email)
+
+    try:
+        request_password_reset(auth_client, request.email)
+    except AuthenticationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Password reset is temporarily unavailable",
+        ) from exc
+
     return MessageResponse(message="If the email exists, a reset link has been sent")
 
 
