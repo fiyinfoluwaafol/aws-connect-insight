@@ -14,6 +14,7 @@ dependencies = [
     "supabase>=2.0.0",
     "httpx>=0.26.0",
     "pydantic-settings>=2.0.0",
+    "pydantic[email]>=2.0.0",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +27,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["api*"]
+include = ["api*", "database*", "services*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
