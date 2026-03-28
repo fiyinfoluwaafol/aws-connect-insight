@@ -138,6 +138,12 @@ def register(
     """Register a new user."""
     auth_client = _require_client(client)
 
+    if request.role is not UserRole.agent:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Supervisor accounts must be created by an administrator",
+        )
+
     try:
         user = register_user(
             auth_client,

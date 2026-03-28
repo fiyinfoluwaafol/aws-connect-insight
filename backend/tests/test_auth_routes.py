@@ -75,6 +75,30 @@ def test_register_returns_created_user(
     )
 
 
+def test_register_rejects_public_supervisor_signup(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /api/auth/register forbids self-signup for supervisor accounts."""
+    register_mock = MagicMock()
+    monkeypatch.setattr(auth_router, "register_user", register_mock)
+
+    response = client.post(
+        "/api/auth/register",
+        json={
+            "email": "supervisor@example.com",
+            "password": "password123",
+            "first_name": "Test",
+            "last_name": "Supervisor",
+            "role": "supervisor",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Supervisor accounts must be created by an administrator"}
+    register_mock.assert_not_called()
+
+
 def test_login_sets_auth_cookies(
     client: TestClient,
     mock_supabase: MagicMock,
