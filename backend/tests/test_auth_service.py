@@ -82,3 +82,17 @@ def test_reset_user_password_rejects_non_recovery_tokens() -> None:
     """reset_user_password should only accept recovery-style tokens."""
     with pytest.raises(AuthenticationError, match="Invalid token type"):
         auth_service.reset_user_password(MagicMock(), "not-a-jwt", "new-password")
+
+
+def test_request_password_reset_propagates_delivery_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """request_password_reset should surface real delivery failures."""
+    monkeypatch.setattr(
+        auth_service,
+        "send_password_reset_email",
+        MagicMock(side_effect=AuthenticationError("supabase unavailable")),
+    )
+
+    with pytest.raises(AuthenticationError, match="supabase unavailable"):
+        auth_service.request_password_reset(MagicMock(), "test@example.com")

@@ -229,6 +229,26 @@ def test_forgot_password_returns_success_message(
     forgot_password_mock.assert_called_once_with(mock_supabase, "test@example.com")
 
 
+def test_forgot_password_returns_503_for_delivery_failures(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """POST /api/auth/forgot-password surfaces real delivery failures."""
+    monkeypatch.setattr(
+        auth_router,
+        "request_password_reset",
+        MagicMock(side_effect=AuthenticationError("supabase unavailable")),
+    )
+
+    response = client.post(
+        "/api/auth/forgot-password",
+        json={"email": "test@example.com"},
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Password reset is temporarily unavailable"}
+
+
 def test_reset_password_returns_success_message(
     client: TestClient,
     mock_supabase: MagicMock,
