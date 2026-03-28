@@ -1,6 +1,6 @@
 """Authentication helpers."""
 
-from supabase import Client
+from supabase import Client, create_client
 
 from .decorators import auth_operation
 from .exceptions import AuthenticationError
@@ -92,7 +92,10 @@ def update_auth_user_password(client: Client, user_id: str, new_password: str) -
 @auth_operation
 def verify_user_password(client: Client, email: str, password: str) -> bool:
     """Check whether the supplied password is correct for the user."""
-    response = client.auth.sign_in_with_password({"email": email, "password": password})
+    # Use a short-lived client so sign-in does not replace the main client's
+    # service-role authorization header before any admin API calls.
+    verify_client = create_client(str(client.supabase_url), client.supabase_key)
+    response = verify_client.auth.sign_in_with_password({"email": email, "password": password})
     if not response.user:
         raise AuthenticationError("Invalid email or password")
     return True
