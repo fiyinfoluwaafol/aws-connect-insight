@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi, UserRole } from '@/lib/api';
+import { authApi } from '@/lib/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,13 +17,12 @@ export default function SignUp() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    role: 'agent' as UserRole,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -50,7 +49,7 @@ export default function SignUp() {
         password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        role: formData.role,
+        role: 'agent',
       });
       setIsSuccess(true);
       setTimeout(() => navigate('/signin'), 3000);
@@ -70,7 +69,9 @@ export default function SignUp() {
             Create Account
           </h1>
           <p className="text-muted-foreground">
-            {isSuccess ? 'Account created successfully!' : 'Sign up for Amazon Connect Insights'}
+            {isSuccess
+              ? 'Account created successfully!'
+              : 'Sign up for Amazon Connect Insights'}
           </p>
         </div>
 
@@ -137,17 +138,10 @@ export default function SignUp() {
 
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="agent">Agent</option>
-                  <option value="supervisor">Supervisor</option>
-                </select>
+                <Input id="role" value="agent" disabled readOnly />
+                <p className="text-xs text-muted-foreground">
+                  Supervisor accounts are provisioned by an administrator.
+                </p>
               </div>
 
               <div className="space-y-2">
