@@ -225,9 +225,7 @@ def test_forgot_password_returns_success_message(
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "If the email exists, a reset link has been sent"
-    }
+    assert response.json() == {"message": "If the email exists, a reset link has been sent"}
     forgot_password_mock.assert_called_once_with(mock_supabase, "test@example.com")
 
 
@@ -263,9 +261,7 @@ def test_reset_password_returns_auth_error_detail(
         auth_router,
         "reset_user_password",
         MagicMock(
-            side_effect=AuthenticationError(
-                "Invalid token type. Only recovery tokens are allowed."
-            )
+            side_effect=AuthenticationError("Invalid token type. Only recovery tokens are allowed.")
         ),
     )
 
@@ -275,9 +271,7 @@ def test_reset_password_returns_auth_error_detail(
     )
 
     assert response.status_code == 401
-    assert response.json() == {
-        "detail": "Invalid token type. Only recovery tokens are allowed."
-    }
+    assert response.json() == {"detail": "Invalid token type. Only recovery tokens are allowed."}
 
 
 def test_change_password_returns_success_message(
