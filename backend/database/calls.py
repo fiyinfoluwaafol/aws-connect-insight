@@ -1,116 +1,120 @@
 """Call record helpers."""
 
-from .exceptions import ClientError, DatabaseError, NotFoundError
+from datetime import datetime, timedelta
+
+from supabase import Client
+
+from .constants import SortOrder, Tables
+from .decorators import db_operation
+from .exceptions import NotFoundError
+
+MAX_PER_PAGE = 100
 
 
+@db_operation
 def create_call(
-    client, agent_id: str, team_id: str, recording_url: str, duration_seconds: int, started_at: str
+    client: Client,
+    agent_id: str,
+    team_id: str,
+    recording_url: str,
+    duration_seconds: int,
+    started_at: str,
 ) -> dict:
-    """Create a new call record."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = (
-            client.table("calls")
-            .insert(
-                {
-                    "agent_id": agent_id,
-                    "team_id": team_id,
-                    "recording_url": recording_url,
-                    "duration_seconds": duration_seconds,
-                    "started_at": started_at,
-                }
-            )
-            .execute()
+    """
+    Create a new call record (without transcript).
+
+    started_at: ISO timestamp
+    """
+    result = (
+        client.table(Tables.CALLS)
+        .insert(
+            {
+                "agent_id": agent_id,
+                "team_id": team_id,
+                "recording_url": recording_url,
+                "duration_seconds": duration_seconds,
+                "started_at": started_at,
+            }
         )
-        return result.data[0]
-    except Exception as e:
-        raise DatabaseError(f"Failed to create call: {e}")
+        .execute()
+    )
+    return result.data[0]
 
 
-def get_call_by_id(client, call_id: str) -> dict:
-    """Get call by ID."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = client.table("calls").select("*").eq("id", call_id).execute()
-        if not result.data:
-            raise NotFoundError(f"Call {call_id} not found")
-        return result.data[0]
-    except NotFoundError:
-        raise
-    except Exception as e:
-        raise DatabaseError(f"Failed to fetch call: {e}")
+@db_operation
+def update_call_transcript(client: Client, call_id: str, transcript: list[dict]) -> dict:
+    """
+    Update a call with transcript.
+
+    transcript: List of {speaker, text} dicts
+    """
+    result = (
+        client.table(Tables.CALLS).update({"transcript": transcript}).eq("id", call_id).execute()
+    )
+    if not result.data:
+        raise NotFoundError(f"Call {call_id} not found")
+    return result.data[0]
 
 
-def get_calls_by_agent(client, agent_id: str, limit: int = 10) -> list:
-    """Get calls for an agent, most recent first."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = (
-            client.table("calls")
-            .select("*")
-            .eq("agent_id", agent_id)
-            .order("started_at", desc=True)
-            .limit(limit)
-            .execute()
-        )
-        return result.data
-    except Exception as e:
-        raise DatabaseError(f"Failed to get agent calls: {e}")
+@db_operation
+def get_call_by_id(client: Client, call_id: str) -> dict:
+    """Get a call by ID with its analysis (null if not yet analyzed)."""
+    result = (
+        client.table(Tables.CALLS)
+        .select(f"*, {Tables.CALL_ANALYSES}(*)")
+        .eq("id", call_id)
+        .execute()
+    )
+    if not result.data:
+        raise NotFoundError(f"Call {call_id} not found")
+    return result.data[0]
 
 
-def get_calls_by_team(client, team_id: str, limit: int = 10) -> list:
-    """Get calls for a team, most recent first."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = (
-            client.table("calls")
-            .select("*")
-            .eq("team_id", team_id)
-            .order("started_at", desc=True)
-            .limit(limit)
-            .execute()
-        )
-        return result.data
-    except Exception as e:
-        raise DatabaseError(f"Failed to get team calls: {e}")
+@db_operation
+def search_calls(
+    client: Client,
+    team_id: str,
+    agent_id: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    sort: SortOrder = SortOrder.RECENT,
+    page: int = 1,
+    per_page: int = 20,
+) -> dict:
+    """
+    Search calls with filters. Returns {calls, total}.
 
+    page: min 1
+    per_page: max 100
 
-def get_recent_calls_by_team(client, team_id: str, since: str) -> list:
-    """Get calls for a team after a timestamp."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = (
-            client.table("calls")
-            .select("*")
-            .eq("team_id", team_id)
-            .gt("started_at", since)
-            .order("started_at", desc=True)
-            .execute()
-        )
-        return result.data
-    except Exception as e:
-        raise DatabaseError(f"Failed to get recent calls: {e}")
+    TODO: sentiment filter/sort (needs calls_with_analysis view)
+    """
+    if page < 1:
+        page = 1
+    per_page = min(per_page, MAX_PER_PAGE)
 
+    query = (
+        client.table(Tables.CALLS)
+        .select(f"*, {Tables.CALL_ANALYSES}(*)", count="exact")
+        .eq("team_id", team_id)
+    )
 
-def get_calls_in_range_by_team(client, team_id: str, start_date: str, end_date: str) -> list:
-    """Get calls for a team within a date range."""
-    if client is None:
-        raise ClientError("Database client is not initialized")
-    try:
-        result = (
-            client.table("calls")
-            .select("*")
-            .eq("team_id", team_id)
-            .gte("started_at", start_date)
-            .lte("started_at", end_date)
-            .order("started_at", desc=True)
-            .execute()
-        )
-        return result.data
-    except Exception as e:
-        raise DatabaseError(f"Failed to get calls: {e}")
+    if agent_id is not None:
+        query = query.eq("agent_id", agent_id)
+    if date_from is not None:
+        query = query.gte("started_at", date_from)
+    if date_to is not None:
+        next_day = (datetime.fromisoformat(date_to) + timedelta(days=1)).strftime("%Y-%m-%d")
+        query = query.lt("started_at", next_day)
+
+    if sort == SortOrder.OLDEST:
+        query = query.order("started_at", desc=False)
+    else:
+        # Defaults to recent order
+        query = query.order("started_at", desc=True)
+
+    offset = (page - 1) * per_page
+    query = query.range(offset, offset + per_page - 1)
+
+    result = query.execute()
+    return {"calls": result.data, "total": result.count}

@@ -37,6 +37,7 @@ The idea behind this is to create a living document that would continue to be up
 | 12 | `coaching_tips` | AI tips for agents |
 | 13 | `notifications` | User notification inbox |
 | 14 | `briefs` | Stored team reports |
+| 15 | `notes` | User notes on calls |
 
 ---
 
@@ -116,6 +117,7 @@ For insertion, we'd do the following:
 | `summary` | TEXT | AI summary |
 | `sentiment_score` | DECIMAL | -1.0 (negative) to 1.0 (positive) |
 | `sentiment_label` | ENUM | `positive` · `neutral` · `negative` |
+| `key_moves` | JSONB | Array of strings describing agent techniques/actions |
 | `is_resolved` | BOOLEAN | Was issue resolved? |
 | `created_at` | TIMESTAMP |  |
 | `updated_at` | TIMESTAMP |  |
@@ -123,6 +125,8 @@ For insertion, we'd do the following:
 💡 See `calls` table above as transcript has been moved there.
 
 💡 Another option is adding these fields directly in the calls table. The issue with that though would be that if we decide to change something major about our analysis, that would probably mess with our call records. So it might be better to have the call record separate and then store any analysis on it separately also.
+
+💡 `key_moves` is stored here (not in `exemplar_calls`) so all calls have access to AI-identified techniques for coaching and pattern analysis.
 
 ---
 
@@ -216,7 +220,11 @@ For insertion, we'd do the following:
 | `call_id` | **Foreign Key** → calls, UNIQUE | One alert per call |
 | `supervisor_id` | **Foreign Key** → users | Alert recipient |
 | `team_id` | **Foreign Key** → teams | |
+| `type` | ENUM | `threshold` · `keyword` · `manual` |
+| `status` | ENUM | `open` · `closed` |
 | `severity` | ENUM | `low` · `medium` · `high` |
+| `title` | VARCHAR(255) | Alert headline |
+| `description` | TEXT | Alert details |
 | `is_read` | BOOLEAN | Read status |
 | `created_at` | TIMESTAMP | |
 | `updated_at` | TIMESTAMP | |
@@ -239,10 +247,11 @@ For insertion, we'd do the following:
 | `team_id` | **Foreign Key** → teams | Visible to this team |
 | `marked_by` | **Foreign Key** → users | Supervisor who marked it |
 | `note` | TEXT | Why it's a good example |
-| `key_moves` | JSONB | Array of strings describing what made the call great |
 | `created_at` | TIMESTAMP | |
 
 💡 We can get examplar calls transcript using a join on `call_id` → `calls.transcript`.
+
+💡 `key_moves` is accessed via the call's analysis (`call_id` → `call_analyses.key_moves`), not stored here.
 
 💡 Again, this could also be part of the calls table and is very much up for discussion but in light of trying to treat the calls table as the source of truth, this might be the better option since we also might want to add more content as to why the call is an examplar later on.
 
@@ -311,6 +320,20 @@ For insertion, we'd do the following:
 
 ---
 
+### 15. `notes`
+
+> User notes on calls
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID, **Primary key** | |
+| `call_id` | **Foreign Key** → calls | Which call |
+| `user_id` | **Foreign Key** → users | Who wrote it |
+| `content` | TEXT | Note text |
+| `created_at` | TIMESTAMP | |
+
+---
+
 ## Relationships
 
 | Relationship | Type |
@@ -327,6 +350,7 @@ For insertion, we'd do the following:
 | Agent → Coaching Tips | One-to-Many |
 | User → Notifications | One-to-Many |
 | Team → Briefs | One-to-Many |
+| Call → Notes | One-to-Many |
 
 ---
 
@@ -337,7 +361,9 @@ user_role:  `agent`, `supervisor`
 
 sentiment_label:  `positive`, `neutral`, `negative`
 
-alert_type:  `threshold`, `keyword`
+alert_type:  `threshold`, `keyword`, `manual`
+
+alert_status:  `open`, `closed`
 
 alert_severity:  `low`, `medium`, `high`
 
