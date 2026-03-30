@@ -13,7 +13,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```python
 from fastapi import Depends
 from api.dependencies import get_supabase_client
-from database import auth, users
+from database import analysis, auth, users, teams, calls
 
 @router.post("/signup")
 def signup(email: str, password: str, client = Depends(get_supabase_client)):
@@ -31,7 +31,7 @@ Helpers raise specific exceptions on failure:
 | Module | Decorator | Exception |
 |--------|-----------|-----------|
 | `auth` | `@auth_operation` | `AuthenticationError` |
-| `users`, `calls`, `teams` | `@db_operation` | `DatabaseError` |
+| `users`, `calls`, `teams`, `analysis` | `@db_operation` | `DatabaseError` |
 
 Other exceptions:
 - `NotFoundError` — Record doesn't exist
@@ -97,3 +97,41 @@ search_calls(
 | `create_team(client, name, supervisor_id)` | team dict |
 | `get_team_by_id(client, team_id)` | team dict |
 | `add_agent_to_team(client, agent_id, team_id)` | user dict |
+
+## analysis
+
+| Function | Returns |
+|----------|---------|
+| `create_analysis(client, call_id, summary, sentiment_score, sentiment_label, key_moves, is_resolved)` | analysis dict |
+| `get_analysis_by_call_id(client, call_id)` | analysis dict (includes `topics` and `keywords`) |
+| `update_analysis(client, analysis_id, **fields)` | analysis dict |
+| `create_topic(client, name)` | topic dict (upserts, lowercase) |
+| `create_keyword(client, word)` | keyword dict (upserts, lowercase) |
+| `add_topics_to_analysis(client, analysis_id, topic_names)` | list of topic dicts |
+| `add_keywords_to_analysis(client, analysis_id, keywords)` | list of keyword dicts |
+
+> **Note:** Topics and keywords are normalized to lowercase. If they don't exist, they're created automatically.
+
+### Example
+
+```python
+# Create analysis
+result = analysis.create_analysis(
+    client,
+    call_id="uuid",
+    summary="Customer called about billing issue...",
+    sentiment_score=0.45,
+    sentiment_label="neutral",
+    key_moves=["Acknowledged frustration", "Offered refund"],
+    is_resolved=True
+)
+
+# Add topics and keywords
+analysis.add_topics_to_analysis(client, result["id"], ["billing", "refund"])
+analysis.add_keywords_to_analysis(client, result["id"], ["frustrated", "manager"])
+
+# Get analysis with topics and keywords included
+result = analysis.get_analysis_by_call_id(client, "call-uuid")
+# result["topics"] = ["billing", "refund"]
+# result["keywords"] = ["frustrated", "manager"]
+```
