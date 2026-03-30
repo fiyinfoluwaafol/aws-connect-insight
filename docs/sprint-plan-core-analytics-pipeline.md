@@ -20,44 +20,7 @@ The product needs a real data path from transcripts to stored analytics and auth
 
 ---
 
-## 3. In-Scope Issues (10 total)
-
-Each issue below is an existing open GitHub issue. **Exactly two issues are assigned per team member.**
-
-| # | Title | Owner | Pipeline role |
-|---|-------|-------|----------------|
-| **#19** | F5.1: Define call-level summary and analytics contract | Kiitan | Schema / contract — what per-call analytics contains (sentiment, summary, topics, etc.). |
-| **#20** | F5.2: Implement AI-based call summary generation | Kiitan | Processing — generate summaries from transcripts per #19. |
-| **#105** | INF2.4: Add call analysis database helpers | Mujeeb | Persistence layer — CRUD and topic/keyword linking for `call_analyses`. |
-| **#60** | F5.5: Create call-level analytics API endpoint | Mujeeb | API — `GET /api/calls/{id}/analytics` backed by helpers and stored data. |
-| **#128** | Investigate Call Ingestion Approaches for Analytics Pipeline | Fiyin | Input path — research and recommend how transcripts enter the MVP pipeline. |
-| **#28** | F9.1: Define agent performance metrics and dashboard contract | Fiyin | Contract — align agent performance shape with `dashboard-api-endpoints.md`. |
-| **#92** | Replace mock authentication with Supabase Auth integration | Mildness | Auth — real sessions and protected routes for API access. |
-| **#59** | F5.4: Persist call summaries and analytics | Mildness | Persistence — write summaries/analytics to DB; idempotent writes. |
-| **#14** | F3.1: Define historical metrics and time granularity | Ini | Spec — what to store historically and at what granularity for trends/rollups. |
-| **#17** | F4.1: Define supported filters and search parameters | Ini | Spec — query params and response shape for future search/filter APIs. |
-
----
-
-## 4. Out-of-Scope Issues
-
-Everything in `issues.csv` that is **not** one of the ten issues above is out of scope for this sprint, including in particular:
-
-| Area | Examples (not exhaustive) | Reason |
-|------|-------------------------|--------|
-| **Further analytics processing** | #21, #41, #40 | Full call-level analytics extraction, sentiment alerting, and alert definitions are not in this two-task-per-person slice. |
-| **More persistence** | #11, #15 | Alert persistence and separate historical-metrics tables deferred until contracts are used in implementation. |
-| **Aggregation / queries** | #10, #16, #29 | Dashboard and agent aggregation logic deferred. |
-| **Additional APIs** | #47, #77, #12, … | Trends, agent performance, alerts APIs deferred. |
-| **Frontend** | #61, #37, #62, … | UI layouts and API wiring deferred. |
-| **Refactors** | #131–#134, #129 | Code cleanup after pipeline exists. |
-| **Other epics** | F6–F8 sub-tasks, coaching, briefs, learning library | Downstream of core analytics. |
-
-*(The previous version of this document listed many of these with longer rationales; those reasons still apply.)*
-
----
-
-## 5. Task Breakdown and Assignments
+## 3. Task Breakdown and Assignments
 
 ### Kiitan — Analytics contract and summary generation
 
@@ -108,7 +71,7 @@ Optional **small add-ons** Ini can pick up if time allows (same issues, no new t
 
 ---
 
-## 6. Dependency Order
+## 4. Dependency Order
 
 ```
 Contracts & specs (parallel)
@@ -126,7 +89,7 @@ Auth (parallel)
 
 ---
 
-## 7. Risks and Dependencies
+## 5. Risks and Dependencies
 
 | Risk | Mitigation |
 |------|------------|
@@ -137,7 +100,7 @@ Auth (parallel)
 
 ---
 
-## 8. Definition of Done
+## 6. Definition of Done
 
 - [ ] **#19** — Call-level summary + analytics contract documented with example JSON.  
 - [ ] **#20** — Summary generation runs on sample transcripts and matches #19.  
@@ -152,7 +115,7 @@ Auth (parallel)
 
 ---
 
-## 9. End-of-Sprint Demo
+## 7. End-of-Sprint Demo
 
 **Realistic demo for this sprint:**
 
@@ -165,15 +128,3 @@ Auth (parallel)
 > “We locked the analytics and API contracts, defined historical and search parameters for the next layer, chose an ingestion direction, generated AI summaries, persisted analyses, and exposed them through an authenticated per-call analytics endpoint.”
 
 ---
-
-## Appendix: Assignment Summary
-
-| Team Member | Issues | Count |
-|-------------|--------|-------|
-| **Kiitan** | #19, #20 | 2 |
-| **Mujeeb** | #105, #60 | 2 |
-| **Fiyin** | #128, #28 | 2 |
-| **Mildness** | #92, #59 | 2 |
-| **Ini** | #14, #17 | 2 |
-
-**Total sprint issues: 10**
