@@ -17,9 +17,6 @@ By the end of this sprint, the team should be able to show:
 - a documented MVP recommendation for how real calls will enter the pipeline
 - basic agent-side wiring only if the supervisor path is already stable
 
-## Closed Prerequisites
-
-The alignment doc dependencies `#14`, `#19`, `#28`, `#92`, and `#105` are already closed. This sprint builds on those decisions instead of reopening them.
 
 ## Scope For This Sprint
 
