@@ -1,126 +1,218 @@
-# Sprint Plan: Core Call Analytics Pipeline
+# Sprint Plan: Core Analytics Pipeline
 
-> **Status:** Human-reviewed
-> **Updated:** 2026-03-30  
-> **Based on:** Open issues from `issues.csv`, sprint direction from `core-call-analytics-endpoint-issues.md`, API contracts from `dashboard-api-endpoints.md`, and database schema from `datamodel-schema.md`
+> **Status:** Draft
+> **Updated:** 2026-03-31
+> **Sources:** [`core-call-analytics-endpoint-issues.md`](./backend/core-call-analytics-endpoint-issues.md), [`issues.csv`](../issues.csv), [`dashboard-api-endpoints.md`](./backend/dashboard-api-endpoints.md)
 
----
+## Sprint Goal
 
-## 1. Sprint Goal
+Ship the core call analytics pipeline end to end so the team can demo live analytics data flowing from stored backend records into the supervisor experience instead of mocks.
 
-**Establish the analytics contracts and ingestion direction, implement call-analysis database access and summary generation, persist analytics to the database, protect the backend with Supabase Auth, and expose per-call analytics through a working API endpoint.**
+By the end of this sprint, the team should be able to show:
 
-This sprint is intentionally narrow: **two GitHub issues per person (10 issues total)**. Aggregation endpoints, full dashboard/agent performance APIs, alert detection, and UI wiring are deferred to follow-on work once this slice lands.
+- sample calls or transcripts producing persisted analytics records
+- supervisor metrics and historical trends computed from stored analytics
+- working backend endpoints for call-level, historical, and agent-performance reads
+- supervisor dashboard wiring using live backend analytics data
+- a documented MVP recommendation for how real calls will enter the pipeline
+- basic agent-side wiring only if the supervisor path is already stable
 
----
+## Closed Prerequisites
 
-## 2. Why This Sprint
+The alignment doc dependencies `#14`, `#19`, `#28`, `#92`, and `#105` are already closed. This sprint builds on those decisions instead of reopening them.
 
-The product needs a real data path from transcripts to stored analytics and authenticated reads. This slice locks **what** is stored (#19, #14, #17, #28), **how** it gets in (#128), **how** it is written (#105, #59), **how** summaries are produced (#20), and **how** clients read it (#60, #92). Completing these issues unblocks the rest of the pipeline without overloading a single sprint.
+## Scope For This Sprint
 
----
+### Core Scope
 
-## 3. Task Breakdown and Assignments
+- `#128` `F5.9: Investigate Call Ingestion Approaches for Analytics Pipeline`
+- `#21` `F5.3: Generate call-level analytics`
+- `#59` `F5.4: Persist call summaries and analytics`
+- `#15` `F3.2: Persist historical analytics metrics`
+- `#16` `F3.3: Implement time-range analytics query logic`
+- `#10` `F1.2: Implement dashboard metrics aggregation logic`
+- `#47` `F3.4: Create historical analytics API endpoint`
+- `#29` `F9.2: Implement agent-level analytics query logic`
+- `#60` `F5.5: Create call-level analytics API endpoint`
+- `#77` `F9.3: Create agent performance API endpoint`
+- `#36` `F1.4: Create dashboard metrics UI layout`
+- `#37` `F1.5: Connect dashboard UI to metrics API`
+- `#38` `F1.6: Add basic error & loading states`
+- `#48` `F3.5: Build trend charts UI layout`
+- `#49` `F3.6: Connect trend charts to analytics API`
+- `#50` `F3.7: Add loading and empty-state handling`
+- `#61` `F5.6: Build call-level analytics UI layout`
+- `#62` `F5.7: Connect call analytics UI to backend API`
+- `#63` `F5.8: Add loading, empty, and error states`
 
-### Kiitan — Analytics contract and summary generation
+### Out Of Scope
 
-| # | Issue | Short description | Dependencies | Expected deliverable |
-|---|-------|-------------------|--------------|----------------------|
-| **#19** | F5.1: Define call-level summary and analytics contract | Document fields, types, sentiment rules, topic/tag format, example JSON. Unblocks #105, #20, #59. | None (start here) | Written contract + example payloads the team can implement against. |
-| **#20** | F5.2: Implement AI-based call summary generation | Implement summary generation from transcript text; match #19; use Bedrock or a documented mock path. | #19 | Runnable summary generation for sample transcripts with output matching the contract. |
+- coaching tips
+- exemplars
+- notifications
+- creating duplicate issues for work already covered above
 
----
+### If Time Permits
 
-### Mujeeb — Database helpers and call analytics API
+- `#78` `F9.4: Build agent performance dashboard UI layout`
+- `#79` `F9.5: Connect agent dashboard UI to backend API`
+- `#80` `F9.6: Add loading, empty, and error states`
 
-| # | Issue | Short description | Dependencies | Expected deliverable |
-|---|-------|-------------------|--------------|----------------------|
-| **#105** | INF2.4: Add call analysis database helpers | Helpers for create/read/update of call analyses; link topics/keywords; auto-create topics/keywords as needed. | #19 (schema) | Tested helper module used by persistence and API layers. |
-| **#60** | F5.5: Create call-level analytics API endpoint | Implement `GET /api/calls/{id}/analytics`; handle missing/unprocessed calls; align response with #19. | #105, #59 (data exists for demos) | Working endpoint verified with curl/Postman. |
+## Execution Order
 
----
+The team should execute in this order to avoid rework:
 
-### Fiyin — Ingestion research and agent performance contract
+1. Decide MVP ingestion direction in `#128`.
+2. Generate and persist call-level analytics in `#21` and `#59`.
+3. Persist and query historical data in `#15` and `#16`.
+4. Build supervisor and agent aggregation logic in `#10` and `#29`.
+5. Wire backend endpoints in `#60`, `#47`, and `#77`.
+6. Wire the supervisor UI to live metrics, trends, and call analytics using `#36` to `#63`.
+7. If the supervisor path is stable, wire the basic agent performance UI with `#78` to `#80`.
+8. Run an end-to-end demo using seeded or sample calls.
 
-| # | Issue | Short description | Dependencies | Expected deliverable |
-|---|-------|-------------------|--------------|----------------------|
-| **#128** | Investigate Call Ingestion Approaches for Analytics Pipeline | Compare options (e.g. Connect, import, API); metadata needs; MVP recommendation. | None (parallel) | Short doc: options, trade-offs, recommended MVP path. |
-| **#28** | F9.1: Define agent performance metrics and dashboard contract | Define KPIs, weekly trend, team comparison, time ranges; example JSON per `dashboard-api-endpoints.md`. | None (parallel with #128) | Documented contract + example `GET /api/agent/performance` response for future implementation. |
+## Team Assignments
 
----
+This is the recommended sprint split for the current team. If GitHub assignees do not match this plan, update the issues to reflect sprint ownership.
 
-### Mildness — Auth and persisting analytics
+| Team member | Primary ownership | Issues | Sprint deliverable |
+| --- | --- | --- | --- |
+| `fiyinfoluwaafol` | Sprint coordination, ingestion direction, supervisor API wiring | `#128`, `#10`, `#37`, `#49`, `#62` | MVP ingestion recommendation plus live supervisor screens for dashboard metrics, trends, and call analytics |
+| `Mikito-Coder` | Call-level analytics generation and call analytics API | `#21`, `#60` | Structured analytics generated from transcripts and a working call-level analytics endpoint |
+| `lawal-mj` | Historical storage, time-range queries, trends endpoint | `#15`, `#16`, `#47` | Historical analytics persisted, queryable by range, and exposed through a backend trends endpoint |
+| `Mildness10` | Persistence path and agent analytics | `#59`, `#29`, `#77` | Call analytics persisted for reuse and agent performance query plus endpoint working from stored data |
+| `iniayolawal` | Supervisor UI layouts and frontend states | `#36`, `#38`, `#48`, `#50`, `#61`, `#63` | Dashboard, trends, and call analytics screens ready for live wiring with stable loading and empty states |
 
-| # | Issue | Short description | Dependencies | Expected deliverable |
-|---|-------|-------------------|--------------|----------------------|
-| **#92** | Replace mock authentication with Supabase Auth integration | Backend auth routes, session/token handling, middleware; no secrets in frontend. | Can start early | Sign up/in/out/me working; protected routes return 401 when unauthenticated. |
-| **#59** | F5.4: Persist call summaries and analytics | Write pipeline output to DB via #105; idempotent upsert per call; link to `calls`. | #19, #105; integrates with #20 output | Persisted rows verifiable in DB for sample calls. |
+## If Time Permits
 
----
+Once the core backend path and supervisor wiring are stable:
 
-### Ini — Pipeline specifications
+- `iniayolawal` takes `#78` and `#80` for the basic agent performance UI layout and states
+- `fiyinfoluwaafol` takes `#79` to connect the agent dashboard to the backend
+- `Mildness10` closes the loop by pairing `#79` against the live output from `#77`
 
-| # | Issue | Short description | Dependencies | Expected deliverable |
-|---|-------|-------------------|--------------|----------------------|
-| **#14** | F3.1: Define historical metrics and time granularity | List metrics for trends/rollups; daily vs weekly; inputs (date range); example outputs. | None (parallel) | Doc: metrics, granularity, example time-range query + expected shape. |
-| **#17** | F4.1: Define supported filters and search parameters | Document filters (agent, sentiment, keywords), query params, pagination notes, response shape. | None (parallel) | Doc: filter/search contract with example request/response JSON. |
+## Workstream Details
 
----
+### 1. Ingestion And Sprint Coordination
 
-## 4. Dependency Order
+**Owner:** `fiyinfoluwaafol`  
+**Issues:** `#128`, `#10`, `#37`, `#49`, `#62`
 
+**Responsibilities**
+
+- document the recommended MVP path for getting real call data into the backend
+- define what minimum metadata the rest of the pipeline can rely on
+- implement dashboard metrics aggregation once the historical query path is stable
+- wire supervisor metrics, trend charts, and call analytics screens to live APIs
+
+**Done when**
+
+- the team has one agreed ingestion recommendation
+- the required metadata list is explicit
+- dashboard metrics compute correctly from stored analytics for a sample dataset
+- the supervisor frontend is reading live backend analytics instead of mocks
+
+### 2. Call Analytics Generation Path
+
+**Owner:** `Mikito-Coder`  
+**Issues:** `#21`, `#60`
+
+**Responsibilities**
+
+- turn transcripts into structured analytics fields the backend can store and query
+- align output with the response shapes already documented in [`dashboard-api-endpoints.md`](./backend/dashboard-api-endpoints.md)
+- expose per-call analytics through a backend endpoint that handles missing or unprocessed calls cleanly
+
+**Done when**
+
+- sample calls generate stable analytics payloads
+- the call analytics endpoint returns expected fields for processed calls
+- the endpoint has clear behavior for missing data
+
+### 3. Historical Storage And Supervisor Trends
+
+**Owner:** `lawal-mj`  
+**Issues:** `#15`, `#16`, `#47`
+
+**Responsibilities**
+
+- persist analytics in a form that supports time-based grouping
+- implement reusable time-range query logic for daily or weekly chart outputs
+- expose historical analytics to the backend consumer through a trends endpoint
+
+**Done when**
+
+- historical records can be grouped by date range
+- sample queries return chart-friendly data
+- the trends endpoint works for valid ranges and fails cleanly for invalid ones
+
+### 4. Persistence And Agent Performance
+
+**Owner:** `Mildness10`  
+**Issues:** `#59`, `#29`, `#77`
+
+**Responsibilities**
+
+- persist per-call summaries and analytics without unnecessary regeneration
+- implement agent-scoped analytics queries from stored data
+- expose agent performance through a backend endpoint with correct empty-state handling
+
+**Done when**
+
+- stored analytics are retrievable by call ID
+- agent metrics compute correctly for a sample agent
+- the agent performance endpoint returns live backend data rather than mocks
+
+### 5. Supervisor UI Layouts And States
+
+**Owner:** `iniayolawal`  
+**Issues:** `#36`, `#38`, `#48`, `#50`, `#61`, `#63`
+
+**Responsibilities**
+
+- build the supervisor-facing layouts for dashboard metrics, trend charts, and call analytics
+- provide loading, empty, and basic error states that make live wiring safe for demos
+- keep the frontend ready for API connection work without waiting on final backend polish
+
+**Done when**
+
+- the supervisor screens render the required sections cleanly
+- the UI handles loading and no-data cases without breaking
+- the screens are ready for `#37`, `#49`, and `#62` to swap in live data
+
+## Dependency Map
+
+```text
+Implementation path
+  #128
+  #21 -> #59
+  #59 -> #15 -> #16
+  #16 -> #10 and #29
+  #59 -> #60
+  #16 -> #47
+  #10 -> #37
+  #47 -> #49
+  #60 -> #62
+  #36 -> #37
+  #48 -> #49
+  #61 -> #62
+  #38 after #37
+  #50 after #49
+  #63 after #62
+  #29 -> #77
+  optional: #77 -> #79
+  optional: #78 -> #79 -> #80
 ```
-Contracts & specs (parallel)
-  #19 (Kiitan)     #14 (Ini)     #17 (Ini)     #28 (Fiyin)     #128 (Fiyin)
 
-Implementation chain
-  #19 → #105 (Mujeeb) → #20 (Kiitan) → #59 (Mildness) → #60 (Mujeeb)
+## End-Of-Sprint Demo
 
-Auth (parallel)
-  #92 (Mildness) — integrate with #60 when routes are ready
-```
+The sprint is successful if the team can run one demo flow end to end:
 
-**Simplified flow:**  
-`#19` / `#14` / `#17` / `#28` / `#128` (definitions) → `#105` → `#20` → `#59` → `#60` with `#92` enabling protected access.
-
----
-
-## 5. Risks and Dependencies
-
-| Risk | Mitigation |
-|------|------------|
-| **#19 late** | Blocks #105, #20, #59, #60. Time-box #19; use `datamodel-schema.md` and `dashboard-api-endpoints.md` as anchors. |
-| **#60 before #59** | Endpoint may return empty; acceptable for early integration if contract and helpers exist; full demo needs persisted rows. |
-| **Auth (#92) vs API (#60)** | Implement #60 with a dev bypass if needed; require auth before calling the sprint “done” for production-minded demo. |
-| **Scope creep** | Only the ten listed issues count for this sprint; everything else is next sprint. |
-
----
-
-## 6. Definition of Done
-
-- [ ] **#19** — Call-level summary + analytics contract documented with example JSON.  
-- [ ] **#20** — Summary generation runs on sample transcripts and matches #19.  
-- [ ] **#105** — Call analysis DB helpers implemented and covered by tests or manual verification.  
-- [ ] **#60** — `GET /api/calls/{id}/analytics` returns data consistent with #19 for calls that have persisted analysis.  
-- [ ] **#128** — Ingestion investigation doc with MVP recommendation.  
-- [ ] **#28** — Agent performance contract documented with example response.  
-- [ ] **#92** — Supabase Auth integrated; protected routes reject unauthenticated requests appropriately.  
-- [ ] **#59** — Summaries and analytics persisted for sample calls; idempotent behavior described or demonstrated.  
-- [ ] **#14** — Historical metrics and time granularity documented.  
-- [ ] **#17** — Filter and search parameters documented with examples.  
-
----
-
-## 7. End-of-Sprint Demo
-
-**Realistic demo for this sprint:**
-
-1. Show documents for **#14**, **#17**, **#19**, **#28**, and **#128** (contracts + ingestion recommendation).  
-2. Run **summary generation (#20)** on a sample transcript and show output matching #19.  
-3. Show **data in Supabase** from **#59** (via #105).  
-4. Call **`GET /api/calls/{id}/analytics` (#60)** with auth (**#92**) and show JSON for a processed call.  
-
-**Narrative:**  
-> “We locked the analytics and API contracts, defined historical and search parameters for the next layer, chose an ingestion direction, generated AI summaries, persisted analyses, and exposed them through an authenticated per-call analytics endpoint.”
-
----
+1. Show the MVP ingestion recommendation from `#128`.
+2. Process a sample transcript or seeded call through `#21`.
+3. Show persisted analytics data from `#59` and historical persistence from `#15`.
+4. Call the historical trends endpoint from `#47`.
+5. Call the call-level analytics endpoint from `#60`.
+6. Call the agent performance endpoint from `#77`.
+7. Show the supervisor dashboard using live data through `#37`, `#49`, and `#62`.
+8. If time permits, show the basic agent performance screen wired through `#78`, `#79`, and `#80`.
