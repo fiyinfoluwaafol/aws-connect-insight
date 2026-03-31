@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # This is a project-wide issue tracker
-
+issues.csv
 
 # Editor directories and files
 .vscode/*
