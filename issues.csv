@@ -1,3 +1,4 @@
+"issue number","state","title","body","date created","assignees","labels"
 134,"OPEN","Extract Shared Utility Functions and Domain Constants (Eliminate Cross-File Duplication)","## Refactor 2
 
 **Refactor Title:** 
@@ -47,7 +48,7 @@ frontend/src/pages/                 → Inline formatting functions, duplicated 
 - One definition of each formatting function, style mapping, and constant.
 - Types are importable without pulling in mock data.
 - Changing duration display format requires editing one file, not five.
-","2026-03-23T14:17:28Z","refactor","Mildness10"
+","2026-03-17T20:06:52Z","Mildness10","refactor"
 133,"OPEN","Extract a Data Access Layer with a Service Interface (Replace Direct `mockData` Imports)","**Problem:**  
 Pages and components import `mockData` directly from `@/lib/mock-data` **and** use `MockService` from `@/lib/mock-service`, creating two competing data access paths with no abstraction boundary. When the team replaces mocks with real API calls, every page that touches `mockData` directly must be rewritten. Additionally, `MockService` itself is tightly coupled to `useAppStore` via `useAppStore.getState()` calls (lines 83, 97–98, 151, 257, 332, 366, 373), meaning the ""service"" layer has a hard dependency on the React store.
 
@@ -85,7 +86,7 @@ Pages and components import `mockData` directly from `@/lib/mock-data` **and** u
 **Expected Outcome:**
 - Zero direct data imports in pages — all data flows through one swappable interface.
 - Adding a real `ApiDataService` later requires implementing a single interface.
-- Services become unit-testable without Zustand store mocking.","2026-03-23T14:17:38Z","refactor","Mikito-Coder"
+- Services become unit-testable without Zustand store mocking.","2026-03-17T20:05:45Z","Mikito-Coder","refactor"
 132,"OPEN","Decouple Export Logic from MockService into Standalone Utilities","**Problem:**  
 `MockService` in `mock-service.ts` bundles unrelated responsibilities: data querying, store mutation, PDF generation, CSV export, and email sending. The PDF export (lines 181–254) depends on `jsPDF` and `html2canvas` — heavyweight browser-specific libraries that have nothing to do with data access. The CSV export (lines 155–179) is a pure utility function embedded in a mock data service.
 
@@ -132,64 +133,7 @@ frontend/src/lib/mock-service.ts  → reduced to data access only
 - `MockService` becomes purely about data access (~200 lines).
 - Export utilities are tree-shakeable — pages that don't export PDF don't bundle `jsPDF`.
 - Export functions become independently testable.
-","2026-03-23T14:17:45Z","refactor","iniayolawal"
-131,"OPEN","F1.7: Decompose Monolithic Supervisor Pages into Composed Components","**Problem:**  
-The four supervisor pages are each 300–374 lines of tightly packed JSX mixing data derivation, chart configuration, table rendering, action handlers, and layout. This makes them hard to test, hard to review in PRs, and hard to reuse sections of.
-
-| Page | Lines | Responsibilities crammed in |
-|------|-------|-----------------------------|
-| `Overview.tsx` | 373 | Date filtering, 4 stat computations, topic distribution calc, sentiment distribution calc, agent performance calc, 4 different Recharts charts, recent alerts list |
-| `Search.tsx` | 360 | 6 filter states, search handler, CSV export, keyword highlighting, snippet extraction, results list, pagination, call detail drawer |
-| `Alerts.tsx` | 323 | Filtering, bulk selection, alert table, detail sheet, severity styling, call lookup |
-| `Briefs.tsx` | 339 | Brief generation, PDF export, email mock, brief list, brief detail dialog |
-
-**Current Structure:**  
-Each page is a single file with all logic inline. No sub-components exist for any of the dashboard sections.
-
-**Proposed Refactor:**
-
-Create a component composition hierarchy:
-
-```
-pages/supervisor/
-  Overview.tsx              → orchestrator (data fetching, state)
-    OverviewStats.tsx       → the 4 StatCard metrics
-    SentimentTrendChart.tsx → AreaChart section
-    CallVolumeChart.tsx     → LineChart section
-    TopicDistribution.tsx   → BarChart + PieChart
-    AgentPerformance.tsx    → BarChart for agents
-    RecentAlerts.tsx        → alert list (reusable between Overview and Alerts)
-  
-  Search.tsx                → orchestrator
-    SearchFilters.tsx       → filter form
-    SearchResults.tsx       → results list + pagination
-  
-  Alerts.tsx                → orchestrator
-    AlertTable.tsx          → table with selection
-    AlertDetail.tsx         → detail sheet
-  
-  Briefs.tsx                → orchestrator
-    BriefGenerator.tsx      → generate form + actions
-    BriefList.tsx           → list view
-    BriefDetail.tsx         → detail dialog
-```
-
-**Principle Applied:** Single Responsibility Principle + Component Composition
-
-**Implementation Steps:**
-
-1. Start with `Overview.tsx` — extract the stat calculation block (L63–66) and the `<StatCard>` grid (L120–149) into `OverviewStats.tsx`.
-2. Extract each chart tab content (L158–223, L225–273, L276–295) into dedicated chart components.
-3. Extract the recent alerts section (L298–370) into `RecentAlerts.tsx`.
-4. Repeat for `Search.tsx`: extract `SearchFilters` (the Card with inputs, L126–252) and `SearchResults` (L254–340).
-5. Repeat for `Alerts.tsx` and `Briefs.tsx`.
-6. Keep the parent page as an orchestrator: data fetching + state + composition.
-
-**Expected Outcome:**
-- Each file under 100 lines.
-- Chart components become reusable in agent pages too.
-- Team members can work on different dashboard sections in parallel without merge conflicts.
-","2026-03-23T14:17:56Z","refactor","fiyinfoluwaafol"
+","2026-03-17T19:54:09Z","iniayolawal","refactor"
 129,"OPEN","Lab 3 - AI-Assisted Refactoring with Cursor (Individual)","# Architectural Audit Report
 ## Repository: aws-connect-insight
 
@@ -271,8 +215,8 @@ backend/scripts/
 
 **Recommended execution order:** Start with Refactors 2 and 6 (quick wins, reduce duplication immediately), then Refactor 4 (backend cleanup), then Refactor 5 (script cleanup), then Refactor 3 (frontend decomposition), and finally Refactor 1 (service abstraction) which benefits from all prior refactors being in place.
 
-","2026-03-23T14:18:18Z","refactor","Mildness10,Mikito-Coder,lawal-mj,iniayolawal,fiyinfoluwaafol"
-128,"OPEN","Investigate Call Ingestion Approaches for Analytics Pipeline","## Purpose
+","2026-03-17T19:06:13Z","Mildness10;Mikito-Coder;lawal-mj;iniayolawal;fiyinfoluwaafol","refactor"
+128,"OPEN","F5.9: Investigate Call Ingestion Approaches for Analytics Pipeline","## Purpose
 
 The system currently uses manually provided transcripts for testing. We have not yet finalized how real call data (recordings or transcripts) will enter the analytics pipeline.
 
@@ -291,7 +235,7 @@ This task is to research and propose viable approaches for ingesting call data i
 
 ## Notes
 
-The system currently operates with mocked transcripts during development.","2026-03-07T13:16:42Z","documentation","fiyinfoluwaafol"
+The system currently operates with mocked transcripts during development.","2026-03-07T13:16:42Z","fiyinfoluwaafol","documentation;AI Sprint"
 117,"OPEN","Look into providing pagination support","### Purpose
 The website would need pagination support from the database soon to help ensure we do not query too many results in one request
 
@@ -299,53 +243,14 @@ The website would need pagination support from the database soon to help ensure 
 
 - This could apply to things like the search page for supervisors.
 - Also could apply to alerts, examplar calls and briefs 
-","2026-03-03T19:33:26Z","enhancement","lawal-mj"
-105,"OPEN","INF2.4: Add call analysis database helpers","### Purpose
-
-Provide database helpers for storing and retrieving call analysis data (sentiment, topics, keywords, key_moves).
-
-### Scope
-  - Helpers for creating, reading, and updating call analyses                                               
-  - Support for linking topics and keywords to analyses                                                     
-  - Auto-creation of topics/keywords if they don't exist
-
-
-### Acceptance Criteria: 
-  - [ ] Can create, get, and update call analyses.                                                              
-  - [ ] Can link topics and keywords to analyses. ","2026-03-25T14:23:17Z","","Mikito-Coder,lawal-mj,fiyinfoluwaafol"
+","2026-03-03T19:33:26Z","lawal-mj","enhancement"
 99,"OPEN","Look into better ways to handle notification references in database","### Purpose
-We could have situations where notifications are deleted and/or the items they refer to are also deleted. We need to look into ways to handle that gracefully at the database level and not just the API level.","2026-03-23T14:21:31Z","documentation,enhancement","lawal-mj"
+We could have situations where notifications are deleted and/or the items they refer to are also deleted. We need to look into ways to handle that gracefully at the database level and not just the API level.","2026-02-16T22:38:16Z","lawal-mj","documentation;enhancement"
 98,"OPEN","Explore better ways to store alert rule configurations","### Purpose
 Review and refine the current method of alert configurations in the database models and come up with a way that would need need as many NULL columns.
 
 
-","2026-02-16T22:45:11Z","documentation","lawal-mj"
-92,"OPEN","Replace mock authentication with Supabase Auth integration","### Purpose
-Authentication is currently mocked client-side with hardcoded credentials. Supabase Auth has been configured in the Supabase project, but no application integration exists yet.
-
-This task implements backend-driven authentication using Supabase Auth so the frontend can authenticate by calling our API endpoints (sign up, sign in, sign out), and establishes a secure foundation for protected backend routes.
-
-### Scope
-- Remove mock authentication logic and hardcoded credentials from the frontend.
-- Add backend authentication endpoints:
-  - POST /auth/signup
-  - POST /auth/signin
-  - POST /auth/signout
-  - GET /auth/me for session/user info
-- Integrate the backend with Supabase Auth using server-side credentials (no secrets in frontend).
-- Implement secure session/token handling between frontend ↔ backend:
-  - define how tokens/cookies are issued and stored
-  - support session persistence across refresh
-- Add backend middleware/guards to validate authenticated requests for protected endpoints.
-
-### Acceptance Criteria
-- [ ] Mock auth and hardcoded credentials removed from frontend
-- [ ] Backend exposes /auth/signup, /auth/signin, and /auth/signout
-- [ ] Backend successfully performs auth operations via Supabase Auth
-- [ ] Frontend authenticates only via backend endpoints (no direct Supabase client auth calls)
-- [ ] Auth state persists across reloads (session maintained)
-- [ ] Protected backend routes reject unauthenticated requests (401/403)
-- [ ] No Supabase service role key or secrets exist in frontend code","2026-03-24T20:29:57Z","technical-debt","Mildness10"
+","2026-02-16T22:30:33Z","lawal-mj","documentation"
 86,"OPEN","F8.7: Add loading, empty, and error states","### Purpose
 Ensure stable UX and demo reliability.
 
@@ -357,7 +262,7 @@ Ensure stable UX and demo reliability.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states gracefully","2026-01-31T21:44:42Z","","iniayolawal"
+- [ ] UI handles all states gracefully","2026-01-31T00:12:00Z","iniayolawal",""
 85,"OPEN","F8.6: Connect learning library UI to backend API","### Purpose
 Make the learning library live.
 
@@ -370,7 +275,7 @@ Make the learning library live.
 ### Acceptance Criteria
 
 - [ ] UI displays real learning entries
-- [ ] Screenshot showing populated library","2026-01-31T21:44:34Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing populated library","2026-01-31T00:10:42Z","fiyinfoluwaafol",""
 84,"OPEN","F8.5: Build learning library UI","### Purpose
 Allow agents to browse and learn from best calls.
 
@@ -383,7 +288,7 @@ Allow agents to browse and learn from best calls.
 ### Acceptance Criteria
 
 - [ ] Learning library UI renders correctly
-- [ ] Screenshot attached","2026-01-31T21:44:30Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-31T00:09:12Z","iniayolawal",""
 83,"OPEN","F8.4: Create learning library API endpoint","### Purpose
 Expose curated call examples to agents.
 
@@ -396,7 +301,7 @@ Expose curated call examples to agents.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns learning entries
-- [ ] Verified via Postman / curl","2026-01-31T21:44:22Z","","lawal-mj"
+- [ ] Verified via Postman / curl","2026-01-31T00:07:08Z","lawal-mj",""
 82,"OPEN","F8.3: Persist learning library entries","### Purpose
 Store references to high-performing calls for later access.
 
@@ -409,7 +314,7 @@ Store references to high-performing calls for later access.
 ### Acceptance Criteria
 
 - [ ] Learning entries retrievable
-- [ ] Verified via logs or DB query","2026-01-31T21:44:04Z","","Mildness10"
+- [ ] Verified via logs or DB query","2026-01-31T00:06:18Z","Mildness10",""
 81,"OPEN","F8: Best-Call Learning Library","### Description
 
 Provide agents with access to a curated library of anonymized high-performing call examples, enabling them to learn best practices and improve their performance through real interaction examples.
@@ -422,7 +327,7 @@ Provide agents with access to a curated library of anonymized high-performing ca
 
 ### Mapped Requirements
 
-- R14 – Access to anonymized high-performing call examples","2026-01-31T21:43:26Z","","iniayolawal"
+- R14 – Access to anonymized high-performing call examples","2026-01-30T23:53:08Z","iniayolawal",""
 80,"OPEN","F9.6: Add loading, empty, and error states","### Purpose
 Ensure stable UX and demo reliability.
 
@@ -434,7 +339,7 @@ Ensure stable UX and demo reliability.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states gracefully","2026-01-31T21:46:48Z","","iniayolawal"
+- [ ] UI handles all states gracefully","2026-01-30T23:46:14Z","iniayolawal",""
 79,"OPEN","F9.5: Connect agent dashboard UI to backend API","### Purpose
 Make the agent dashboard live.
 
@@ -447,7 +352,7 @@ Make the agent dashboard live.
 ### Acceptance Criteria
 
 - [ ] Dashboard displays real agent data
-- [ ] Screenshot showing populated dashboard","2026-01-31T21:46:42Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing populated dashboard","2026-01-30T23:45:15Z","fiyinfoluwaafol",""
 78,"OPEN","F9.4: Build agent performance dashboard UI layout","### Purpose
 Provide a clear visual dashboard for agents.
 
@@ -461,7 +366,7 @@ Provide a clear visual dashboard for agents.
 ### Acceptance Criteria
 
 - [ ] Dashboard layout renders correctly
-- [ ] Screenshot attached","2026-01-31T21:46:33Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T23:43:59Z","iniayolawal",""
 77,"OPEN","F9.3: Create agent performance API endpoint","### Purpose
 Expose agent-specific performance analytics.
 
@@ -474,7 +379,7 @@ Expose agent-specific performance analytics.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns agent performance data
-- [ ] Verified via Postman / curl","2026-01-31T21:46:22Z","","Mildness10"
+- [ ] Verified via Postman / curl","2026-01-30T23:42:43Z","Mildness10",""
 76,"OPEN","F9: Personal Agent Performance Dashboard","### Description
 
 Provide agents with a personal performance dashboard that visualizes their sentiment trends and common interaction topics, allowing them to track progress and identify areas for improvement over time.
@@ -487,7 +392,7 @@ Provide agents with a personal performance dashboard that visualizes their senti
 
 ### Mapped Requirements
 
-- R15 – Personal agent performance dashboard","2026-01-31T21:45:59Z","","fiyinfoluwaafol"
+- R15 – Personal agent performance dashboard","2026-01-30T23:30:36Z","fiyinfoluwaafol",""
 75,"OPEN","F7.7: Add loading, empty, and error states","### Purpose
 Ensure stable UX and demo reliability.
 
@@ -499,7 +404,7 @@ Ensure stable UX and demo reliability.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states gracefully","2026-01-31T21:43:04Z","","iniayolawal"
+- [ ] UI handles all states gracefully","2026-01-30T23:18:13Z","iniayolawal",""
 74,"OPEN","F7.6: Connect feedback UI to backend API","### Purpose
 Make feedback live for agents.
 
@@ -512,7 +417,7 @@ Make feedback live for agents.
 ### Acceptance Criteria
 
 - [ ] UI displays real feedback
-- [ ] Screenshot showing populated feedback","2026-01-31T21:42:50Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing populated feedback","2026-01-30T23:16:36Z","fiyinfoluwaafol",""
 73,"OPEN","F7.5: Build agent-facing feedback UI","### Purpose
 Allow agents to view post-call feedback.
 
@@ -525,7 +430,7 @@ Allow agents to view post-call feedback.
 ### Acceptance Criteria
 
 - [ ] Feedback UI renders correctly
-- [ ] Screenshot attached","2026-01-31T21:42:45Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T23:14:08Z","iniayolawal",""
 72,"OPEN","F7.4: Create coaching feedback API endpoint","### Purpose
 Expose feedback to agent-facing clients.
 
@@ -538,7 +443,7 @@ Expose feedback to agent-facing clients.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns feedback data
-- [ ] Verified via Postman / curl","2026-01-31T21:42:36Z","","lawal-mj"
+- [ ] Verified via Postman / curl","2026-01-30T23:09:44Z","lawal-mj",""
 71,"OPEN","F7.3: Persist post-call feedback","### Purpose
 Store feedback so agents can revisit it.
 
@@ -550,7 +455,7 @@ Store feedback so agents can revisit it.
 ### Acceptance Criteria
 
 - [ ] Feedback retrievable by call ID or agent ID
-- [ ] Verified via logs or DB query","2026-01-31T21:42:25Z","","Mildness10"
+- [ ] Verified via logs or DB query","2026-01-30T23:02:12Z","Mildness10",""
 70,"OPEN","F7: Real-Time Post-Call Feedback & Coaching","### Description
 
 Provide agents with actionable post-call feedback and coaching tips derived from call analytics, helping them improve performance based on sentiment, topics, and identified issues.
@@ -564,7 +469,7 @@ Provide agents with actionable post-call feedback and coaching tips derived from
 ### Mapped Requirements
 
 - R12 – Personalized coaching tips for agents
-- R13 – Real-time post-call feedback","2026-01-31T21:41:56Z","","Mikito-Coder"
+- R13 – Real-time post-call feedback","2026-01-30T22:10:31Z","Mikito-Coder",""
 69,"OPEN","F6.7: Add loading and empty-state handling","### Purpose
 Ensure stable UX and demo behavior.
 
@@ -576,7 +481,7 @@ Ensure stable UX and demo behavior.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states gracefully","2026-01-31T21:41:24Z","","iniayolawal"
+- [ ] UI handles all states gracefully","2026-01-30T22:06:26Z","iniayolawal",""
 68,"OPEN","F6.6: Connect performance brief UI to API","### Purpose
 Make performance briefs live.
 
@@ -589,7 +494,7 @@ Make performance briefs live.
 ### Acceptance Criteria
 
 - [ ] UI displays real brief data
-- [ ] Screenshot showing populated brief","2026-01-31T21:41:07Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing populated brief","2026-01-30T22:05:23Z","fiyinfoluwaafol",""
 67,"OPEN","F6.5: Build performance brief UI module","### Purpose
 Display performance briefs in the dashboard.
 
@@ -602,7 +507,7 @@ Display performance briefs in the dashboard.
 ### Acceptance Criteria
 
 - [ ] Brief module renders correctly
-- [ ] Screenshot attached","2026-01-31T21:41:01Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T22:04:11Z","iniayolawal",""
 66,"OPEN","F6.4: Create performance brief API endpoint","### Purpose
 Expose briefs to the frontend.
 
@@ -615,7 +520,7 @@ Expose briefs to the frontend.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns brief content
-- [ ] Verified via Postman / curl","2026-01-31T21:40:48Z","","lawal-mj"
+- [ ] Verified via Postman / curl","2026-01-30T22:02:57Z","lawal-mj",""
 65,"OPEN","F6.3: Generate performance brief content","### Purpose
 Convert aggregated metrics into a readable brief.
 
@@ -628,7 +533,7 @@ Convert aggregated metrics into a readable brief.
 ### Acceptance Criteria
 
 - [ ] Brief generated for sample dataset
-- [ ] Output matches defined structure","2026-01-31T21:40:09Z","","Mikito-Coder"
+- [ ] Output matches defined structure","2026-01-30T22:01:02Z","Mikito-Coder",""
 64,"OPEN","F6: Daily / Weekly Performance Briefs","### Description
 
 Generate concise daily or weekly performance briefs that summarize key trends and metrics, enabling supervisors to prepare efficiently for standups and team check-ins.
@@ -642,7 +547,7 @@ Generate concise daily or weekly performance briefs that summarize key trends an
 ### Mapped Requirements
 
 - R10 – Daily or weekly performance briefs
-- R11 – Key metrics for standups","2026-01-31T21:39:27Z","","fiyinfoluwaafol"
+- R11 – Key metrics for standups","2026-01-30T21:48:27Z","fiyinfoluwaafol",""
 63,"OPEN","F5.8: Add loading, empty, and error states","### Purpose
 Ensure stable UX and demo reliability.
 
@@ -654,7 +559,7 @@ Ensure stable UX and demo reliability.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states without crashing","2026-01-31T21:39:08Z","","iniayolawal"
+- [ ] UI handles all states without crashing","2026-01-30T21:43:42Z","iniayolawal",""
 62,"OPEN","F5.7: Connect call analytics UI to backend API","### Purpose
 Make call-level insights functional end-to-end.
 
@@ -667,7 +572,7 @@ Make call-level insights functional end-to-end.
 ### Acceptance Criteria
 
 - [ ] UI displays real analytics data
-- [ ] Screenshot showing live content","2026-01-31T21:39:13Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing live content","2026-01-30T21:42:56Z","fiyinfoluwaafol",""
 61,"OPEN","F5.6: Build call-level analytics UI layout","### Purpose
 Provide a clear visual presentation for call insights.
 
@@ -682,7 +587,7 @@ Provide a clear visual presentation for call insights.
 ### Acceptance Criteria
 
 - [ ] UI renders correctly
-- [ ] Screenshot attached","2026-01-31T21:38:57Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T21:41:20Z","iniayolawal",""
 60,"OPEN","F5.5: Create call-level analytics API endpoint","### Purpose
 Expose summaries and analytics to the frontend.
 
@@ -695,7 +600,7 @@ Expose summaries and analytics to the frontend.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns expected data
-- [ ] Verified via Postman / curl","2026-01-31T21:38:46Z","","lawal-mj"
+- [ ] Verified via Postman / curl","2026-01-30T21:39:53Z","lawal-mj","AI Sprint"
 59,"OPEN","F5.4: Persist call summaries and analytics","### Purpose
 Store generated insights for later retrieval.
 
@@ -708,7 +613,7 @@ Avoid regenerating analytics unnecessarily
 ### Acceptance Criteria
 
 Stored data retrievable by call ID
-Verified via logs or DB query","2026-01-31T21:38:26Z","","Mildness10"
+Verified via logs or DB query","2026-01-30T21:35:18Z","Mildness10","AI Sprint"
 58,"OPEN","F5: AI-Generated Call Summaries & Analytics","### Description
 
 Automatically generate concise summaries and analytical insights for individual agent–customer calls to reduce manual review effort and help supervisors quickly understand key outcomes of each interaction.
@@ -723,7 +628,7 @@ Automatically generate concise summaries and analytical insights for individual 
 ### Mapped Requirements
 
 - R8 – AI-generated summaries for each call
-- R9 – Visual analytics for individual calls","2026-01-31T21:37:27Z","","Mikito-Coder"
+- R9 – Visual analytics for individual calls","2026-01-30T21:24:37Z","Mikito-Coder",""
 57,"OPEN","F4.8: Add loading, empty, and error states","### Purpose
 Ensure stable UX during queries.
 
@@ -735,7 +640,7 @@ Ensure stable UX during queries.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states gracefully","2026-01-31T21:37:04Z","","iniayolawal"
+- [ ] UI handles all states gracefully","2026-01-30T20:54:36Z","iniayolawal",""
 56,"OPEN","F4.7: Connect search UI to backend API","### Purpose
 Make filtering and search functional end-to-end.
 
@@ -748,7 +653,7 @@ Make filtering and search functional end-to-end.
 ### Acceptance Criteria
 
 - [ ] Results update based on filters/search
-- [ ] Screenshot showing live query results","2026-01-31T21:36:56Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing live query results","2026-01-30T20:52:41Z","fiyinfoluwaafol",""
 55,"OPEN","F4.6: Display filtered search results","### Purpose
 Render conversation results returned by filters/search.
 
@@ -761,7 +666,7 @@ Render conversation results returned by filters/search.
 ### Acceptance Criteria
 
 - [ ] Results render correctly
-- [ ] Screenshot attached","2026-01-31T21:36:50Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T20:51:42Z","iniayolawal",""
 54,"OPEN","F4.5: Build filtering and search UI controls","### Purpose
 Allow supervisors to specify filters and search queries.
 
@@ -776,7 +681,7 @@ Allow supervisors to specify filters and search queries.
 ### Acceptance Criteria
 
 - [ ] Controls render correctly
-- [ ] Screenshot attached","2026-01-31T21:36:41Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T20:48:25Z","iniayolawal",""
 53,"OPEN","F4.4: Create filtering and search API endpoint","### Purpose
 Expose filtering and search functionality to the frontend.
 
@@ -789,7 +694,7 @@ Expose filtering and search functionality to the frontend.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns filtered/search results
-- [ ] Verified via Postman / curl","2026-01-31T21:36:29Z","","Mildness10"
+- [ ] Verified via Postman / curl","2026-01-30T20:46:05Z","Mildness10",""
 52,"OPEN","F4.3: Implement backend keyword search logic","### Purpose
 Enable text-based search across call transcripts or summaries.
 
@@ -802,7 +707,7 @@ Enable text-based search across call transcripts or summaries.
 ### Acceptance Criteria
 
 - [ ] Relevant calls returned for keyword queries
-- [ ] Non-matching calls excluded","2026-01-31T21:36:04Z","","lawal-mj"
+- [ ] Non-matching calls excluded","2026-01-30T20:45:05Z","lawal-mj",""
 51,"OPEN","F4: Advanced Filtering & Search","### Description
 
 Enable supervisors to efficiently locate relevant agent–customer interactions by filtering and searching past conversations based on agent attributes, sentiment, and keywords.
@@ -816,7 +721,7 @@ Enable supervisors to efficiently locate relevant agent–customer interactions 
 ### Mapped Requirements
 
 - R6 – Filter past conversations by agent, sentiment, or keywords
-- R7 – Search past conversations by agent, sentiment, or keywords","2026-01-31T21:35:23Z","","lawal-mj"
+- R7 – Search past conversations by agent, sentiment, or keywords","2026-01-30T20:35:25Z","lawal-mj",""
 50,"OPEN","F3.7: Add loading and empty-state handling","### Purpose
 Prevent broken or confusing trend views.
 
@@ -828,7 +733,7 @@ Prevent broken or confusing trend views.
 
 ### Acceptance Criteria
 
-- [ ] UI handles all states without crashing","2026-01-31T21:34:54Z","","iniayolawal"
+- [ ] UI handles all states without crashing","2026-01-30T20:25:35Z","iniayolawal",""
 49,"OPEN","F3.6: Connect trend charts to analytics API","### Purpose
 Make trend analytics live.
 
@@ -841,7 +746,7 @@ Make trend analytics live.
 ### Acceptance Criteria
 
 - [ ] Charts update based on selected range
-- [ ] Screenshot showing live data","2026-01-31T21:34:45Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing live data","2026-01-30T20:22:51Z","fiyinfoluwaafol",""
 48,"OPEN","F3.5: Build trend charts UI layout","### Purpose
 Create visual containers for historical analytics.
 
@@ -854,7 +759,7 @@ Create visual containers for historical analytics.
 ### Acceptance Criteria
 
 - [ ] Charts render in dashboard
-- [ ] Screenshot attached","2026-01-31T21:34:39Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T20:21:35Z","iniayolawal",""
 47,"OPEN","F3.4: Create historical analytics API endpoint","### Purpose
 Expose historical analytics to the frontend.
 
@@ -867,7 +772,7 @@ Expose historical analytics to the frontend.
 ### Acceptance Criteria
 
 - [ ] Endpoint returns correct data
-- [ ] Verified via Postman / curl","2026-01-31T21:34:24Z","","lawal-mj"
+- [ ] Verified via Postman / curl","2026-01-30T19:51:28Z","lawal-mj",""
 45,"OPEN","F3: Historical & Trend Analytics","### Description
 
 Enable supervisors to analyze historical sentiment and performance data over selectable time ranges, allowing them to track trends and evaluate changes in agent and customer interaction quality over time.
@@ -881,7 +786,7 @@ Enable supervisors to analyze historical sentiment and performance data over sel
 ### Mapped Requirements
 
 - R4 – Historical customer satisfaction metrics
-- R5 – Historical agent performance metrics","2026-01-31T21:33:29Z","","lawal-mj"
+- R5 – Historical agent performance metrics","2026-01-30T19:23:11Z","lawal-mj",""
 44,"OPEN","F2.8: Add basic alert handling UX","### Purpose
 Improve usability and demo stability.
 
@@ -893,7 +798,7 @@ Improve usability and demo stability.
 
 ### Acceptance Criteria
 
-- [ ] UI handles loading and failure gracefully","2026-01-31T21:33:05Z","","iniayolawal"
+- [ ] UI handles loading and failure gracefully","2026-01-30T19:14:09Z","iniayolawal",""
 43,"OPEN","F2.7: Connect alerts UI to alerts API","### Purpose
 Make alerts live.
 
@@ -906,7 +811,7 @@ Make alerts live.
 ### Acceptance Criteria
 
 - [ ] Alerts displayed using real API data
-- [ ] Screenshot showing populated alerts","2026-01-31T21:33:10Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing populated alerts","2026-01-30T19:12:19Z","fiyinfoluwaafol",""
 42,"OPEN","F2.3: Detect recurring issues across calls","### Purpose
 Identify issues or topics that occur repeatedly across interactions.
 
@@ -919,7 +824,7 @@ Identify issues or topics that occur repeatedly across interactions.
 ### Acceptance Criteria
 
 - [ ] Recurring issues identified for sample dataset
-- [ ] Threshold logic validated","2026-01-31T21:32:04Z","","Mikito-Coder"
+- [ ] Threshold logic validated","2026-01-30T19:02:01Z","Mikito-Coder",""
 41,"OPEN","F2.2: Detect negative sentiment during analytics processing","### Purpose
 Identify calls that meet negative sentiment criteria.
 
@@ -932,7 +837,7 @@ Identify calls that meet negative sentiment criteria.
 ### Acceptance Criteria
 
 - [ ] Calls correctly flagged based on threshold
-- [ ] Unit test or console output verifying behavior","2026-01-31T21:31:53Z","","Mikito-Coder"
+- [ ] Unit test or console output verifying behavior","2026-01-30T19:00:50Z","Mikito-Coder",""
 40,"OPEN","F2.1: Define alert types and thresholds","### Purpose
 Establish what qualifies as an alert before any logic or UI is built.
 
@@ -947,7 +852,7 @@ Establish what qualifies as an alert before any logic or UI is built.
 ### Acceptance Criteria
 
 - [ ] Alert types and thresholds documented
-- [ ] Example alert JSON included in issue description","2026-01-31T21:31:33Z","","Mildness10"
+- [ ] Example alert JSON included in issue description","2026-01-30T18:58:48Z","Mildness10",""
 39,"OPEN","F2: Sentiment & Issue Alerts","### Description
 Implement automated alerting for supervisors by detecting negative sentiment and recurring issues across agent–customer interactions. Alerts help supervisors identify and address problems early without manually reviewing calls.
 
@@ -959,7 +864,7 @@ Implement automated alerting for supervisors by detecting negative sentiment and
 
 ### Mapped Requirements
 - R2 – Automatic alerts for recurring issues
-- R3 – Automatic alerts for negative sentiment","2026-01-31T21:30:25Z","","Mildness10"
+- R3 – Automatic alerts for negative sentiment","2026-01-30T18:52:09Z","Mildness10",""
 38,"OPEN","F1.6: Add basic error & loading states","### Purpose:
 Prevent brittle demo behavior.
 
@@ -970,7 +875,7 @@ Prevent brittle demo behavior.
 
 ### Acceptance Criteria:
 
-- [ ] UI handles failure without crashing","2026-01-31T21:29:04Z","","iniayolawal"
+- [ ] UI handles failure without crashing","2026-01-30T18:44:44Z","iniayolawal",""
 37,"OPEN","F1.5: Connect dashboard UI to metrics API","### Purpose:
 Make the dashboard live.
 
@@ -983,7 +888,7 @@ Make the dashboard live.
 ### Acceptance Criteria:
 
 - [ ] Metrics displayed using API data
-- [ ] Screenshot showing live values","2026-01-31T21:25:54Z","","fiyinfoluwaafol"
+- [ ] Screenshot showing live values","2026-01-30T18:43:43Z","fiyinfoluwaafol",""
 36,"OPEN","F1.4: Create dashboard metrics UI layout","### Purpose:
 Lay out the supervisor dashboard metrics section.
 
@@ -996,7 +901,7 @@ Lay out the supervisor dashboard metrics section.
 ### Acceptance Criteria:
 
 - [ ] Dashboard renders metric cards
-- [ ] Screenshot attached","2026-01-31T21:28:49Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-30T18:42:04Z","iniayolawal",""
 34,"OPEN","F1.0: AI-Powered Interaction Dashboard","### Description
 Build a supervisor-facing dashboard that provides a high-level summary of agent–customer interactions using aggregated metrics derived from call analytics. The dashboard is intended to support quick performance assessment and standup discussions.
 
@@ -1007,7 +912,7 @@ Build a supervisor-facing dashboard that provides a high-level summary of agent�
 
 ### Mapped Requirements
 - R1 – AI-powered interaction dashboard
-- R11 – Key metrics for standups","2026-03-09T01:19:02Z","","fiyinfoluwaafol"
+- R11 – Key metrics for standups","2026-01-30T18:24:53Z","fiyinfoluwaafol",""
 29,"OPEN","F9.2: Implement agent-level analytics query logic","### Purpose
 Retrieve analytics scoped to a single agent.
 
@@ -1020,22 +925,7 @@ Retrieve analytics scoped to a single agent.
 ### Acceptance Criteria
 
 - [ ] Correct metrics returned for sample agent
-- [ ] Verified via logs or test output","2026-01-31T21:46:12Z","","Mildness10"
-28,"OPEN","F9.1: Define agent performance metrics and dashboard contract","### Purpose
-Agree on what agents see in their dashboard before querying data or building UI.
-
-### Scope
-
-- Define agent-level metrics:
-  - Sentiment trend over time
-  - Common topics / issue tags
-- Define time-range support (daily / weekly)
-- Define example API response
-
-### Acceptance Criteria
-
-- [ ] Metrics and response schema documented
-- [ ] Example output included","2026-01-31T21:45:51Z","","fiyinfoluwaafol"
+- [ ] Verified via logs or test output","2026-01-26T03:47:58Z","Mildness10",""
 27,"OPEN","F8.2: Identify and flag high-performing calls","### Purpose
 Automatically flag calls that meet “best call” criteria.
 
@@ -1048,7 +938,7 @@ Automatically flag calls that meet “best call” criteria.
 ### Acceptance Criteria
 
 - [ ] High-performing calls correctly flagged
-- [ ] Verified using sample dataset","2026-01-31T21:43:54Z","","Mikito-Coder"
+- [ ] Verified using sample dataset","2026-01-26T03:46:55Z","Mikito-Coder",""
 26,"OPEN","F8.1: Define high-performing call criteria","### Purpose
 Decide what qualifies as a “best call” before selecting or displaying any examples.
 
@@ -1061,7 +951,7 @@ Decide what qualifies as a “best call” before selecting or displaying any ex
 ### Acceptance Criteria
 
 - [ ] Criteria documented
-- [ ] Example call entry documented","2026-01-31T21:43:41Z","","iniayolawal"
+- [ ] Example call entry documented","2026-01-26T03:46:25Z","iniayolawal",""
 25,"OPEN","F7.2: Generate post-call feedback from analytics","### Purpose
 Produce feedback based on call analytics.
 
@@ -1074,7 +964,7 @@ Produce feedback based on call analytics.
 Acceptance Criteria
 
 - [ ] Feedback generated for sample calls
-- [ ] Output matches defined schema","2026-01-31T21:42:17Z","","Mikito-Coder"
+- [ ] Output matches defined schema","2026-01-26T03:45:55Z","Mikito-Coder",""
 24,"OPEN","F7.1: Define post-call feedback and coaching schema","### Purpose
 Decide what feedback looks like before generating or displaying it.
 
@@ -1090,7 +980,7 @@ Decide what feedback looks like before generating or displaying it.
 ### Acceptance Criteria
 
 - [ ] Feedback schema documented
-- [ ] Example output included","2026-01-31T21:42:08Z","","Mikito-Coder"
+- [ ] Example output included","2026-01-26T03:45:28Z","Mikito-Coder",""
 23,"OPEN","F6.2: Aggregate metrics for performance brief","### Purpose
 Compute summary metrics over a defined time window.
 
@@ -1103,7 +993,7 @@ Compute summary metrics over a defined time window.
 ### Acceptance Criteria
 
 - [ ] Aggregated metrics correct for sample periods
-- [ ] Verified via logs or test output","2026-01-31T21:39:59Z","","Mildness10"
+- [ ] Verified via logs or test output","2026-01-26T03:45:10Z","Mildness10",""
 22,"OPEN","F6.1: Define performance brief contents and cadence","### Purpose
 Decide what goes into a brief before generating anything.
 
@@ -1116,7 +1006,7 @@ Decide what goes into a brief before generating anything.
 ### Acceptance Criteria
 
 - [ ] Brief contents documented
-- [ ] Example output included","2026-01-31T21:39:48Z","","fiyinfoluwaafol"
+- [ ] Example output included","2026-01-26T03:44:50Z","fiyinfoluwaafol",""
 21,"OPEN","F5.3: Generate call-level analytics","### Purpose
 Extract structured insights from call transcripts.
 
@@ -1129,7 +1019,7 @@ Extract structured insights from call transcripts.
 ### Acceptance Criteria
 
 - [ ] Analytics generated for sample calls
-- [ ] Output matches defined schema","2026-01-31T21:38:04Z","","Mikito-Coder"
+- [ ] Output matches defined schema","2026-01-26T03:44:24Z","Mikito-Coder",""
 20,"OPEN","F5.2: Implement AI-based call summary generation","### Purpose
 Generate concise summaries from call transcripts.
 
@@ -1142,23 +1032,7 @@ Generate concise summaries from call transcripts.
 ### Acceptance Criteria
 
 - [ ] Summary generated for sample transcript
-- [ ] Output matches contract from F5-1","2026-01-31T21:37:55Z","","Mikito-Coder"
-19,"OPEN","F5.1: Define call-level summary and analytics contract","### Purpose
-Agree on what data is produced per call before invoking any AI or building UI.
-
-### Scope
-
-- Define summary fields (e.g., short paragraph, key bullet points)
-- Define analytics fields:
-  - Sentiment score
-  - Topics
-  - Issue tags
-- Define example output payload
-
-### Acceptance Criteria
-
-- [ ] Summary + analytics fields documented
-- [ ] Example JSON included","2026-03-23T14:31:16Z","","Mikito-Coder"
+- [ ] Output matches contract from F5-1","2026-01-26T03:44:12Z","Mikito-Coder","AI Sprint"
 18,"OPEN","F4.2: Implement backend filtering logic","### Purpose
 Retrieve conversations that match selected filters.
 
@@ -1173,23 +1047,7 @@ Retrieve conversations that match selected filters.
 ### Acceptance Criteria
 
 - [ ] Correct calls returned for sample filter combinations
-- [ ] Verified via test output or logs","2026-01-31T21:35:45Z","","Mildness10"
-17,"OPEN","F4.1: Define supported filters and search parameters","### Purpose
-Lock down what users can filter/search by before implementing queries or UI.
-
-### Scope
-
-- Define supported filters:
-  - Agent
-  - Sentiment score / range
-  - Keywords
-- Define query parameter format
-- Define expected response shape
-
-### Acceptance Criteria
-
-- [ ] Filters and search parameters documented
-- [ ] Example request/response included","2026-03-24T18:10:17Z","","iniayolawal,fiyinfoluwaafol"
+- [ ] Verified via test output or logs","2026-01-26T03:43:23Z","Mildness10",""
 16,"OPEN","F3.3: Implement time-range analytics query logic","### Purpose
 Retrieve historical analytics for a given date range.
 
@@ -1202,7 +1060,7 @@ Retrieve historical analytics for a given date range.
 ### Acceptance Criteria
 
 - [ ] Correct data returned for sample ranges
-- [ ] Output structure supports charting","2026-01-31T21:34:06Z","","Mildness10"
+- [ ] Output structure supports charting","2026-01-26T03:42:48Z","Mildness10",""
 15,"OPEN","F3.2: Persist historical analytics metrics","### Purpose
 Store analytics data in a way that supports trend analysis.
 
@@ -1215,20 +1073,7 @@ Store analytics data in a way that supports trend analysis.
 ### Acceptance Criteria
 
 - [ ] Historical records persisted
-- [ ] Sample dataset verified in DB or logs","2026-01-31T21:33:55Z","","lawal-mj"
-14,"OPEN","F3.1: Define historical metrics and time granularity","### Purpose
-Decide what data is stored historically and at what resolution before building storage or charts.
-
-### Scope
-
-- Define historical metrics (e.g., sentiment avg, call count, negative rate)
-- Define aggregation granularity (daily, weekly)
-- Define expected query inputs (start date, end date)
-
-### Acceptance Criteria
-
-- [ ] Metrics list documented
-- [ ] Example time-range query documented","2026-03-23T14:57:25Z","","iniayolawal,fiyinfoluwaafol"
+- [ ] Sample dataset verified in DB or logs","2026-01-26T03:41:44Z","lawal-mj",""
 13,"OPEN","F2.6: Build alerts UI section in dashboard","### Purpose
 Allow supervisors to view alerts in one place.
 
@@ -1241,7 +1086,7 @@ Allow supervisors to view alerts in one place.
 ### Acceptance Criteria
 
 - [ ] Alerts section renders in dashboard
-- [ ] Screenshot attached","2026-01-31T21:32:46Z","","iniayolawal"
+- [ ] Screenshot attached","2026-01-26T03:40:16Z","iniayolawal",""
 12,"OPEN","F2.5: Create alerts API endpoint","### Purpose
 Expose alerts to the frontend.
 
@@ -1254,7 +1099,7 @@ Expose alerts to the frontend.
 ### Acceptance Criteria
 
 - [ ] API returns alert list
-- [ ] Verified via Postman / curl","2026-01-31T21:32:31Z","","Mildness10"
+- [ ] Verified via Postman / curl","2026-01-26T03:39:30Z","Mildness10",""
 11,"OPEN","F2.4: Persist alert records","### Purpose
 Store generated alerts for later retrieval and display.
 
@@ -1267,7 +1112,7 @@ Store generated alerts for later retrieval and display.
 Acceptance ### Criteria
 
 - [ ] Alerts saved and retrievable
-- [ ] Duplicate alerts handled gracefully","2026-01-31T21:32:14Z","","Mildness10"
+- [ ] Duplicate alerts handled gracefully","2026-01-26T03:38:27Z","Mildness10",""
 10,"OPEN","F1.2: Implement dashboard metrics aggregation logic","### Purpose:
 Compute summary metrics from stored call analytics.
 
@@ -1280,4 +1125,4 @@ Compute summary metrics from stored call analytics.
 - [ ] Function returns correct metrics for sample dataset
 - [ ] Unit test or console output proving correctness
 
-Depends on: #4 ","2026-01-31T21:28:25Z","","lawal-mj"
+Depends on: #4 ","2026-01-26T03:37:22Z","lawal-mj",""
