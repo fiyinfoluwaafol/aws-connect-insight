@@ -1,15 +1,33 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth-store";
 
 const Index = () => {
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
+  const location = useLocation();
+
+  if (location.hash || location.search) {
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const searchParams = new URLSearchParams(location.search);
+    
+    if (
+      (hashParams.get('type') === 'recovery' && hashParams.get('access_token')) ||
+      (searchParams.get('type') === 'recovery' && searchParams.get('access_token')) ||
+      hashParams.get('access_token') || 
+      searchParams.get('access_token')
+    ) {
+      const suffix = location.hash || location.search;
+      return <Navigate to={`/reset-password${suffix}`} replace />;
+    }
+  }
   
-  // If no user logged in, redirect to sign in
+  if (isLoading) {
+    return null; // Wait for auth hydration to complete
+  }
+  
   if (!user) {
     return <Navigate to="/signin" replace />;
   }
   
-  // Redirect based on role
   if (user.role === 'supervisor') {
     return <Navigate to="/supervisor" replace />;
   }

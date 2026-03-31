@@ -7,10 +7,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { seedInitialData } from "@/lib/seed";
 import { ThemeProvider } from "@/components/theme-provider";
+import { useAuthStore } from "@/stores/auth-store";
 
 // Pages
 import Index from "./pages/Index";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Supervisor pages
@@ -30,6 +34,16 @@ import AgentNotifications from "./pages/agent/Notifications";
 
 const queryClient = new QueryClient();
 
+function AuthInitializer({ children }: { children: React.ReactNode }) {
+  const initAuth = useAuthStore((state) => state.initAuth);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  return <>{children}</>;
+}
+
 const App = () => {
   // Seed initial data on app load
   useEffect(() => {
@@ -43,47 +57,52 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/signin" element={<SignIn />} />
+            <AuthInitializer>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* Supervisor routes */}
-              <Route
-                path="/supervisor"
-                element={
-                  <ProtectedRoute allowedRole="supervisor">
-                    <SupervisorLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<SupervisorOverview />} />
-                <Route path="overview" element={<SupervisorOverview />} />
-                <Route path="alerts" element={<SupervisorAlerts />} />
-                <Route path="search" element={<SupervisorSearch />} />
-                <Route path="briefs" element={<SupervisorBriefs />} />
-                <Route path="settings" element={<SupervisorSettings />} />
-              </Route>
+                {/* Supervisor routes */}
+                <Route
+                  path="/supervisor"
+                  element={
+                    <ProtectedRoute allowedRole="supervisor">
+                      <SupervisorLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<SupervisorOverview />} />
+                  <Route path="overview" element={<SupervisorOverview />} />
+                  <Route path="alerts" element={<SupervisorAlerts />} />
+                  <Route path="search" element={<SupervisorSearch />} />
+                  <Route path="briefs" element={<SupervisorBriefs />} />
+                  <Route path="settings" element={<SupervisorSettings />} />
+                </Route>
 
-              {/* Agent routes */}
-              <Route
-                path="/agent"
-                element={
-                  <ProtectedRoute allowedRole="agent">
-                    <AgentLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<AgentHome />} />
-                <Route path="home" element={<AgentHome />} />
-                <Route path="performance" element={<AgentPerformance />} />
-                <Route path="exemplars" element={<AgentExemplars />} />
-                <Route path="notifications" element={<AgentNotifications />} />
-              </Route>
+                {/* Agent routes */}
+                <Route
+                  path="/agent"
+                  element={
+                    <ProtectedRoute allowedRole="agent">
+                      <AgentLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<AgentHome />} />
+                  <Route path="home" element={<AgentHome />} />
+                  <Route path="performance" element={<AgentPerformance />} />
+                  <Route path="exemplars" element={<AgentExemplars />} />
+                  <Route path="notifications" element={<AgentNotifications />} />
+                </Route>
 
-              {/* Catch-all 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* Catch-all 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthInitializer>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

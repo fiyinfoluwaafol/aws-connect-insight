@@ -22,10 +22,14 @@ export function AppHeader({ title, subtitle, actions }: AppHeaderProps) {
   const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await signOut();
     navigate('/signin');
   };
+
+  const userDisplayName = user
+    ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`.trim()
+    : '';
 
   return (
     <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50 sticky top-0 z-50">
@@ -49,7 +53,7 @@ export function AppHeader({ title, subtitle, actions }: AppHeaderProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
                     <User className="h-4 w-4" />
-                    {user.name}
+                    {userDisplayName || user.email}
                     <Badge variant="secondary" className="ml-1 text-xs">
                       {user.role}
                     </Badge>
