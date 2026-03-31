@@ -1,6 +1,6 @@
 # Sprint Plan: Core Call Analytics Pipeline
 
-> **Status:** Team-refined — two tasks per person  
+> **Status:** Human-reviewed
 > **Updated:** 2026-03-30  
 > **Based on:** Open issues from `issues.csv`, sprint direction from `core-call-analytics-endpoint-issues.md`, API contracts from `dashboard-api-endpoints.md`, and database schema from `datamodel-schema.md`
 
@@ -58,11 +58,7 @@ The product needs a real data path from transcripts to stored analytics and auth
 
 ---
 
-### Ini — Pipeline specifications (not UI-only)
-
-Ini’s issues are **specification and contract work** for the analytics pipeline: they define what gets stored over time (#14) and how search/filter APIs should behave (#17). This is core pipeline design—schemas, metrics lists, and request/response examples—not frontend implementation.
-
-Optional **small add-ons** Ini can pick up if time allows (same issues, no new tickets): review #19/#28 for consistency, add a **cross-reference table** in the team doc (metric → table/field), or draft **example SQL** or query sketches that implement #14’s granularity—still within pipeline analytics, not a separate UI epic.
+### Ini — Pipeline specifications
 
 | # | Issue | Short description | Dependencies | Expected deliverable |
 |---|-------|-------------------|--------------|----------------------|
