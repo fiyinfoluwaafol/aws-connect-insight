@@ -41,6 +41,9 @@ By the end of this sprint, the team should be able to show:
 - `#61` `F5.6: Build call-level analytics UI layout`
 - `#62` `F5.7: Connect call analytics UI to backend API`
 - `#63` `F5.8: Add loading, empty, and error states`
+- `#78` `F9.4: Build agent performance dashboard UI layout` `(optional)`
+- `#79` `F9.5: Connect agent dashboard UI to backend API` `(optional)`
+- `#80` `F9.6: Add loading, empty, and error states` `(optional)`
 
 ### Out Of Scope
 
@@ -48,12 +51,6 @@ By the end of this sprint, the team should be able to show:
 - exemplars
 - notifications
 - creating duplicate issues for work already covered above
-
-### If Time Permits
-
-- `#78` `F9.4: Build agent performance dashboard UI layout`
-- `#79` `F9.5: Connect agent dashboard UI to backend API`
-- `#80` `F9.6: Add loading, empty, and error states`
 
 ## Execution Order
 
@@ -65,7 +62,7 @@ The team should execute in this order to avoid rework:
 4. Build supervisor and agent aggregation logic in `#10` and `#29`.
 5. Wire backend endpoints in `#60`, `#47`, and `#77`.
 6. Wire the supervisor UI to live metrics, trends, and call analytics using `#36` to `#63`.
-7. If the supervisor path is stable, wire the basic agent performance UI with `#78` to `#80`.
+7. If the supervisor path is stable, pick up optional agent UI wiring in `#78` to `#80`.
 8. Run an end-to-end demo using seeded or sample calls.
 
 ## Team Assignments
@@ -74,39 +71,30 @@ This is the recommended sprint split for the current team. If GitHub assignees d
 
 | Team member | Primary ownership | Issues | Sprint deliverable |
 | --- | --- | --- | --- |
-| `fiyinfoluwaafol` | Sprint coordination, ingestion direction, supervisor API wiring | `#128`, `#10`, `#37`, `#49`, `#62` | MVP ingestion recommendation plus live supervisor screens for dashboard metrics, trends, and call analytics |
+| `fiyinfoluwaafol` | Sprint coordination, ingestion direction, supervisor API wiring | `#128`, `#37`, `#49`, `#62`, `#79` `(optional)` | MVP ingestion recommendation plus live supervisor screens for dashboard metrics, trends, and call analytics, with agent UI connection only if the core sprint work is already stable |
 | `Mikito-Coder` | Call-level analytics generation and call analytics API | `#21`, `#60` | Structured analytics generated from transcripts and a working call-level analytics endpoint |
-| `lawal-mj` | Historical storage, time-range queries, trends endpoint | `#15`, `#16`, `#47` | Historical analytics persisted, queryable by range, and exposed through a backend trends endpoint |
-| `Mildness10` | Persistence path and agent analytics | `#59`, `#29`, `#77` | Call analytics persisted for reuse and agent performance query plus endpoint working from stored data |
-| `iniayolawal` | Supervisor UI layouts and frontend states | `#36`, `#38`, `#48`, `#50`, `#61`, `#63` | Dashboard, trends, and call analytics screens ready for live wiring with stable loading and empty states |
-
-## If Time Permits
-
-Once the core backend path and supervisor wiring are stable:
-
-- `iniayolawal` takes `#78` and `#80` for the basic agent performance UI layout and states
-- `fiyinfoluwaafol` takes `#79` to connect the agent dashboard to the backend
-- `Mildness10` closes the loop by pairing `#79` against the live output from `#77`
+| `lawal-mj` | Backend aggregation, historical storage, and trends APIs | `#10`, `#15`, `#47` | Supervisor metrics aggregation plus historical analytics persisted and exposed through the trends endpoint |
+| `Mildness10` | Persistence path and agent analytics | `#59`, `#16`, `#29`, `#77` | Call analytics persisted for reuse, shared time-range query logic implemented, and agent performance query plus endpoint working from stored data |
+| `iniayolawal` | Supervisor UI layouts and frontend states | `#36`, `#38`, `#48`, `#50`, `#61`, `#63`, `#78` `(optional)`, `#80` `(optional)` | Dashboard, trends, and call analytics screens ready for live wiring with stable loading and empty states, plus basic agent UI polish if time permits |
 
 ## Workstream Details
 
 ### 1. Ingestion And Sprint Coordination
 
 **Owner:** `fiyinfoluwaafol`  
-**Issues:** `#128`, `#10`, `#37`, `#49`, `#62`
+**Issues:** `#128`, `#37`, `#49`, `#62`, `#79` `(optional)`
 
 **Responsibilities**
 
 - document the recommended MVP path for getting real call data into the backend
 - define what minimum metadata the rest of the pipeline can rely on
-- implement dashboard metrics aggregation once the historical query path is stable
 - wire supervisor metrics, trend charts, and call analytics screens to live APIs
+- wire the agent performance screen only if the supervisor path is already stable
 
 **Done when**
 
 - the team has one agreed ingestion recommendation
 - the required metadata list is explicit
-- dashboard metrics compute correctly from stored analytics for a sample dataset
 - the supervisor frontend is reading live backend analytics instead of mocks
 
 ### 2. Call Analytics Generation Path
@@ -126,19 +114,20 @@ Once the core backend path and supervisor wiring are stable:
 - the call analytics endpoint returns expected fields for processed calls
 - the endpoint has clear behavior for missing data
 
-### 3. Historical Storage And Supervisor Trends
+### 3. Backend Aggregation And Historical Trends
 
 **Owner:** `lawal-mj`  
-**Issues:** `#15`, `#16`, `#47`
+**Issues:** `#10`, `#15`, `#47`
 
 **Responsibilities**
 
+- compute dashboard metrics from stored call analytics
 - persist analytics in a form that supports time-based grouping
-- implement reusable time-range query logic for daily or weekly chart outputs
 - expose historical analytics to the backend consumer through a trends endpoint
 
 **Done when**
 
+- dashboard metrics compute correctly from a sample dataset
 - historical records can be grouped by date range
 - sample queries return chart-friendly data
 - the trends endpoint works for valid ranges and fails cleanly for invalid ones
@@ -146,30 +135,33 @@ Once the core backend path and supervisor wiring are stable:
 ### 4. Persistence And Agent Performance
 
 **Owner:** `Mildness10`  
-**Issues:** `#59`, `#29`, `#77`
+**Issues:** `#59`, `#16`, `#29`, `#77`
 
 **Responsibilities**
 
 - persist per-call summaries and analytics without unnecessary regeneration
+- implement reusable time-range query logic that downstream aggregations can share
 - implement agent-scoped analytics queries from stored data
 - expose agent performance through a backend endpoint with correct empty-state handling
 
 **Done when**
 
 - stored analytics are retrievable by call ID
+- time-range queries return stable chart-friendly data
 - agent metrics compute correctly for a sample agent
 - the agent performance endpoint returns live backend data rather than mocks
 
 ### 5. Supervisor UI Layouts And States
 
 **Owner:** `iniayolawal`  
-**Issues:** `#36`, `#38`, `#48`, `#50`, `#61`, `#63`
+**Issues:** `#36`, `#38`, `#48`, `#50`, `#61`, `#63`, `#78` `(optional)`, `#80` `(optional)`
 
 **Responsibilities**
 
 - build the supervisor-facing layouts for dashboard metrics, trend charts, and call analytics
 - provide loading, empty, and basic error states that make live wiring safe for demos
 - keep the frontend ready for API connection work without waiting on final backend polish
+- build the basic agent performance layout and states only if the supervisor flow is already wired
 
 **Done when**
 
@@ -212,4 +204,4 @@ The sprint is successful if the team can run one demo flow end to end:
 5. Call the call-level analytics endpoint from `#60`.
 6. Call the agent performance endpoint from `#77`.
 7. Show the supervisor dashboard using live data through `#37`, `#49`, and `#62`.
-8. If time permits, show the basic agent performance screen wired through `#78`, `#79`, and `#80`.
+8. If optional work landed, show the basic agent performance screen wired through `#78`, `#79`, and `#80`.
