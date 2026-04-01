@@ -251,7 +251,7 @@ def add_team_member(
         # Add agent to team
         add_agent_to_team(db_client, request.agent_id, team_id)
 
-        return MessageResponse(message=f"Agent added to team successfully")
+        return MessageResponse(message="Agent added to team successfully")
 
     except NotFoundError as exc:
         raise HTTPException(
@@ -306,10 +306,7 @@ def remove_team_member(
 
         # Remove agent from team by setting team_id to null
         result = (
-            db_client.table(Tables.USERS)
-            .update({"team_id": None})
-            .eq("id", agent_id)
-            .execute()
+            db_client.table(Tables.USERS).update({"team_id": None}).eq("id", agent_id).execute()
         )
 
         if not result.data:

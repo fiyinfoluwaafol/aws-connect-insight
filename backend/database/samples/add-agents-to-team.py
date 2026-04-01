@@ -3,10 +3,12 @@
 Quick script to add agents to a supervisor's team.
 
 Usage:
-    python backend/database/samples/add-agents-to-team.py <supervisor_email> <agent_email1> [agent_email2] [agent_email3] ...
+    python backend/database/samples/add-agents-to-team.py <supervisor_email> \\
+        <agent_email1> [agent_email2] [agent_email3] ...
 
 Example:
-    python backend/database/samples/add-agents-to-team.py supervisor@example.com agent1@example.com agent2@example.com
+    python backend/database/samples/add-agents-to-team.py supervisor@example.com \\
+        agent1@example.com agent2@example.com
 """
 
 import os
@@ -21,8 +23,7 @@ project_root = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(project_root / ".env")
 
 supabase = create_client(
-    os.environ.get("SUPABASE_URL"),
-    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 )
 
 
@@ -40,7 +41,10 @@ def add_agents_to_team(supervisor_email: str, agent_emails: list[str]):
     supervisor = result.data[0]
 
     if supervisor.get("role") != "supervisor":
-        print(f"❌ Error: User {supervisor_email} is not a supervisor (role: {supervisor.get('role')})")
+        print(
+            f"❌ Error: User {supervisor_email} is not a supervisor "
+            f"(role: {supervisor.get('role')})"
+        )
         sys.exit(1)
 
     team_id = supervisor.get("team_id")
@@ -70,25 +74,29 @@ def add_agents_to_team(supervisor_email: str, agent_emails: list[str]):
         # Check if already in a team
         if agent.get("team_id"):
             if agent["team_id"] == team_id:
-                print(f"    ⚠️  Already in this team")
+                print("    ⚠️  Already in this team")
             else:
                 print(f"    ⚠️  Already in another team (ID: {agent['team_id']})")
             continue
 
         # Add to team
-        supabase.table("users").update({
-            "team_id": team_id
-        }).eq("id", agent["id"]).execute()
+        supabase.table("users").update({"team_id": team_id}).eq("id", agent["id"]).execute()
 
         print(f"    ✓ Added: {agent.get('first_name', 'N/A')} {agent.get('last_name', 'N/A')}")
 
-    print(f"\n✅ Done! Agents added to team.")
+    print("\n✅ Done! Agents added to team.")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python add-agents-to-team.py <supervisor_email> <agent_email1> [agent_email2] ...")
-        print("Example: python add-agents-to-team.py supervisor@example.com agent1@example.com agent2@example.com")
+        print(
+            "Usage: python add-agents-to-team.py <supervisor_email> "
+            "<agent_email1> [agent_email2] ..."
+        )
+        print(
+            "Example: python add-agents-to-team.py supervisor@example.com "
+            "agent1@example.com agent2@example.com"
+        )
         sys.exit(1)
 
     supervisor_email = sys.argv[1]

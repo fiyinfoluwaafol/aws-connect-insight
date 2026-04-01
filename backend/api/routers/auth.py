@@ -160,7 +160,9 @@ def register(
             team = create_team(auth_client, name=team_name, supervisor_id=user.id)
 
             # Update the user's team_id
-            auth_client.table(Tables.USERS).update({"team_id": team["id"]}).eq("id", user.id).execute()
+            auth_client.table(Tables.USERS).update({"team_id": team["id"]}).eq(
+                "id", user.id
+            ).execute()
 
             # Update the returned user object with the team_id
             user = get_current_user_profile(auth_client, user_id=user.id, email=user.email)

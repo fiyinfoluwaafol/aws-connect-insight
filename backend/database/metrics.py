@@ -12,7 +12,6 @@ from supabase import Client
 from .constants import Tables
 from .decorators import db_operation
 
-
 # Maximum rows to fetch per query. Supabase defaults to 1000.
 # For larger datasets, consider pre-computed rollups.
 MAX_QUERY_ROWS = 10000
@@ -53,7 +52,10 @@ def get_daily_metrics(
     # Build query for calls with their analyses
     query = (
         client.table(Tables.CALLS)
-        .select(f"started_at, duration_seconds, agent_id, team_id, {Tables.CALL_ANALYSES}(sentiment_score, sentiment_label)")
+        .select(
+            f"started_at, duration_seconds, agent_id, team_id, "
+            f"{Tables.CALL_ANALYSES}(sentiment_score, sentiment_label)"
+        )
         .gte("started_at", date_from.isoformat())
         .lte("started_at", f"{date_to.isoformat()}T23:59:59")
         .limit(MAX_QUERY_ROWS)
@@ -67,13 +69,15 @@ def get_daily_metrics(
     result = query.execute()
 
     # Group data by date and compute aggregates
-    daily_data = defaultdict(lambda: {
-        "sentiment_scores": [],
-        "durations": [],
-        "negative_count": 0,
-        "analyzed_count": 0,
-        "total_count": 0,
-    })
+    daily_data = defaultdict(
+        lambda: {
+            "sentiment_scores": [],
+            "durations": [],
+            "negative_count": 0,
+            "analyzed_count": 0,
+            "total_count": 0,
+        }
+    )
 
     for call in result.data or []:
         if not call.get("started_at"):
@@ -103,13 +107,17 @@ def get_daily_metrics(
         day = daily_data[call_date]
         analyzed = day["analyzed_count"]
 
-        metrics.append({
-            "date": call_date,
-            "call_count": day["total_count"],
-            "avg_sentiment": _safe_average(day["sentiment_scores"]),
-            "avg_duration": _safe_average(day["durations"], as_int=True),
-            "negative_call_percent": round((day["negative_count"] / analyzed) * 100, 1) if analyzed > 0 else 0.0,
-        })
+        metrics.append(
+            {
+                "date": call_date,
+                "call_count": day["total_count"],
+                "avg_sentiment": _safe_average(day["sentiment_scores"]),
+                "avg_duration": _safe_average(day["durations"], as_int=True),
+                "negative_call_percent": round((day["negative_count"] / analyzed) * 100, 1)
+                if analyzed > 0
+                else 0.0,
+            }
+        )
 
     return metrics
 
@@ -148,7 +156,10 @@ def get_metrics_summary(
     # Build query for calls with their analyses
     query = (
         client.table(Tables.CALLS)
-        .select(f"started_at, duration_seconds, {Tables.CALL_ANALYSES}(sentiment_score, sentiment_label)")
+        .select(
+            f"started_at, duration_seconds, "
+            f"{Tables.CALL_ANALYSES}(sentiment_score, sentiment_label)"
+        )
         .gte("started_at", date_from.isoformat())
         .lte("started_at", f"{date_to.isoformat()}T23:59:59")
         .limit(MAX_QUERY_ROWS)
@@ -193,7 +204,9 @@ def get_metrics_summary(
         "total_calls": total_calls,
         "avg_sentiment": _safe_average(sentiment_scores),
         "avg_duration": _safe_average(durations, as_int=True),
-        "negative_call_percent": round((negative_count / analyzed_calls) * 100, 1) if analyzed_calls > 0 else 0.0,
+        "negative_call_percent": round((negative_count / analyzed_calls) * 100, 1)
+        if analyzed_calls > 0
+        else 0.0,
         "sentiment_distribution": sentiment_counts,
     }
 
@@ -242,10 +255,7 @@ def get_top_topics(
 
     # Get analyses for these calls
     analyses_result = (
-        client.table(Tables.CALL_ANALYSES)
-        .select("id")
-        .in_("call_id", call_ids)
-        .execute()
+        client.table(Tables.CALL_ANALYSES).select("id").in_("call_id", call_ids).execute()
     )
     analysis_ids = [a["id"] for a in analyses_result.data or []]
 
@@ -344,12 +354,14 @@ def get_agent_stats(
     # Convert to output format
     stats = []
     for agent in agent_data.values():
-        stats.append({
-            "agent_id": agent["agent_id"],
-            "name": agent["name"],
-            "call_count": agent["call_count"],
-            "avg_sentiment": _safe_average(agent["sentiment_scores"]),
-        })
+        stats.append(
+            {
+                "agent_id": agent["agent_id"],
+                "name": agent["name"],
+                "call_count": agent["call_count"],
+                "avg_sentiment": _safe_average(agent["sentiment_scores"]),
+            }
+        )
 
     # Sort by call count descending
     stats.sort(key=lambda x: x["call_count"], reverse=True)

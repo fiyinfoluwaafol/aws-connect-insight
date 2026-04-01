@@ -12,7 +12,6 @@ from pydantic import BaseModel
 
 from api.dependencies import get_current_user, get_supabase_client
 from database.constants import Tables
-from database.exceptions import DatabaseError
 
 router = APIRouter()
 
@@ -207,7 +206,10 @@ def get_agent_performance(
     avg_sentiment = round(sum(sentiments) / len(sentiments), 2) if sentiments else 0.0
 
     # Log for debugging
-    print(f"Agent {agent_id}: {total_calls} calls, {len(sentiments)} with sentiment, avg: {avg_sentiment}")
+    print(
+        f"Agent {agent_id}: {total_calls} calls, "
+        f"{len(sentiments)} with sentiment, avg: {avg_sentiment}"
+    )
 
     # Calculate percentile within team
     # Query all agents in the team and their average sentiment
@@ -245,9 +247,7 @@ def get_agent_performance(
                 agent_sentiments[call_agent_id].append(sentiment_score)
 
     # Calculate average sentiment for each agent
-    team_averages = [
-        sum(scores) / len(scores) for scores in agent_sentiments.values() if scores
-    ]
+    team_averages = [sum(scores) / len(scores) for scores in agent_sentiments.values() if scores]
 
     # Calculate percentile (what % of team this agent outperforms)
     if team_averages and avg_sentiment > 0:
@@ -266,9 +266,7 @@ def get_agent_performance(
 
         # Filter calls for this specific day
         day_calls = [
-            call
-            for call in agent_calls
-            if call["started_at"].startswith(day_date.isoformat())
+            call for call in agent_calls if call["started_at"].startswith(day_date.isoformat())
         ]
 
         # Calculate sentiment for the day
@@ -287,9 +285,7 @@ def get_agent_performance(
                     day_sentiments.append(sentiment_score)
 
         day_avg_sentiment = (
-            round(sum(day_sentiments) / len(day_sentiments), 2)
-            if day_sentiments
-            else 0.0
+            round(sum(day_sentiments) / len(day_sentiments), 2) if day_sentiments else 0.0
         )
 
         weekly_trend.append(

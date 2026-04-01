@@ -3,10 +3,12 @@
 Generate sample call data for specific agents.
 
 Usage:
-    python backend/database/samples/generate-sample-calls.py <agent_email> <num_calls> [agent_email2] [num_calls2] ...
+    python backend/database/samples/generate-sample-calls.py <agent_email> \\
+        <num_calls> [agent_email2] [num_calls2] ...
 
 Example:
-    python backend/database/samples/generate-sample-calls.py agent1@example.com 20 agent2@example.com 15
+    python backend/database/samples/generate-sample-calls.py \\
+        agent1@example.com 20 agent2@example.com 15
 """
 
 import os
@@ -23,8 +25,7 @@ project_root = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(project_root / ".env")
 
 supabase = create_client(
-    os.environ.get("SUPABASE_URL"),
-    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 )
 
 # Sample data templates
@@ -36,7 +37,7 @@ TOPICS = [
     "cancellation-request",
     "upgrade-request",
     "complaint",
-    "general-inquiry"
+    "general-inquiry",
 ]
 
 SUMMARIES = {
@@ -57,7 +58,7 @@ SUMMARIES = {
         "Difficult conversation. Customer unhappy with current service limitations.",
         "Customer expressed dissatisfaction. Issue requires escalation.",
         "Challenging call. Customer remained upset despite attempted resolution.",
-    ]
+    ],
 }
 
 
@@ -76,7 +77,7 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
     team_id = agent.get("team_id")
 
     if not team_id:
-        print(f"❌ Error: Agent is not assigned to a team")
+        print("❌ Error: Agent is not assigned to a team")
         return 0
 
     print(f"✓ Found agent: {agent['first_name']} {agent['last_name']}")
@@ -89,15 +90,16 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
     for i in range(num_calls):
         # Random date within last 14 days
         days_ago = random.randint(0, 13)
-        call_time = today - timedelta(days=days_ago, hours=random.randint(0, 8), minutes=random.randint(0, 59))
+        call_time = today - timedelta(
+            days=days_ago, hours=random.randint(0, 8), minutes=random.randint(0, 59)
+        )
 
         # Random duration between 2-20 minutes
         duration = random.randint(120, 1200)
 
         # Random sentiment (weighted towards neutral/positive)
         sentiment_type = random.choices(
-            ["positive", "neutral", "negative"],
-            weights=[0.4, 0.4, 0.2]
+            ["positive", "neutral", "negative"], weights=[0.4, 0.4, 0.2]
         )[0]
 
         if sentiment_type == "positive":
@@ -108,24 +110,41 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
             sentiment_score = random.uniform(-1.0, -0.3)
 
         # Create call
-        call = supabase.table("calls").insert({
-            "agent_id": agent["id"],
-            "team_id": team_id,
-            "recording_url": f"https://example.com/recordings/call-{random.randint(10000, 99999)}.mp3",
-            "duration_seconds": duration,
-            "started_at": call_time.isoformat(),
-        }).execute().data[0]
+        call = (
+            supabase.table("calls")
+            .insert(
+                {
+                    "agent_id": agent["id"],
+                    "team_id": team_id,
+                    "recording_url": (
+                        f"https://example.com/recordings/"
+                        f"call-{random.randint(10000, 99999)}.mp3"
+                    ),
+                    "duration_seconds": duration,
+                    "started_at": call_time.isoformat(),
+                }
+            )
+            .execute()
+            .data[0]
+        )
 
         # Create call analysis
         summary = random.choice(SUMMARIES[sentiment_type])
 
-        analysis = supabase.table("call_analyses").insert({
-            "call_id": call["id"],
-            "summary": summary,
-            "sentiment_score": round(sentiment_score, 3),
-            "sentiment_label": sentiment_type,
-            "is_resolved": sentiment_type != "negative" or random.random() > 0.5,
-        }).execute().data[0]
+        analysis = (
+            supabase.table("call_analyses")
+            .insert(
+                {
+                    "call_id": call["id"],
+                    "summary": summary,
+                    "sentiment_score": round(sentiment_score, 3),
+                    "sentiment_label": sentiment_type,
+                    "is_resolved": sentiment_type != "negative" or random.random() > 0.5,
+                }
+            )
+            .execute()
+            .data[0]
+        )
 
         # Add 1-3 random topics to the analysis
         num_topics = random.randint(1, 3)
@@ -133,17 +152,16 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
 
         for topic_name in selected_topics:
             # Get or create topic
-            topic_result = supabase.table("topics").upsert(
-                {"name": topic_name},
-                on_conflict="name"
-            ).execute()
+            topic_result = (
+                supabase.table("topics").upsert({"name": topic_name}, on_conflict="name").execute()
+            )
             topic = topic_result.data[0]
 
             # Link topic to analysis
-            supabase.table("call_analysis_topics").upsert({
-                "call_analysis_id": analysis["id"],
-                "topic_id": topic["id"]
-            }, on_conflict="call_analysis_id,topic_id").execute()
+            supabase.table("call_analysis_topics").upsert(
+                {"call_analysis_id": analysis["id"], "topic_id": topic["id"]},
+                on_conflict="call_analysis_id,topic_id",
+            ).execute()
 
     print(f"✓ Generated {num_calls} calls for {agent['first_name']} {agent['last_name']}")
     return num_calls
@@ -151,8 +169,14 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or len(sys.argv) % 2 != 1:
-        print("Usage: python generate-sample-calls.py <agent_email> <num_calls> [agent_email2] [num_calls2] ...")
-        print("Example: python generate-sample-calls.py agent1@example.com 20 agent2@example.com 15")
+        print(
+            "Usage: python generate-sample-calls.py <agent_email> <num_calls> "
+            "[agent_email2] [num_calls2] ..."
+        )
+        print(
+            "Example: python generate-sample-calls.py agent1@example.com 20 "
+            "agent2@example.com 15"
+        )
         sys.exit(1)
 
     # Parse agent email and count pairs
@@ -162,7 +186,9 @@ if __name__ == "__main__":
         num_calls = int(sys.argv[i + 1])
 
         if num_calls < 1 or num_calls > 100:
-            print(f"❌ Error: num_calls must be between 1 and 100 (got {num_calls} for {agent_email})")
+            print(
+                f"❌ Error: num_calls must be between 1 and 100 (got {num_calls} for {agent_email})"
+            )
             sys.exit(1)
 
         agents_to_generate.append((agent_email, num_calls))
@@ -176,4 +202,4 @@ if __name__ == "__main__":
         total_calls += calls_generated
 
     print(f"\n✅ Done! Generated {total_calls} total calls with analyses and topics.")
-    print(f"Refresh your dashboard to see the data!")
+    print("Refresh your dashboard to see the data!")

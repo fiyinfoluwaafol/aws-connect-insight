@@ -7,7 +7,6 @@ from unittest.mock import MagicMock
 from database import metrics as metrics_helpers
 from database.constants import Tables
 
-
 # =============================================================================
 # get_daily_metrics tests
 # =============================================================================
@@ -17,33 +16,37 @@ def test_get_daily_metrics_aggregates_by_date() -> None:
     """get_daily_metrics should group calls by date and compute aggregates."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        # Day 1: Two calls (both analyzed)
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-        {
-            "started_at": "2026-03-01T14:00:00",
-            "duration_seconds": 200,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
-        },
-        # Day 2: One call
-        {
-            "started_at": "2026-03-02T09:00:00",
-            "duration_seconds": 400,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.2, "sentiment_label": "neutral"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            # Day 1: Two calls (both analyzed)
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": "2026-03-01T14:00:00",
+                "duration_seconds": 200,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
+            },
+            # Day 2: One call
+            {
+                "started_at": "2026-03-02T09:00:00",
+                "duration_seconds": 400,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.2, "sentiment_label": "neutral"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -75,7 +78,9 @@ def test_get_daily_metrics_filters_by_team() -> None:
     client = MagicMock()
 
     mock_query = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value = mock_query
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value
+    ) = mock_query
     mock_query.eq.return_value.execute.return_value = SimpleNamespace(data=[])
 
     metrics_helpers.get_daily_metrics(
@@ -93,7 +98,9 @@ def test_get_daily_metrics_filters_by_agent() -> None:
     client = MagicMock()
 
     mock_query = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value = mock_query
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value
+    ) = mock_query
     mock_query.eq.return_value.execute.return_value = SimpleNamespace(data=[])
 
     metrics_helpers.get_daily_metrics(
@@ -109,7 +116,11 @@ def test_get_daily_metrics_filters_by_agent() -> None:
 def test_get_daily_metrics_returns_empty_for_no_data() -> None:
     """get_daily_metrics should return empty list when no calls found."""
     client = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = SimpleNamespace(data=[])
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = SimpleNamespace(
+        data=[]
+    )
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -124,17 +135,21 @@ def test_get_daily_metrics_handles_missing_analysis() -> None:
     """get_daily_metrics should handle calls without analysis data."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: None,  # No analysis
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: None,  # No analysis
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -153,17 +168,21 @@ def test_get_daily_metrics_handles_missing_duration() -> None:
     """get_daily_metrics should handle calls without duration."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": None,  # No duration
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": None,  # No duration
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -184,25 +203,29 @@ def test_get_metrics_summary_computes_totals() -> None:
     """get_metrics_summary should compute aggregates across all calls."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.6, "sentiment_label": "positive"},
-        },
-        {
-            "started_at": "2026-03-01T14:00:00",
-            "duration_seconds": 200,
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.4, "sentiment_label": "negative"},
-        },
-        {
-            "started_at": "2026-03-02T09:00:00",
-            "duration_seconds": 400,
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.1, "sentiment_label": "neutral"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.6, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": "2026-03-01T14:00:00",
+                "duration_seconds": 200,
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.4, "sentiment_label": "negative"},
+            },
+            {
+                "started_at": "2026-03-02T09:00:00",
+                "duration_seconds": 400,
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.1, "sentiment_label": "neutral"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -227,7 +250,9 @@ def test_get_metrics_summary_filters_by_team() -> None:
     client = MagicMock()
 
     mock_query = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value = mock_query
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value
+    ) = mock_query
     mock_query.eq.return_value.execute.return_value = SimpleNamespace(data=[])
 
     metrics_helpers.get_metrics_summary(
@@ -245,7 +270,9 @@ def test_get_metrics_summary_filters_by_agent() -> None:
     client = MagicMock()
 
     mock_query = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value = mock_query
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value
+    ) = mock_query
     mock_query.eq.return_value.execute.return_value = SimpleNamespace(data=[])
 
     metrics_helpers.get_metrics_summary(
@@ -261,7 +288,11 @@ def test_get_metrics_summary_filters_by_agent() -> None:
 def test_get_metrics_summary_returns_zeros_for_no_data() -> None:
     """get_metrics_summary should return zero counts when no calls found."""
     client = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = SimpleNamespace(data=[])
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = SimpleNamespace(
+        data=[]
+    )
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -280,20 +311,24 @@ def test_get_metrics_summary_handles_missing_analysis() -> None:
     """get_metrics_summary should handle calls without analysis data."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            Tables.CALL_ANALYSES: None,
-        },
-        {
-            "started_at": "2026-03-01T14:00:00",
-            "duration_seconds": 200,
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                Tables.CALL_ANALYSES: None,
+            },
+            {
+                "started_at": "2026-03-01T14:00:00",
+                "duration_seconds": 200,
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -317,28 +352,36 @@ def test_get_top_topics_counts_topics() -> None:
     client = MagicMock()
 
     # Mock calls query
-    calls_result = SimpleNamespace(data=[
-        {"id": "call-1"},
-        {"id": "call-2"},
-        {"id": "call-3"},
-    ])
+    calls_result = SimpleNamespace(
+        data=[
+            {"id": "call-1"},
+            {"id": "call-2"},
+            {"id": "call-3"},
+        ]
+    )
 
     # Mock analyses query
-    analyses_result = SimpleNamespace(data=[
-        {"id": "analysis-1"},
-        {"id": "analysis-2"},
-        {"id": "analysis-3"},
-    ])
+    analyses_result = SimpleNamespace(
+        data=[
+            {"id": "analysis-1"},
+            {"id": "analysis-2"},
+            {"id": "analysis-3"},
+        ]
+    )
 
     # Mock topics query - billing appears twice, refund once
-    topics_result = SimpleNamespace(data=[
-        {"topic_id": "topic-1", Tables.TOPICS: {"name": "billing"}},
-        {"topic_id": "topic-1", Tables.TOPICS: {"name": "billing"}},
-        {"topic_id": "topic-2", Tables.TOPICS: {"name": "refund"}},
-    ])
+    topics_result = SimpleNamespace(
+        data=[
+            {"topic_id": "topic-1", Tables.TOPICS: {"name": "billing"}},
+            {"topic_id": "topic-1", Tables.TOPICS: {"name": "billing"}},
+            {"topic_id": "topic-2", Tables.TOPICS: {"name": "refund"}},
+        ]
+    )
 
     # Set up the mock chain
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = calls_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = calls_result
     client.table.return_value.select.return_value.in_.return_value.execute.side_effect = [
         analyses_result,
         topics_result,
@@ -358,7 +401,11 @@ def test_get_top_topics_counts_topics() -> None:
 def test_get_top_topics_returns_empty_for_no_calls() -> None:
     """get_top_topics should return empty list when no calls found."""
     client = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = SimpleNamespace(data=[])
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = SimpleNamespace(
+        data=[]
+    )
 
     result = metrics_helpers.get_top_topics(
         client,
@@ -375,16 +422,20 @@ def test_get_top_topics_respects_limit() -> None:
 
     calls_result = SimpleNamespace(data=[{"id": "call-1"}])
     analyses_result = SimpleNamespace(data=[{"id": "analysis-1"}])
-    topics_result = SimpleNamespace(data=[
-        {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
-        {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
-        {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
-        {"topic_id": "t2", Tables.TOPICS: {"name": "refund"}},
-        {"topic_id": "t2", Tables.TOPICS: {"name": "refund"}},
-        {"topic_id": "t3", Tables.TOPICS: {"name": "shipping"}},
-    ])
+    topics_result = SimpleNamespace(
+        data=[
+            {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
+            {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
+            {"topic_id": "t1", Tables.TOPICS: {"name": "billing"}},
+            {"topic_id": "t2", Tables.TOPICS: {"name": "refund"}},
+            {"topic_id": "t2", Tables.TOPICS: {"name": "refund"}},
+            {"topic_id": "t3", Tables.TOPICS: {"name": "shipping"}},
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = calls_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = calls_result
     client.table.return_value.select.return_value.in_.return_value.execute.side_effect = [
         analyses_result,
         topics_result,
@@ -429,25 +480,29 @@ def test_get_agent_stats_aggregates_by_agent() -> None:
     """get_agent_stats should aggregate metrics per agent."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
-        },
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.7},
-        },
-        {
-            "agent_id": "agent-2",
-            Tables.USERS: {"first_name": "John", "last_name": "Smith"},
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.3},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
+            },
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.7},
+            },
+            {
+                "agent_id": "agent-2",
+                Tables.USERS: {"first_name": "John", "last_name": "Smith"},
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.3},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_agent_stats(
         client,
@@ -472,7 +527,11 @@ def test_get_agent_stats_aggregates_by_agent() -> None:
 def test_get_agent_stats_returns_empty_for_no_data() -> None:
     """get_agent_stats should return empty list when no calls found."""
     client = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = SimpleNamespace(data=[])
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = SimpleNamespace(
+        data=[]
+    )
 
     result = metrics_helpers.get_agent_stats(
         client,
@@ -487,15 +546,19 @@ def test_get_agent_stats_handles_missing_user_info() -> None:
     """get_agent_stats should handle missing user name gracefully."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: None,  # No user info
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: None,  # No user info
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_agent_stats(
         client,
@@ -511,20 +574,24 @@ def test_get_agent_stats_handles_missing_analysis() -> None:
     """get_agent_stats should handle calls without analysis."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
-            Tables.CALL_ANALYSES: None,  # No analysis
-        },
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
+                Tables.CALL_ANALYSES: None,  # No analysis
+            },
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_agent_stats(
         client,
@@ -595,38 +662,42 @@ def test_get_daily_metrics_negative_percent_uses_analyzed_calls() -> None:
     client = MagicMock()
 
     # 4 calls total, but only 2 have analysis. 1 of those 2 is negative.
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
-        },
-        {
-            "started_at": "2026-03-01T11:00:00",
-            "duration_seconds": 200,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-        {
-            "started_at": "2026-03-01T12:00:00",
-            "duration_seconds": 250,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: None,  # No analysis
-        },
-        {
-            "started_at": "2026-03-01T13:00:00",
-            "duration_seconds": 350,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: None,  # No analysis
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
+            },
+            {
+                "started_at": "2026-03-01T11:00:00",
+                "duration_seconds": 200,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": "2026-03-01T12:00:00",
+                "duration_seconds": 250,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: None,  # No analysis
+            },
+            {
+                "started_at": "2026-03-01T13:00:00",
+                "duration_seconds": 350,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: None,  # No analysis
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -645,23 +716,39 @@ def test_get_metrics_summary_negative_percent_uses_analyzed_calls() -> None:
     client = MagicMock()
 
     # 5 calls total, only 2 analyzed, 1 negative
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
-        },
-        {
-            "started_at": "2026-03-01T11:00:00",
-            "duration_seconds": 200,
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-        {"started_at": "2026-03-01T12:00:00", "duration_seconds": 250, Tables.CALL_ANALYSES: None},
-        {"started_at": "2026-03-01T13:00:00", "duration_seconds": 350, Tables.CALL_ANALYSES: None},
-        {"started_at": "2026-03-01T14:00:00", "duration_seconds": 400, Tables.CALL_ANALYSES: None},
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
+            },
+            {
+                "started_at": "2026-03-01T11:00:00",
+                "duration_seconds": 200,
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": "2026-03-01T12:00:00",
+                "duration_seconds": 250,
+                Tables.CALL_ANALYSES: None,
+            },
+            {
+                "started_at": "2026-03-01T13:00:00",
+                "duration_seconds": 350,
+                Tables.CALL_ANALYSES: None,
+            },
+            {
+                "started_at": "2026-03-01T14:00:00",
+                "duration_seconds": 400,
+                Tables.CALL_ANALYSES: None,
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -678,31 +765,35 @@ def test_get_daily_metrics_skips_calls_without_started_at() -> None:
     """Calls without started_at should be skipped entirely."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-        {
-            "started_at": None,  # Missing started_at
-            "duration_seconds": 200,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
-        },
-        {
-            # Missing started_at key entirely
-            "duration_seconds": 250,
-            "agent_id": "agent-1",
-            "team_id": "team-1",
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.2, "sentiment_label": "neutral"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": None,  # Missing started_at
+                "duration_seconds": 200,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
+            },
+            {
+                # Missing started_at key entirely
+                "duration_seconds": 250,
+                "agent_id": "agent-1",
+                "team_id": "team-1",
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.2, "sentiment_label": "neutral"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -719,20 +810,24 @@ def test_get_metrics_summary_skips_calls_without_started_at() -> None:
     """Calls without started_at should be skipped entirely."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "started_at": "2026-03-01T10:00:00",
-            "duration_seconds": 300,
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
-        },
-        {
-            "started_at": None,
-            "duration_seconds": 200,
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "started_at": "2026-03-01T10:00:00",
+                "duration_seconds": 300,
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5, "sentiment_label": "positive"},
+            },
+            {
+                "started_at": None,
+                "duration_seconds": 200,
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5, "sentiment_label": "negative"},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -751,7 +846,9 @@ def test_get_daily_metrics_filters_by_both_team_and_agent() -> None:
     client = MagicMock()
 
     mock_query = MagicMock()
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value = mock_query
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value
+    ) = mock_query
     mock_query.eq.return_value = mock_query  # Allow chaining
     mock_query.execute.return_value = SimpleNamespace(data=[])
 
@@ -774,20 +871,24 @@ def test_get_agent_stats_skips_calls_without_agent_id() -> None:
     """Calls without agent_id should be skipped in agent stats."""
     client = MagicMock()
 
-    mock_result = SimpleNamespace(data=[
-        {
-            "agent_id": "agent-1",
-            Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
-            Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
-        },
-        {
-            "agent_id": None,  # No agent_id
-            Tables.USERS: {"first_name": "Unknown", "last_name": ""},
-            Tables.CALL_ANALYSES: {"sentiment_score": -0.5},
-        },
-    ])
+    mock_result = SimpleNamespace(
+        data=[
+            {
+                "agent_id": "agent-1",
+                Tables.USERS: {"first_name": "Jane", "last_name": "Doe"},
+                Tables.CALL_ANALYSES: {"sentiment_score": 0.5},
+            },
+            {
+                "agent_id": None,  # No agent_id
+                Tables.USERS: {"first_name": "Unknown", "last_name": ""},
+                Tables.CALL_ANALYSES: {"sentiment_score": -0.5},
+            },
+        ]
+    )
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = mock_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = mock_result
 
     result = metrics_helpers.get_agent_stats(
         client,
@@ -808,8 +909,12 @@ def test_get_top_topics_returns_empty_for_no_analyses() -> None:
     calls_result = SimpleNamespace(data=[{"id": "call-1"}, {"id": "call-2"}])
     analyses_result = SimpleNamespace(data=[])  # No analyses for these calls
 
-    client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value = calls_result
-    client.table.return_value.select.return_value.in_.return_value.execute.return_value = analyses_result
+    (
+        client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
+    ) = calls_result
+    client.table.return_value.select.return_value.in_.return_value.execute.return_value = (
+        analyses_result
+    )
 
     result = metrics_helpers.get_top_topics(
         client,

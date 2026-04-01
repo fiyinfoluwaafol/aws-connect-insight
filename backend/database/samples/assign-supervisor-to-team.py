@@ -21,8 +21,7 @@ project_root = Path(__file__).resolve().parent.parent.parent.parent
 load_dotenv(project_root / ".env")
 
 supabase = create_client(
-    os.environ.get("SUPABASE_URL"),
-    os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 )
 
 
@@ -40,7 +39,10 @@ def assign_supervisor_to_team(supervisor_email: str):
     supervisor = result.data[0]
 
     if supervisor.get("role") != "supervisor":
-        print(f"❌ Error: User {supervisor_email} is not a supervisor (role: {supervisor.get('role')})")
+        print(
+            f"❌ Error: User {supervisor_email} is not a supervisor "
+            f"(role: {supervisor.get('role')})"
+        )
         sys.exit(1)
 
     print(f"✓ Found supervisor: {supervisor['first_name']} {supervisor['last_name']}")
@@ -56,10 +58,7 @@ def assign_supervisor_to_team(supervisor_email: str):
 
     team = (
         supabase.table("teams")
-        .insert({
-            "name": team_name,
-            "supervisor_id": supervisor["id"]
-        })
+        .insert({"name": team_name, "supervisor_id": supervisor["id"]})
         .execute()
         .data[0]
     )
@@ -67,14 +66,12 @@ def assign_supervisor_to_team(supervisor_email: str):
     print(f"✓ Created team: {team['name']} (ID: {team['id']})")
 
     # Step 4: Assign supervisor to the team
-    print(f"Assigning supervisor to team...")
+    print("Assigning supervisor to team...")
 
-    supabase.table("users").update({
-        "team_id": team["id"]
-    }).eq("id", supervisor["id"]).execute()
+    supabase.table("users").update({"team_id": team["id"]}).eq("id", supervisor["id"]).execute()
 
-    print(f"✓ Supervisor assigned to team!")
-    print(f"\n✅ Done! Supervisor can now access the dashboard.")
+    print("✓ Supervisor assigned to team!")
+    print("\n✅ Done! Supervisor can now access the dashboard.")
 
 
 if __name__ == "__main__":

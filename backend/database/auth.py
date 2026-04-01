@@ -40,6 +40,7 @@ def get_current_user(client: Client, access_token: str) -> dict:
 
     # Fetch complete user profile from database
     from .users import get_user_by_id
+
     try:
         user_profile = get_user_by_id(client, response.user.id)
         return user_profile

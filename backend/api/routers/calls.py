@@ -121,9 +121,7 @@ def simulate_call(
     duration = random.randint(120, 1200)  # 2-20 minutes
 
     # Random sentiment (weighted towards neutral/positive)
-    sentiment_type = random.choices(
-        ["positive", "neutral", "negative"], weights=[0.4, 0.4, 0.2]
-    )[0]
+    sentiment_type = random.choices(["positive", "neutral", "negative"], weights=[0.4, 0.4, 0.2])[0]
 
     if sentiment_type == "positive":
         sentiment_score = random.uniform(0.3, 1.0)

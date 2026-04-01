@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from api.main import app as _app
 from api import dependencies
+from api.main import app as _app
 
 
 @pytest.fixture
@@ -127,13 +127,20 @@ def test_trends_returns_aggregated_metrics(
     authenticated_client: TestClient,
 ) -> None:
     """GET /api/dashboard/trends should return aggregated metrics."""
-    with patch("api.routers.dashboard.get_daily_metrics") as mock_daily, \
-         patch("api.routers.dashboard.get_metrics_summary") as mock_summary, \
-         patch("api.routers.dashboard.get_top_topics") as mock_topics, \
-         patch("api.routers.dashboard.get_agent_stats") as mock_agents:
-
+    with (
+        patch("api.routers.dashboard.get_daily_metrics") as mock_daily,
+        patch("api.routers.dashboard.get_metrics_summary") as mock_summary,
+        patch("api.routers.dashboard.get_top_topics") as mock_topics,
+        patch("api.routers.dashboard.get_agent_stats") as mock_agents,
+    ):
         mock_daily.return_value = [
-            {"date": "2026-03-01", "call_count": 10, "avg_sentiment": 0.5, "avg_duration": 300, "negative_call_percent": 20.0},
+            {
+                "date": "2026-03-01",
+                "call_count": 10,
+                "avg_sentiment": 0.5,
+                "avg_duration": 300,
+                "negative_call_percent": 20.0,
+            },
         ]
         mock_summary.return_value = {
             "total_calls": 100,
@@ -169,11 +176,12 @@ def test_trends_uses_days_parameter(
     authenticated_client: TestClient,
 ) -> None:
     """GET /api/dashboard/trends should respect the days query parameter."""
-    with patch("api.routers.dashboard.get_daily_metrics") as mock_daily, \
-         patch("api.routers.dashboard.get_metrics_summary") as mock_summary, \
-         patch("api.routers.dashboard.get_top_topics") as mock_topics, \
-         patch("api.routers.dashboard.get_agent_stats") as mock_agents:
-
+    with (
+        patch("api.routers.dashboard.get_daily_metrics") as mock_daily,
+        patch("api.routers.dashboard.get_metrics_summary") as mock_summary,
+        patch("api.routers.dashboard.get_top_topics") as mock_topics,
+        patch("api.routers.dashboard.get_agent_stats") as mock_agents,
+    ):
         mock_daily.return_value = []
         mock_summary.return_value = {
             "total_calls": 0,
@@ -192,7 +200,7 @@ def test_trends_uses_days_parameter(
         # Verify the date range passed to the metrics functions
         call_args = mock_daily.call_args
         date_from = call_args[0][1]  # Second positional arg
-        date_to = call_args[0][2]    # Third positional arg
+        date_to = call_args[0][2]  # Third positional arg
 
         # Should span 30 days
         delta = (date_to - date_from).days
@@ -243,11 +251,12 @@ def test_trends_scopes_data_to_team(
     authenticated_client: TestClient,
 ) -> None:
     """GET /api/dashboard/trends should scope data to user's team."""
-    with patch("api.routers.dashboard.get_daily_metrics") as mock_daily, \
-         patch("api.routers.dashboard.get_metrics_summary") as mock_summary, \
-         patch("api.routers.dashboard.get_top_topics") as mock_topics, \
-         patch("api.routers.dashboard.get_agent_stats") as mock_agents:
-
+    with (
+        patch("api.routers.dashboard.get_daily_metrics") as mock_daily,
+        patch("api.routers.dashboard.get_metrics_summary") as mock_summary,
+        patch("api.routers.dashboard.get_top_topics") as mock_topics,
+        patch("api.routers.dashboard.get_agent_stats") as mock_agents,
+    ):
         mock_daily.return_value = []
         mock_summary.return_value = {
             "total_calls": 0,
@@ -272,11 +281,12 @@ def test_trends_handles_empty_data(
     authenticated_client: TestClient,
 ) -> None:
     """GET /api/dashboard/trends should handle empty data gracefully."""
-    with patch("api.routers.dashboard.get_daily_metrics") as mock_daily, \
-         patch("api.routers.dashboard.get_metrics_summary") as mock_summary, \
-         patch("api.routers.dashboard.get_top_topics") as mock_topics, \
-         patch("api.routers.dashboard.get_agent_stats") as mock_agents:
-
+    with (
+        patch("api.routers.dashboard.get_daily_metrics") as mock_daily,
+        patch("api.routers.dashboard.get_metrics_summary") as mock_summary,
+        patch("api.routers.dashboard.get_top_topics") as mock_topics,
+        patch("api.routers.dashboard.get_agent_stats") as mock_agents,
+    ):
         mock_daily.return_value = []
         mock_summary.return_value = {
             "total_calls": 0,
