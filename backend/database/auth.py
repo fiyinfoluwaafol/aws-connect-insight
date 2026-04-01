@@ -33,11 +33,19 @@ def authenticate_user(client: Client, email: str, password: str) -> dict:
 
 @auth_operation
 def get_current_user(client: Client, access_token: str) -> dict:
-    """Verify token and return user info."""
+    """Verify token and return user info with profile data."""
     response = client.auth.get_user(access_token)
     if not response.user:
         raise AuthenticationError("Invalid or expired token")
-    return {"id": response.user.id, "email": response.user.email}
+
+    # Fetch complete user profile from database
+    from .users import get_user_by_id
+    try:
+        user_profile = get_user_by_id(client, response.user.id)
+        return user_profile
+    except Exception:
+        # Fallback to basic auth data if profile not found
+        return {"id": response.user.id, "email": response.user.email}
 
 
 @auth_operation
