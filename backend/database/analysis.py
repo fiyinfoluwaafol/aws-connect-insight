@@ -38,6 +38,43 @@ def create_analysis(
 
 
 @db_operation
+def upsert_analysis(
+    client: Client,
+    call_id: str,
+    summary: str,
+    sentiment_score: float,
+    sentiment_label: str,
+    key_moves: list[str],
+    is_resolved: bool,
+) -> dict:
+    """
+    Create or update analysis for a call.
+
+    This is idempotent - safe to call multiple times for the same call.
+    If an analysis already exists for the call_id, it will be updated.
+    If not, a new analysis will be created.
+    """
+    result = (
+        client.table(Tables.CALL_ANALYSES)
+        .upsert(
+            {
+                "call_id": call_id,
+                "summary": summary,
+                "sentiment_score": sentiment_score,
+                "sentiment_label": sentiment_label,
+                "key_moves": key_moves,
+                "is_resolved": is_resolved,
+            },
+            on_conflict="call_id",
+        )
+        .execute()
+    )
+    if not result.data:
+        raise DatabaseError("Failed to upsert analysis")
+    return result.data[0]
+
+
+@db_operation
 def get_analysis_by_call_id(client: Client, call_id: str) -> dict:
     """Get analysis for a call, including topics and keywords."""
     result = (
@@ -63,6 +100,42 @@ def get_analysis_by_call_id(client: Client, call_id: str) -> dict:
     analysis["keywords"] = [k[Tables.KEYWORDS]["word"] for k in raw_keywords]
 
     return analysis
+
+
+@db_operation
+def get_analyses_by_call_ids(client: Client, call_ids: list[str]) -> list[dict]:
+    """
+    Get analyses for multiple calls in a single query.
+
+    Returns a list of analyses with their topics and keywords.
+    Calls without analyses are omitted from the result.
+    """
+    if not call_ids:
+        return []
+
+    result = (
+        client.table(Tables.CALL_ANALYSES)
+        .select(
+            f"*, {Tables.CALL_ANALYSIS_TOPICS}({Tables.TOPICS}(name)), "
+            f"{Tables.CALL_ANALYSIS_KEYWORDS}({Tables.KEYWORDS}(word))"
+        )
+        .in_("call_id", call_ids)
+        .execute()
+    )
+
+    analyses = []
+    for analysis in result.data or []:
+        # Flatten topics to list of names
+        raw_topics = analysis.pop(Tables.CALL_ANALYSIS_TOPICS, [])
+        analysis["topics"] = [t[Tables.TOPICS]["name"] for t in raw_topics]
+
+        # Flatten keywords to list of words
+        raw_keywords = analysis.pop(Tables.CALL_ANALYSIS_KEYWORDS, [])
+        analysis["keywords"] = [k[Tables.KEYWORDS]["word"] for k in raw_keywords]
+
+        analyses.append(analysis)
+
+    return analyses
 
 
 @db_operation
