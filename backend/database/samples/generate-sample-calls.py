@@ -117,8 +117,7 @@ def generate_calls_for_agent(agent_email: str, num_calls: int):
                     "agent_id": agent["id"],
                     "team_id": team_id,
                     "recording_url": (
-                        f"https://example.com/recordings/"
-                        f"call-{random.randint(10000, 99999)}.mp3"
+                        f"https://example.com/recordings/call-{random.randint(10000, 99999)}.mp3"
                     ),
                     "duration_seconds": duration,
                     "started_at": call_time.isoformat(),
@@ -174,8 +173,7 @@ if __name__ == "__main__":
             "[agent_email2] [num_calls2] ..."
         )
         print(
-            "Example: python generate-sample-calls.py agent1@example.com 20 "
-            "agent2@example.com 15"
+            "Example: python generate-sample-calls.py agent1@example.com 20 agent2@example.com 15"
         )
         sys.exit(1)
 

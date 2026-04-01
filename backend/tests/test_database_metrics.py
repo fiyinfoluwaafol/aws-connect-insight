@@ -118,9 +118,7 @@ def test_get_daily_metrics_returns_empty_for_no_data() -> None:
     client = MagicMock()
     (
         client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
-    ) = SimpleNamespace(
-        data=[]
-    )
+    ) = SimpleNamespace(data=[])
 
     result = metrics_helpers.get_daily_metrics(
         client,
@@ -290,9 +288,7 @@ def test_get_metrics_summary_returns_zeros_for_no_data() -> None:
     client = MagicMock()
     (
         client.table.return_value.select.return_value.gte.return_value.lte.return_value.limit.return_value.execute.return_value
-    ) = SimpleNamespace(
-        data=[]
-    )
+    ) = SimpleNamespace(data=[])
 
     result = metrics_helpers.get_metrics_summary(
         client,
@@ -403,9 +399,7 @@ def test_get_top_topics_returns_empty_for_no_calls() -> None:
     client = MagicMock()
     (
         client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
-    ) = SimpleNamespace(
-        data=[]
-    )
+    ) = SimpleNamespace(data=[])
 
     result = metrics_helpers.get_top_topics(
         client,
@@ -529,9 +523,7 @@ def test_get_agent_stats_returns_empty_for_no_data() -> None:
     client = MagicMock()
     (
         client.table.return_value.select.return_value.gte.return_value.lte.return_value.execute.return_value
-    ) = SimpleNamespace(
-        data=[]
-    )
+    ) = SimpleNamespace(data=[])
 
     result = metrics_helpers.get_agent_stats(
         client,
