@@ -6,10 +6,12 @@ import {
   Search,
   FileText,
   Settings,
+  Users,
 } from 'lucide-react';
 
 const navItems = [
   { path: '/supervisor', label: 'Overview', icon: LayoutDashboard, exact: true },
+  { path: '/supervisor/team', label: 'Team', icon: Users },
   { path: '/supervisor/alerts', label: 'Alerts', icon: AlertTriangle },
   { path: '/supervisor/search', label: 'Search', icon: Search },
   { path: '/supervisor/briefs', label: 'Daily Briefs', icon: FileText },

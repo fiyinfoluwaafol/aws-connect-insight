@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAppStore } from '@/stores/app-store';
-import { mockData } from '@/lib/mock-data';
-import { MockService } from '@/lib/mock-service';
+import { callsApi } from '@/lib/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,15 +15,48 @@ export default function AgentHome() {
 
   const userTips = agentTips.filter((t) => t.agentId === user?.agentId && !t.dismissed);
 
-  const handleSimulateCallEnd = () => {
-    const agentCalls = mockData.calls.filter((c) => c.agentId === user?.agentId);
-    const randomCall = agentCalls[Math.floor(Math.random() * agentCalls.length)];
-    if (!randomCall) return;
+  const handleSimulateCallEnd = async () => {
+    try {
+      const result = await callsApi.simulateCall();
 
-    const { tips, reason } = MockService.generatePostCallTips(randomCall);
-    addAgentTip({ callId: randomCall.id, agentId: user?.agentId || '', tips, reason });
-    addNotification(`New coaching tips available for your recent call`);
-    toast({ title: 'Call Ended', description: 'New coaching tips are available!' });
+      // Only generate coaching tips for negative calls
+      if (result.sentiment_score < -0.3 || result.sentiment_label === 'negative') {
+        const tips: string[] = [];
+
+        if (result.sentiment_score < -0.3) {
+          tips.push('Try acknowledging the customer\'s frustration earlier in the call');
+        }
+        if (result.sentiment_label === 'negative') {
+          tips.push('Ensure clear next steps are communicated before ending the call');
+        }
+
+        const reason = `Based on ${result.sentiment_label} sentiment call about ${result.topics.join(', ')}`;
+
+        addAgentTip({
+          callId: result.call_id,
+          agentId: user?.id || '',
+          tips,
+          reason
+        });
+        addNotification(`New coaching tips available for your recent call`);
+        toast({
+          title: 'Call Ended',
+          description: `Call recorded with ${result.sentiment_label} sentiment. Coaching tips available!`
+        });
+      } else {
+        // No tips for positive/neutral calls
+        toast({
+          title: 'Call Ended',
+          description: `Call recorded with ${result.sentiment_label} sentiment. Great job!`
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to simulate call',
+        variant: 'destructive'
+      });
+    }
   };
 
   const toggleExpand = (tipId: string) => {
@@ -37,7 +69,7 @@ export default function AgentHome() {
     <div className="container mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-semibold">Welcome back, {user?.name}</h2>
+          <h2 className="text-xl font-semibold">Welcome back, {user?.firstName || user?.email}</h2>
           <p className="text-sm text-muted-foreground">Your post-call coaching tips</p>
         </div>
         <Button onClick={handleSimulateCallEnd}>

@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import type { DailyMetric } from '@/lib/mock-data';
+import type { DailyMetric } from '@/lib/api';
 
 export interface SentimentTrendChartProps {
   data: DailyMetric[];

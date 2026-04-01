@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 // Supervisor pages
 import SupervisorLayout from "./pages/SupervisorLayout";
 import SupervisorOverview from "./pages/supervisor/Overview";
+import SupervisorTeam from "./pages/supervisor/Team";
 import SupervisorAlerts from "./pages/supervisor/Alerts";
 import SupervisorSearch from "./pages/supervisor/Search";
 import SupervisorBriefs from "./pages/supervisor/Briefs";
@@ -77,6 +78,7 @@ const App = () => {
                 >
                   <Route index element={<SupervisorOverview />} />
                   <Route path="overview" element={<SupervisorOverview />} />
+                  <Route path="team" element={<SupervisorTeam />} />
                   <Route path="alerts" element={<SupervisorAlerts />} />
                   <Route path="search" element={<SupervisorSearch />} />
                   <Route path="briefs" element={<SupervisorBriefs />} />

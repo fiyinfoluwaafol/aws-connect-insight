@@ -6,8 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Phone, Users } from 'lucide-react';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function SignUp() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    role: 'agent' as 'agent' | 'supervisor',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function SignUp() {
         password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        role: 'agent',
+        role: formData.role,
       });
 
       await signIn(formData.email, formData.password);
@@ -133,11 +135,56 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Input id="role" value="agent" disabled readOnly />
-              <p className="text-xs text-muted-foreground">
-                Supervisor accounts are provisioned by an administrator.
-              </p>
+              <Label htmlFor="role">I am a...</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, role: 'agent' }))}
+                  disabled={isLoading}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    formData.role === 'agent'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <Phone className={`h-6 w-6 ${formData.role === 'agent' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className="text-center">
+                    <p className={`font-semibold ${formData.role === 'agent' ? 'text-primary' : 'text-foreground'}`}>
+                      Agent
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Handle customer calls
+                    </p>
+                  </div>
+                  {formData.role === 'agent' && (
+                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, role: 'supervisor' }))}
+                  disabled={isLoading}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    formData.role === 'supervisor'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <Users className={`h-6 w-6 ${formData.role === 'supervisor' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <div className="text-center">
+                    <p className={`font-semibold ${formData.role === 'supervisor' ? 'text-primary' : 'text-foreground'}`}>
+                      Supervisor
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Manage a team
+                    </p>
+                  </div>
+                  {formData.role === 'supervisor' && (
+                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
