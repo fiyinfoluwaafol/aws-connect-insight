@@ -8,7 +8,9 @@ from pydantic import BaseModel, EmailStr
 
 from api.config import Settings, get_settings
 from api.dependencies import get_current_user, get_supabase_client
+from database.constants import Tables
 from database.exceptions import AuthenticationError, DatabaseError
+from database.teams import create_team
 from services.auth import (
     AuthUser,
     change_user_password,
@@ -135,14 +137,11 @@ def register(
     request: RegisterRequest,
     client: Annotated[Any, Depends(get_supabase_client)],
 ) -> UserResponse:
-    """Register a new user."""
-    auth_client = _require_client(client)
+    """Register a new user with agent or supervisor role.
 
-    if request.role is not UserRole.agent:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Supervisor accounts must be created by an administrator",
-        )
+    For supervisors, automatically creates a team and assigns them to it.
+    """
+    auth_client = _require_client(client)
 
     try:
         user = register_user(
@@ -154,6 +153,18 @@ def register(
             role=request.role.value,
             team_id=request.team_id,
         )
+
+        # If supervisor, auto-create a team and assign them to it
+        if request.role == UserRole.supervisor:
+            team_name = f"{request.first_name}'s Team"
+            team = create_team(auth_client, name=team_name, supervisor_id=user.id)
+
+            # Update the user's team_id
+            auth_client.table(Tables.USERS).update({"team_id": team["id"]}).eq("id", user.id).execute()
+
+            # Update the returned user object with the team_id
+            user = get_current_user_profile(auth_client, user_id=user.id, email=user.email)
+
     except DatabaseError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
