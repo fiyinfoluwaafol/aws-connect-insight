@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { agentApi, PerformanceResponse } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth-store';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Phone, Users, Loader2 } from 'lucide-react';
+import { TrendingUp, Phone, Users, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   LineChart,
@@ -17,6 +18,7 @@ import {
 } from 'recharts';
 
 export default function AgentPerformance() {
+  const { user } = useAuthStore();
   const [performance, setPerformance] = useState<PerformanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +42,24 @@ export default function AgentPerformance() {
 
     loadPerformance();
   }, []);
+
+  // Show message if not in a team
+  if (!user?.teamId) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Card className="p-8 max-w-md text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Not Assigned to a Team</h3>
+            <p className="text-muted-foreground">
+              Please join a team to start getting calls and performance information.
+              Contact your supervisor to be added to a team.
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
