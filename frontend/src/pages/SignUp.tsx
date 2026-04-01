@@ -167,13 +167,13 @@ export default function SignUp() {
                   disabled={isLoading}
                   className={`relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                     formData.role === 'supervisor'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-border hover:border-amber-500/50'
                   }`}
                 >
-                  <Users className={`h-6 w-6 ${formData.role === 'supervisor' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Users className={`h-6 w-6 ${formData.role === 'supervisor' ? 'text-amber-600' : 'text-muted-foreground'}`} />
                   <div className="text-center">
-                    <p className={`font-semibold ${formData.role === 'supervisor' ? 'text-primary' : 'text-foreground'}`}>
+                    <p className={`font-semibold ${formData.role === 'supervisor' ? 'text-amber-600' : 'text-foreground'}`}>
                       Supervisor
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -181,7 +181,7 @@ export default function SignUp() {
                     </p>
                   </div>
                   {formData.role === 'supervisor' && (
-                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-amber-500" />
                   )}
                 </button>
               </div>
