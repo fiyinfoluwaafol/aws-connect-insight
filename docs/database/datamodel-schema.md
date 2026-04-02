@@ -344,9 +344,9 @@ For insertion, we'd do the following:
 | `id` | UUID, **Primary key** | Auto-generated |
 | `transcript` | JSONB | Array of `{speaker, text}` objects |
 
-💡 This table stores standalone transcript samples that are not associated with actual calls. Used for testing, training, and development purposes. Format matches the `transcript` field in the `calls` table for consistency.
+💡 This table stores standalone transcript samples that are not associated with actual calls. Used for simulation, testing, training, and development purposes. Format matches the `transcript` field in the `calls` table for consistency.
 
-💡 To get a random sample transcript: `SELECT * FROM sample_transcripts ORDER BY random() LIMIT 1`
+💡 The app picks one random sample transcript from this pool, then runs the canonical analysis flow to determine sentiment, topics, and coaching signals.
 
 ---
 

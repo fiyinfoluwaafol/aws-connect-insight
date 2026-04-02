@@ -19,23 +19,26 @@ def create_call(
     recording_url: str,
     duration_seconds: int,
     started_at: str,
+    transcript: list[dict] | None = None,
 ) -> dict:
     """
-    Create a new call record (without transcript).
+    Create a new call record.
 
     started_at: ISO timestamp
     """
+    payload = {
+        "agent_id": agent_id,
+        "team_id": team_id,
+        "recording_url": recording_url,
+        "duration_seconds": duration_seconds,
+        "started_at": started_at,
+    }
+    if transcript is not None:
+        payload["transcript"] = transcript
+
     result = (
         client.table(Tables.CALLS)
-        .insert(
-            {
-                "agent_id": agent_id,
-                "team_id": team_id,
-                "recording_url": recording_url,
-                "duration_seconds": duration_seconds,
-                "started_at": started_at,
-            }
-        )
+        .insert(payload)
         .execute()
     )
     return result.data[0]

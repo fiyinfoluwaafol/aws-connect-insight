@@ -1,5 +1,5 @@
 """Database module."""
 
-from . import analysis, auth, calls, teams, users
+from . import analysis, auth, calls, sample_transcripts, teams, users
 
-__all__ = ["analysis", "auth", "users", "teams", "calls"]
+__all__ = ["analysis", "auth", "users", "teams", "calls", "sample_transcripts"]
