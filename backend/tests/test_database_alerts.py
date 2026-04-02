@@ -88,9 +88,9 @@ def test_list_alerts_applies_filters_and_pagination() -> None:
 def test_update_alert_rule_normalizes_topic_and_keyword() -> None:
     """update_alert_rule should normalize mutable match values."""
     client = MagicMock()
-    client.table.return_value.update.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value = SimpleNamespace(
-        data=[{"id": "rule-1"}]
-    )
+    (
+        client.table.return_value.update.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value
+    ) = SimpleNamespace(data=[{"id": "rule-1"}])
 
     alert_helpers.update_alert_rule(
         client,
@@ -102,14 +102,42 @@ def test_update_alert_rule_normalizes_topic_and_keyword() -> None:
 
     client.table.assert_called_once_with(Tables.ALERT_CONFIGURATIONS)
     client.table.return_value.update.assert_called_once_with(
-        {"keyword": "cancel", "topic": "billing"}
+        {
+            "keyword": "cancel",
+            "topic": "billing",
+            "min_occurrences": alert_helpers.DEFAULT_RECURRING_MIN_OCCURRENCES,
+            "window_days": alert_helpers.DEFAULT_RECURRING_WINDOW_DAYS,
+        }
+    )
+
+
+def test_update_alert_rule_applies_defaults_when_null_recurrence_fields_are_provided() -> None:
+    """update_alert_rule should replace null recurrence fields with database-safe defaults."""
+    client = MagicMock()
+    (
+        client.table.return_value.update.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value
+    ) = SimpleNamespace(data=[{"id": "rule-1"}])
+
+    alert_helpers.update_alert_rule(
+        client,
+        rule_id="rule-1",
+        team_id="team-1",
+        supervisor_id="sup-1",
+        fields={"sentiment_below": 1.0, "min_occurrences": None, "window_days": None},
+    )
+
+    client.table.return_value.update.assert_called_once_with(
+        {
+            "sentiment_below": 1.0,
+            "min_occurrences": alert_helpers.DEFAULT_RECURRING_MIN_OCCURRENCES,
+            "window_days": alert_helpers.DEFAULT_RECURRING_WINDOW_DAYS,
+        }
     )
 
 
 def test_get_open_recurring_alert_normalizes_matched_value() -> None:
     """get_open_recurring_alert should normalize the matched value lookup."""
     client = MagicMock()
-    query = MagicMock()
     (
         client.table.return_value.select.return_value.eq.return_value.eq.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value
     ) = SimpleNamespace(data=[{"id": "alert-1"}])
@@ -129,9 +157,9 @@ def test_get_open_recurring_alert_normalizes_matched_value() -> None:
 def test_update_alert_raises_not_found_for_missing_record() -> None:
     """update_alert should raise NotFoundError when no row matches the scope."""
     client = MagicMock()
-    client.table.return_value.update.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value = SimpleNamespace(
-        data=[]
-    )
+    (
+        client.table.return_value.update.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value
+    ) = SimpleNamespace(data=[])
 
     with pytest.raises(NotFoundError, match="Alert alert-404 not found"):
         alert_helpers.update_alert(

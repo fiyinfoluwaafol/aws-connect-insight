@@ -6,8 +6,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any
 
-from database import analysis as analysis_helpers
 from database import alerts as alert_helpers
+from database import analysis as analysis_helpers
 from database.constants import AlertRuleType
 
 

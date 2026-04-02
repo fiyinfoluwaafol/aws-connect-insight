@@ -8,7 +8,7 @@ from supabase import Client
 
 from .constants import AlertStatus, Tables
 from .decorators import db_operation
-from .exceptions import DatabaseError, NotFoundError
+from .exceptions import NotFoundError
 
 DEFAULT_RECURRING_MIN_OCCURRENCES = 3
 DEFAULT_RECURRING_WINDOW_DAYS = 7
@@ -144,6 +144,10 @@ def update_alert_rule(
         payload["keyword"] = normalize_match_value(payload["keyword"])
     if "topic" in payload:
         payload["topic"] = normalize_match_value(payload["topic"])
+    if payload.get("min_occurrences") is None:
+        payload["min_occurrences"] = DEFAULT_RECURRING_MIN_OCCURRENCES
+    if payload.get("window_days") is None:
+        payload["window_days"] = DEFAULT_RECURRING_WINDOW_DAYS
 
     result = (
         client.table(Tables.ALERT_CONFIGURATIONS)

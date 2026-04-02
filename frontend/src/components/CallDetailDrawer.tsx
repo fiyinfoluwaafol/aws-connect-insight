@@ -26,8 +26,18 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
+type CallDetailCall = Call & {
+  callSummary?: {
+    callId: string;
+    summaryText: string;
+    keyPhrases: string[];
+    entities: string[];
+    transcript: Array<{ speaker: string; text: string; timestamp?: string }>;
+  };
+};
+
 interface CallDetailDrawerProps {
-  call: Call | null;
+  call: CallDetailCall | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -35,11 +45,12 @@ interface CallDetailDrawerProps {
 export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerProps) {
   const [newNote, setNewNote] = useState('');
   const { user } = useAuthStore();
-  const { exemplarCallIds, toggleExemplar, callNotes, addNote, alerts, setAlerts } = useAppStore();
+  const { exemplarCallIds, toggleExemplar, callNotes, addNote } = useAppStore();
 
   if (!call) return null;
 
-  const summary = MockService.getSummary(call.id);
+  const summary: CallSummary | CallDetailCall['callSummary'] | undefined =
+    call.callSummary ?? MockService.getSummary(call.id);
   const isExemplar = exemplarCallIds.includes(call.id);
   const notes = callNotes.filter((n) => n.callId === call.id);
 
@@ -60,20 +71,9 @@ export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerP
   };
 
   const handleCreateAlert = () => {
-    const newAlert = {
-      id: `alert-${Date.now()}`,
-      callId: call.id,
-      createdAt: new Date().toISOString(),
-      ruleId: 'manual',
-      ruleLabel: 'Manual Review',
-      severity: 'medium' as const,
-      status: 'open' as const,
-      issue: `Manual alert for ${call.topics[0]} call`,
-    };
-    setAlerts([newAlert, ...alerts]);
     toast({
-      title: 'Alert Created',
-      description: 'A new alert has been created for this call.',
+      title: 'Manual Alerts Coming Soon',
+      description: 'Manual alert creation has not been wired to the backend yet.',
     });
   };
 
@@ -82,7 +82,7 @@ export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerP
     addNote({
       callId: call.id,
       userId: user.id,
-      userName: user.name,
+      userName: `${user.firstName} ${user.lastName}`.trim() || user.email,
       text: newNote.trim(),
     });
     setNewNote('');
@@ -200,9 +200,11 @@ export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerP
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-medium">{turn.speaker}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {turn.timestamp}
-                        </span>
+                        {turn.timestamp && (
+                          <span className="text-xs text-muted-foreground">
+                            {turn.timestamp}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm">{turn.text}</p>
                     </div>

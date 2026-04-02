@@ -8,11 +8,11 @@ import {
 } from '@/components/ui/sheet';
 import { SentimentBadge } from '@/components/SentimentBadge';
 import { AlertTriangle, CheckCircle, User, Clock } from 'lucide-react';
-import type { Alert, Call } from '@/lib/mock-data';
+import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
 
 export interface AlertDetailProps {
-  alert: Alert | null;
-  call: Call | undefined;
+  alert: SupervisorAlertViewModel | null;
+  call: SupervisorCallViewModel | undefined;
   onClose: () => void;
   onOpenCall: (callId: string) => void;
   onCloseAlert: (id: string) => void;

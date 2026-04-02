@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { mockData } from '@/lib/mock-data';
-import { dashboardApi } from '@/lib/api';
-import { useAppStore } from '@/stores/app-store';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { alertsApi, callsApi, dashboardApi } from '@/lib/api';
+import { mapAlertRecordToViewModel, mapCallDetailToViewModel } from '@/lib/supervisor-alerts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -71,7 +70,6 @@ function ErrorState({ error, onRetry }: ErrorStateProps) {
 
 export default function SupervisorOverview() {
   const navigate = useNavigate();
-  const { alerts, setAlerts } = useAppStore();
   const [dateRange, setDateRange] = useState<DateRangeOption>('14');
 
   // Fetch dashboard data from API
@@ -88,29 +86,82 @@ export default function SupervisorOverview() {
     retry: 1,
   });
 
-  // Initialize alerts from mock data if empty (alerts are managed separately)
-  useEffect(() => {
-    if (alerts.length === 0) {
-      setAlerts(mockData.alerts);
-    }
-  }, [alerts.length, setAlerts]);
+  const {
+    data: recentAlertsResponse,
+    isLoading: isRecentAlertsLoading,
+    isError: isRecentAlertsError,
+    error: recentAlertsError,
+    refetch: refetchRecentAlerts,
+  } = useQuery({
+    queryKey: ['alerts', 'recent-open'],
+    queryFn: () => alertsApi.listAlerts({ status: 'open', page: 1, per_page: 5 }),
+    staleTime: 30 * 1000,
+    refetchInterval: 10 * 1000,
+    retry: 1,
+  });
 
-  // Computed values from alerts (not from API)
-  const openAlerts = useMemo(
-    () => alerts.filter((a) => a.status === 'open').length,
-    [alerts]
-  );
+  const {
+    data: totalAlertsResponse,
+    isLoading: isTotalAlertsLoading,
+    isError: isTotalAlertsError,
+    error: totalAlertsError,
+    refetch: refetchTotalAlerts,
+  } = useQuery({
+    queryKey: ['alerts', 'total-count'],
+    queryFn: () => alertsApi.listAlerts({ page: 1, per_page: 1 }),
+    staleTime: 30 * 1000,
+    refetchInterval: 10 * 1000,
+    retry: 1,
+  });
 
   const recentAlerts = useMemo(
-    () => alerts.filter((a) => a.status === 'open').slice(0, 5),
-    [alerts]
+    () => (recentAlertsResponse?.alerts ?? []).map(mapAlertRecordToViewModel),
+    [recentAlertsResponse]
   );
 
-  // Call lookup for alert details (still using mock for now)
-  const callsById = useMemo(
-    () => Object.fromEntries(mockData.calls.map((c) => [c.id, c])),
-    []
+  const callIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          recentAlerts
+            .map((alert) => alert.callId)
+            .filter((callId): callId is string => Boolean(callId))
+        )
+      ),
+    [recentAlerts]
   );
+
+  const callQueries = useQueries({
+    queries: callIds.map((callId) => ({
+      queryKey: ['calls', 'detail', callId],
+      queryFn: () => callsApi.getCallById(callId),
+      staleTime: 30 * 1000,
+      retry: 1,
+    })),
+  });
+
+  const callsById = useMemo(
+    () =>
+      Object.fromEntries(
+        callQueries
+          .filter((query) => query.data)
+          .map((query) => {
+            const call = mapCallDetailToViewModel(query.data!);
+            return [call.id, call];
+          })
+      ),
+    [callQueries]
+  );
+
+  const alertsError = (recentAlertsError || totalAlertsError) as Error | null;
+  const alertsRefetch = () => {
+    void refetchRecentAlerts();
+    void refetchTotalAlerts();
+  };
+  const openAlerts = recentAlertsResponse?.total ?? 0;
+  const totalAlerts = totalAlertsResponse?.total ?? 0;
+  const alertsLoading = isRecentAlertsLoading || isTotalAlertsLoading;
+  const alertsFailed = isRecentAlertsError || isTotalAlertsError;
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -130,9 +181,17 @@ export default function SupervisorOverview() {
         </Select>
       </div>
 
-      {isError && <ErrorState error={error as Error} onRetry={() => refetch()} />}
+      {(isError || alertsFailed) && (
+        <ErrorState
+          error={(error as Error) || alertsError || new Error('Failed to load alert data')}
+          onRetry={() => {
+            void refetch();
+            alertsRefetch();
+          }}
+        />
+      )}
 
-      {isLoading ? (
+      {isLoading || alertsLoading ? (
         <OverviewSkeleton />
       ) : dashboardData ? (
         <>
@@ -143,7 +202,7 @@ export default function SupervisorOverview() {
             negativePercent={dashboardData.negativePercent}
             negativeCallCount={dashboardData.negativeCallCount}
             openAlerts={openAlerts}
-            totalAlerts={alerts.length}
+            totalAlerts={totalAlerts}
           />
 
           <Tabs defaultValue="trends" className="space-y-6">

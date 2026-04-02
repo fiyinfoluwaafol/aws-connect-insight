@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Alert, Call } from '@/lib/mock-data';
 
 interface SentEmail {
   id: string;
@@ -66,17 +65,10 @@ interface AgentCall {
 }
 
 interface Settings {
-  sentimentThreshold: number;
-  keywords: string[];
   dataRetentionDays: number;
 }
 
 interface AppState {
-  // Alerts
-  alerts: Alert[];
-  setAlerts: (alerts: Alert[]) => void;
-  updateAlert: (alertId: string, patch: Partial<Alert>) => void;
-  
   // Exemplars
   exemplarCallIds: string[];
   toggleExemplar: (callId: string) => void;
@@ -119,23 +111,12 @@ interface AppState {
 }
 
 const defaultSettings: Settings = {
-  sentimentThreshold: -0.5,
-  keywords: ['refund', 'cancel', 'supervisor', 'complaint', 'chargeback'],
   dataRetentionDays: 30,
 };
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set, get) => ({
-      alerts: [],
-      setAlerts: (alerts) => set({ alerts }),
-      updateAlert: (alertId, patch) =>
-        set((state) => ({
-          alerts: state.alerts.map((a) =>
-            a.id === alertId ? { ...a, ...patch } : a
-          ),
-        })),
-
+    (set) => ({
       exemplarCallIds: [],
       toggleExemplar: (callId) =>
         set((state) => ({
@@ -234,7 +215,6 @@ export const useAppStore = create<AppState>()(
 
       resetAll: () =>
         set({
-          alerts: [],
           exemplarCallIds: [],
           bookmarkedExemplars: [],
           callNotes: [],
