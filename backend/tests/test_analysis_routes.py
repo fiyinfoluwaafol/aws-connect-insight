@@ -37,7 +37,7 @@ def test_analyze_transcript_returns_exact_contract(
             summary=LONG_SUMMARY,
             sentiment_score=0.5,
             sentiment_label="positive",
-            top_keywords=["active listening", "positive reinforcement"],
+            key_moves=["active listening", "positive reinforcement"],
             is_resolved=False,
             topics=["Account setup"],
             keywords={},
@@ -61,7 +61,7 @@ def test_analyze_transcript_returns_exact_contract(
         "summary": LONG_SUMMARY,
         "sentiment_score": 0.5,
         "sentiment_label": "positive",
-        "top_keywords": ["active listening", "positive reinforcement"],
+        "key_moves": ["active listening", "positive reinforcement"],
         "is_resolved": False,
         "topics": ["Account setup"],
         "keywords": {},
@@ -87,7 +87,7 @@ def test_analyze_transcript_defaults_to_gpt_5_mini(
             summary="Call reviewed.",
             sentiment_score=0.2,
             sentiment_label="neutral",
-            top_keywords=[],
+            key_moves=[],
             is_resolved=False,
             topics=[],
             keywords={},
@@ -152,11 +152,28 @@ def test_transcript_analysis_response_normalizes_notebook_shape() -> None:
         "summary": "Call reviewed.",
         "sentiment_score": 0.75,
         "sentiment_label": "positive",
-        "top_keywords": ["active listening", "positive reinforcement"],
+        "key_moves": ["active listening", "positive reinforcement"],
         "is_resolved": False,
         "topics": ["Account setup"],
         "keywords": {"refund": True, "charge": True},
     }
+
+
+def test_transcript_analysis_response_accepts_legacy_top_keywords() -> None:
+    """Legacy top_keywords model output should still normalize into key_moves."""
+    response = TranscriptAnalysisResponse.model_validate(
+        {
+            "summary": "Call reviewed.",
+            "sentiment_score": 0.2,
+            "sentiment_label": "neutral",
+            "top_keywords": ["asked clarifying question"],
+            "is_resolved": True,
+            "topics": [],
+            "keywords": {},
+        }
+    )
+
+    assert response.model_dump()["key_moves"] == ["asked clarifying question"]
 
 
 def test_transcript_analysis_keyword_normalization_drops_unknown_keys() -> None:
@@ -166,7 +183,7 @@ def test_transcript_analysis_keyword_normalization_drops_unknown_keys() -> None:
             "summary": "Call reviewed.",
             "sentiment_score": 0.0,
             "sentiment_label": "neutral",
-            "top_keywords": [],
+            "key_moves": [],
             "is_resolved": False,
             "topics": [],
             "keywords": {"refund": True, "account": True, "delay": False},
@@ -183,7 +200,7 @@ def test_transcript_analysis_response_drops_resolved_keyword_when_unresolved() -
             "summary": "Call reviewed.",
             "sentiment_score": -0.4,
             "sentiment_label": "negative",
-            "top_keywords": [],
+            "key_moves": [],
             "is_resolved": False,
             "topics": [],
             "keywords": {"resolved": True, "refund": True},

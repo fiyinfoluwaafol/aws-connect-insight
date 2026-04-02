@@ -267,7 +267,15 @@ export interface SimulateCallResponse {
   sentiment_score: number;
   sentiment_label: 'positive' | 'neutral' | 'negative';
   summary: string;
+  transcript: Array<{
+    speaker: string;
+    text: string;
+    timestamp?: string;
+  }>;
+  key_moves: string[];
+  is_resolved: boolean;
   topics: string[];
+  keywords: Record<string, boolean>;
 }
 
 // =============================================================================

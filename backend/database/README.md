@@ -64,12 +64,12 @@ Other exceptions:
 
 | Function | Returns |
 |----------|---------|
-| `create_call(client, agent_id, team_id, recording_url, duration_seconds, started_at)` | call dict |
+| `create_call(client, agent_id, team_id, recording_url, duration_seconds, started_at, transcript=None)` | call dict |
 | `update_call_transcript(client, call_id, transcript)` | call dict |
 | `get_call_by_id(client, call_id)` | call dict + `call_analyses` |
 | `search_calls(client, team_id, ...)` | `{calls, total}` |
 
-> **Note:** `transcript` is a list of `{speaker, text}` dicts. Add it via `update_call` after transcription completes.
+> **Note:** `transcript` is a list of `{speaker, text}` dicts. It can be included during `create_call()` or added later via `update_call_transcript()`.
 
 ### search_calls options
 
@@ -97,6 +97,14 @@ search_calls(
 | `create_team(client, name, supervisor_id)` | team dict |
 | `get_team_by_id(client, team_id)` | team dict |
 | `add_agent_to_team(client, agent_id, team_id)` | user dict |
+
+## sample_transcripts
+
+| Function | Returns |
+|----------|---------|
+| `get_random_sample_transcript(client)` | sample transcript dict |
+
+> **Note:** Sample transcripts are a synthetic pool for simulation and testing. The helper returns one random transcript row from that pool.
 
 ## analysis
 

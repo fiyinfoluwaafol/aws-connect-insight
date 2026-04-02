@@ -64,7 +64,7 @@ Use exactly these top-level keys:
 - summary: string
 - sentiment_score: number from -1.0 to 1.0
 - sentiment_label: "positive", "neutral", or "negative"
-- top_keywords: array of short strings describing the most important
+- key_moves: array of short strings describing the most important
   interaction techniques, cues, or call signals
 - is_resolved: boolean
 - topics: array of topic strings
@@ -92,7 +92,7 @@ class TranscriptAnalysisResponse(BaseModel):
     summary: str = ""
     sentiment_score: float = 0.0
     sentiment_label: str = "neutral"
-    top_keywords: list[str] = Field(default_factory=list)
+    key_moves: list[str] = Field(default_factory=list)
     is_resolved: bool = False
     topics: list[str] = Field(default_factory=list)
     keywords: dict[str, bool] = Field(default_factory=dict)
@@ -122,11 +122,11 @@ class TranscriptAnalysisResponse(BaseModel):
             else:
                 raw_label = "neutral"
 
-        raw_top_keywords = data.get("top_keywords", data.get("key_moves", []))
-        if isinstance(raw_top_keywords, list):
-            top_keywords = [str(item).strip() for item in raw_top_keywords if str(item).strip()]
+        raw_key_moves = data.get("key_moves", data.get("top_keywords", []))
+        if isinstance(raw_key_moves, list):
+            key_moves = [str(item).strip() for item in raw_key_moves if str(item).strip()]
         else:
-            top_keywords = []
+            key_moves = []
 
         raw_topics = data.get("topics", [])
         if isinstance(raw_topics, list):
@@ -141,7 +141,7 @@ class TranscriptAnalysisResponse(BaseModel):
             "summary": summary,
             "sentiment_score": sentiment_score,
             "sentiment_label": raw_label,
-            "top_keywords": top_keywords,
+            "key_moves": key_moves,
             "is_resolved": bool(data.get("is_resolved", False)),
             "topics": topics,
             "keywords": _prune_keywords_for_resolution(

@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+import uuid
 from pathlib import Path
 
 from supabase import create_client
@@ -39,16 +40,24 @@ def main():
     # Insert each transcript into the database
     inserted_count = 0
     for item in data:
-        # Extract turns array from transcript object
+        source_transcript_id = item.get("id")
         turns = item.get("transcript", {}).get("turns", [])
 
-        if not turns:
-            print(f"Warning: No turns found for transcript {item.get('id')}, skipping")
+        if not source_transcript_id or not turns:
+            print(f"Warning: Transcript {item.get('id')} is missing required data, skipping")
             continue
 
-        # Insert into sample_transcripts table
+        sample_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"sample-transcript:{source_transcript_id}"))
+
+        # Upsert into sample_transcripts table using a deterministic UUID so reruns stay idempotent.
         try:
-            client.table("sample_transcripts").insert({"transcript": turns}).execute()
+            client.table("sample_transcripts").upsert(
+                {
+                    "id": sample_id,
+                    "transcript": turns,
+                },
+                on_conflict="id",
+            ).execute()
             inserted_count += 1
 
             if inserted_count % 10 == 0:
@@ -58,7 +67,7 @@ def main():
             print(f"Error inserting transcript {item.get('id')}: {e}")
             continue
 
-    print(f"\nComplete! Inserted {inserted_count} transcripts into sample_transcripts table")
+    print(f"\nComplete! Upserted {inserted_count} transcripts into sample_transcripts table")
 
 
 if __name__ == "__main__":
