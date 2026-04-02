@@ -59,6 +59,10 @@ class ApiClient {
       body: data ? JSON.stringify(data) : undefined,
     });
   }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'DELETE' });
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);
@@ -128,4 +132,217 @@ export const authApi = {
 
   changePassword: (data: ChangePasswordRequest) =>
     api.patch<MessageResponse>('/api/auth/change-password', data),
+};
+
+// =============================================================================
+// Dashboard API Types
+// =============================================================================
+
+export interface ApiDailyMetric {
+  date: string;
+  call_count: number;
+  avg_sentiment: number | null;
+  avg_duration: number | null;
+  negative_call_percent: number;
+}
+
+export interface ApiSentimentDistribution {
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+export interface ApiTopicCount {
+  name: string;
+  count: number;
+}
+
+export interface ApiAgentStat {
+  agent_id: string;
+  name: string;
+  call_count: number;
+  avg_sentiment: number | null;
+}
+
+export interface TrendsResponse {
+  daily_metrics: ApiDailyMetric[];
+  total_calls: number;
+  avg_sentiment: number | null;
+  avg_duration: number | null;
+  negative_call_percent: number;
+  sentiment_distribution: ApiSentimentDistribution;
+  top_topics: ApiTopicCount[];
+  agent_stats: ApiAgentStat[];
+}
+
+// Transformed types for frontend components
+export interface DailyMetric {
+  date: string;
+  avgSentiment: number;
+  callCount: number;
+  avgDuration: number;
+  negativePercent: number;
+}
+
+export interface TopicDatum {
+  name: string;
+  value: number;
+}
+
+export interface SentimentDatum {
+  name: 'Positive' | 'Neutral' | 'Negative';
+  value: number;
+  color: string;
+}
+
+export interface AgentPerformanceDatum {
+  name: string;
+  sentiment: number;
+  calls: number;
+}
+
+export interface DashboardData {
+  totalCalls: number;
+  avgSentiment: number;
+  avgDuration: number | null;
+  negativePercent: number;
+  negativeCallCount: number;
+  dailyMetrics: DailyMetric[];
+  topTopics: TopicDatum[];
+  sentimentDist: SentimentDatum[];
+  agentStats: AgentPerformanceDatum[];
+}
+
+// =============================================================================
+// Dashboard API
+// =============================================================================
+
+function transformTrendsResponse(response: TrendsResponse): DashboardData {
+  return {
+    totalCalls: response.total_calls,
+    avgSentiment: response.avg_sentiment ?? 0,
+    avgDuration: response.avg_duration,
+    negativePercent: response.negative_call_percent,
+    negativeCallCount: response.sentiment_distribution.negative,
+    dailyMetrics: response.daily_metrics.map((m) => ({
+      date: m.date,
+      avgSentiment: m.avg_sentiment ?? 0,
+      callCount: m.call_count,
+      avgDuration: m.avg_duration ?? 0,
+      negativePercent: m.negative_call_percent,
+    })),
+    topTopics: response.top_topics.map((t) => ({
+      name: t.name.replace(/-/g, ' '),
+      value: t.count,
+    })),
+    sentimentDist: [
+      { name: 'Positive', value: response.sentiment_distribution.positive, color: 'hsl(var(--success))' },
+      { name: 'Neutral', value: response.sentiment_distribution.neutral, color: 'hsl(var(--muted-foreground))' },
+      { name: 'Negative', value: response.sentiment_distribution.negative, color: 'hsl(var(--destructive))' },
+    ],
+    agentStats: response.agent_stats.slice(0, 6).map((a) => ({
+      name: a.name.split(' ')[0],
+      sentiment: a.avg_sentiment ?? 0,
+      calls: a.call_count,
+    })),
+  };
+}
+
+export const dashboardApi = {
+  getTrends: (days: number) =>
+    api.get<TrendsResponse>(`/api/dashboard/trends?days=${days}`),
+
+  getTrendsTransformed: async (days: number): Promise<DashboardData> => {
+    const response = await api.get<TrendsResponse>(`/api/dashboard/trends?days=${days}`);
+    return transformTrendsResponse(response);
+  },
+};
+
+// =============================================================================
+// Calls API Types
+// =============================================================================
+
+export interface SimulateCallResponse {
+  call_id: string;
+  sentiment_score: number;
+  sentiment_label: 'positive' | 'neutral' | 'negative';
+  summary: string;
+  topics: string[];
+}
+
+// =============================================================================
+// Calls API
+// =============================================================================
+
+export const callsApi = {
+  simulateCall: () =>
+    api.post<SimulateCallResponse>('/api/calls/simulate'),
+};
+
+// =============================================================================
+// Teams API Types
+// =============================================================================
+
+export interface AgentInfo {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+}
+
+export interface TeamMembersResponse {
+  members: AgentInfo[];
+  team_id: string;
+}
+
+export interface AvailableAgentsResponse {
+  agents: AgentInfo[];
+}
+
+export interface AddMemberRequest {
+  agent_id: string;
+}
+
+// =============================================================================
+// Teams API
+// =============================================================================
+
+export const teamsApi = {
+  getMembers: () =>
+    api.get<TeamMembersResponse>('/api/teams/members'),
+
+  getAvailableAgents: () =>
+    api.get<AvailableAgentsResponse>('/api/teams/available-agents'),
+
+  addMember: (data: AddMemberRequest) =>
+    api.post<MessageResponse>('/api/teams/members', data),
+
+  removeMember: (agentId: string) =>
+    api.delete<MessageResponse>(`/api/teams/members/${agentId}`),
+};
+
+// =============================================================================
+// Agent API Types
+// =============================================================================
+
+export interface WeeklyTrendItem {
+  day: string;
+  sentiment: number;
+  calls: number;
+}
+
+export interface PerformanceResponse {
+  total_calls: number;
+  avg_sentiment: number;
+  percentile: number;
+  weekly_trend: WeeklyTrendItem[];
+}
+
+// =============================================================================
+// Agent API
+// =============================================================================
+
+export const agentApi = {
+  getPerformance: () =>
+    api.get<PerformanceResponse>('/api/agent/performance'),
 };

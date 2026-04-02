@@ -77,11 +77,38 @@ def test_register_returns_created_user(
 
 def test_register_rejects_public_supervisor_signup(
     client: TestClient,
+    mock_supabase: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """POST /api/auth/register forbids self-signup for supervisor accounts."""
-    register_mock = MagicMock()
+    """POST /api/auth/register allows supervisor signup and creates a team."""
+    register_mock = MagicMock(
+        return_value=AuthUser(
+            id="user-1",
+            email="supervisor@example.com",
+            first_name="Test",
+            last_name="Supervisor",
+            role="supervisor",
+            team_id=None,
+        )
+    )
     monkeypatch.setattr(auth_router, "register_user", register_mock)
+
+    # Mock create_team
+    create_team_mock = MagicMock(return_value={"id": "team-1", "name": "Test's Team"})
+    monkeypatch.setattr(auth_router, "create_team", create_team_mock)
+
+    # Mock get_current_user_profile
+    profile_mock = MagicMock(
+        return_value=AuthUser(
+            id="user-1",
+            email="supervisor@example.com",
+            first_name="Test",
+            last_name="Supervisor",
+            role="supervisor",
+            team_id="team-1",
+        )
+    )
+    monkeypatch.setattr(auth_router, "get_current_user_profile", profile_mock)
 
     response = client.post(
         "/api/auth/register",
@@ -94,9 +121,20 @@ def test_register_rejects_public_supervisor_signup(
         },
     )
 
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Supervisor accounts must be created by an administrator"}
-    register_mock.assert_not_called()
+    assert response.status_code == 201
+    assert response.json() == {
+        "id": "user-1",
+        "email": "supervisor@example.com",
+        "first_name": "Test",
+        "last_name": "Supervisor",
+        "role": "supervisor",
+        "team_id": "team-1",
+    }
+    register_mock.assert_called_once()
+    create_team_mock.assert_called_once_with(
+        mock_supabase, name="Test's Team", supervisor_id="user-1"
+    )
+    profile_mock.assert_called_once()
 
 
 def test_login_sets_auth_cookies(

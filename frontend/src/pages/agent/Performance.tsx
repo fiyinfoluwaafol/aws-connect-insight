@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
+import { agentApi, PerformanceResponse } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
-import { MockService } from '@/lib/mock-service';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Phone, Users } from 'lucide-react';
+import { TrendingUp, Phone, Users, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import {
   LineChart,
   Line,
@@ -17,7 +19,67 @@ import {
 
 export default function AgentPerformance() {
   const { user } = useAuthStore();
-  const performance = MockService.getAgentPerformance(user?.agentId || 'a1');
+  const [performance, setPerformance] = useState<PerformanceResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPerformance = async () => {
+      try {
+        setLoading(true);
+        const data = await agentApi.getPerformance();
+        setPerformance(data);
+      } catch (error) {
+        console.error('Failed to load performance data:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load performance data',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPerformance();
+  }, []);
+
+  // Show message if not in a team
+  if (!user?.teamId) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Card className="p-8 max-w-md text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Not Assigned to a Team</h3>
+            <p className="text-muted-foreground">
+              Please join a team to start getting calls and performance information.
+              Contact your supervisor to be added to a team.
+            </p>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!performance) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <div className="text-center py-12 text-muted-foreground">
+          <p>No performance data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -26,12 +88,12 @@ export default function AgentPerformance() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="p-6 text-center">
           <Phone className="h-8 w-8 mx-auto mb-2 text-primary" />
-          <p className="text-3xl font-bold">{performance.totalCalls}</p>
+          <p className="text-3xl font-bold">{performance.total_calls}</p>
           <p className="text-sm text-muted-foreground">Calls This Week</p>
         </Card>
         <Card className="p-6 text-center">
           <TrendingUp className="h-8 w-8 mx-auto mb-2 text-success" />
-          <p className="text-3xl font-bold">{performance.avgSentiment}</p>
+          <p className="text-3xl font-bold">{performance.avg_sentiment.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground">Avg Sentiment</p>
         </Card>
         <Card className="p-6">
@@ -52,7 +114,7 @@ export default function AgentPerformance() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Weekly Sentiment Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performance.weeklyTrend}>
+            <LineChart data={performance.weekly_trend}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="day"
@@ -87,7 +149,7 @@ export default function AgentPerformance() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Weekly Call Volume</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={performance.weeklyTrend}>
+            <BarChart data={performance.weekly_trend}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="day"
@@ -123,10 +185,10 @@ export default function AgentPerformance() {
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span>Your Average Sentiment</span>
-              <span className="font-medium">{performance.avgSentiment}</span>
+              <span className="font-medium">{performance.avg_sentiment.toFixed(2)}</span>
             </div>
             <Progress
-              value={(performance.avgSentiment + 1) * 50}
+              value={(performance.avg_sentiment + 1) * 50}
               className="h-2"
             />
           </div>

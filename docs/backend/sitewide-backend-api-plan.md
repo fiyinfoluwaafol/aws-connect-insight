@@ -6,6 +6,7 @@
 | ---------------------- | --------- | ------------------------------------------ |
 | Auth                   | 8         | Both roles                                 |
 | Supervisor — Dashboard | 1         | Overview page                              |
+| Supervisor — Teams     | 4         | Team management page                       |
 | Supervisor — Alerts    | 4         | Alerts page + alert detail sidebar         |
 | Supervisor — Search    | 1         | Search page                                |
 | Supervisor — Briefs    | 3         | Briefs page                                |
@@ -14,11 +15,11 @@
 | Agent — Coaching Tips  | 2         | Home page                                  |
 | Agent — Exemplars      | 2         | Exemplars page                             |
 | Agent — Notifications  | 2         | Notifications page                         |
-| Shared — Calls         | 1         | CallDetailDrawer (used by Alerts + Search) |
+| Shared — Calls         | 2         | CallDetailDrawer + Simulate functionality  |
 | Shared — Notes         | 2         | CallDetailDrawer (notes section)           |
 | Shared — Actions       | 1         | CallDetailDrawer (Mark Exemplar)           |
 | Shared — Agents        | 1         | Search page (agent filter dropdown)        |
-| **Total**              | **31**    |                                            |
+| **Total**              | **36**    |                                            |
 
 ## AUTH
 
@@ -276,6 +277,118 @@ Dashboard overview stats, charts, and agent performance.
 
 ---
 
+## SUPERVISOR — TEAMS
+
+### GET `/api/teams/members`
+
+Get all members of the supervisor's team.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response `200`:**
+
+```json
+{
+  "members": [
+    {
+      "id": "uuid",
+      "email": "agent1@example.com",
+      "first_name": "John",
+      "last_name": "Smith"
+    },
+    {
+      "id": "uuid",
+      "email": "agent2@example.com",
+      "first_name": "Jane",
+      "last_name": "Doe"
+    }
+  ],
+  "team_id": "uuid"
+}
+```
+
+**Errors:** `403` if not a supervisor or not assigned to a team, `503` if database unavailable
+
+---
+
+### GET `/api/teams/available-agents`
+
+Get all agents not assigned to any team. Used to populate the "Available Agents" list for adding to team.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response `200`:**
+
+```json
+{
+  "agents": [
+    {
+      "id": "uuid",
+      "email": "newagent@example.com",
+      "first_name": "Mike",
+      "last_name": "Johnson"
+    }
+  ]
+}
+```
+
+**Errors:** `403` if not a supervisor, `503` if database unavailable
+
+---
+
+### POST `/api/teams/members`
+
+Add an agent to the supervisor's team. The agent must not already be assigned to another team.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:**
+
+```json
+{
+  "agent_id": "uuid"
+}
+```
+
+**Response `200`:**
+
+```json
+{
+  "message": "Agent added to team successfully"
+}
+```
+
+**Errors:**
+- `400` if agent is already on a team or not an agent role
+- `403` if not a supervisor or not assigned to a team
+- `404` if agent not found
+- `500` if database operation fails
+- `503` if database unavailable
+
+---
+
+### DELETE `/api/teams/members/{agent_id}`
+
+Remove an agent from the supervisor's team. Sets the agent's team_id to null.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response `200`:**
+
+```json
+{
+  "message": "Agent removed from team successfully"
+}
+```
+
+**Errors:**
+- `403` if not a supervisor or not assigned to a team
+- `404` if agent not found or not on supervisor's team
+- `500` if database operation fails
+- `503` if database unavailable
+
+---
+
 ## SUPERVISOR — ALERTS
 
 ### GET `/api/alerts`
@@ -465,6 +578,37 @@ Search and filter calls.
   "per_page": 20
 }
 ```
+
+---
+
+## SHARED — CALLS
+
+### POST `/api/calls/simulate`
+
+Simulate a call for the current authenticated agent. Creates a realistic call record with random sentiment, duration, topics, and analysis. Used for testing and demo purposes.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request Body:** None
+
+**Response `200`:**
+
+```json
+{
+  "call_id": "uuid",
+  "sentiment_score": 0.45,
+  "sentiment_label": "positive",
+  "summary": "Customer was satisfied with the resolution provided. Issue resolved successfully.",
+  "topics": ["billing-issue", "technical-support"]
+}
+```
+
+**Errors:**
+- `403` if user is not assigned to a team
+- `500` if database operation fails
+- `503` if database unavailable
+
+**Note:** The call is automatically assigned to the authenticated user as the agent. The sentiment distribution is weighted towards realistic scenarios (40% positive, 40% neutral, 20% negative). Topics are randomly selected from a predefined list.
 
 ---
 
@@ -940,27 +1084,32 @@ Personal KPIs, weekly trend, and anonymized team comparison.
 | 7   | POST   | `/api/auth/reset-password`           | Both       | Reset password page      |
 | 8   | PATCH  | `/api/auth/change-password`          | Both       | Settings / profile       |
 | 9   | GET    | `/api/dashboard/metrics`             | Supervisor | Overview                 |
-| 10  | GET    | `/api/alerts`                        | Supervisor | Alerts                   |
-| 11  | PATCH  | `/api/alerts/{alert_id}`             | Supervisor | Alerts                   |
-| 12  | PATCH  | `/api/alerts/read-all`               | Supervisor | Alerts                   |
-| 13  | POST   | `/api/alerts`                        | Supervisor | CallDetailDrawer         |
-| 14  | GET    | `/api/agents`                        | Supervisor | Search (agent dropdown)  |
-| 15  | GET    | `/api/calls`                         | Supervisor | Search                   |
-| 16  | GET    | `/api/calls/{call_id}`               | Both       | CallDetailDrawer         |
-| 17  | GET    | `/api/calls/{call_id}/notes`         | Both       | CallDetailDrawer         |
-| 18  | POST   | `/api/calls/{call_id}/notes`         | Both       | CallDetailDrawer         |
-| 19  | POST   | `/api/exemplars`                     | Supervisor | CallDetailDrawer         |
-| 20  | GET    | `/api/briefs`                        | Supervisor | Briefs                   |
-| 21  | POST   | `/api/briefs/generate`               | Supervisor | Briefs                   |
-| 22  | GET    | `/api/briefs/{brief_id}/export`      | Supervisor | Briefs                   |
-| 23  | GET    | `/api/settings`                      | Supervisor | Settings                 |
-| 24  | PATCH  | `/api/settings`                      | Supervisor | Settings                 |
-| 25  | GET    | `/api/agent/performance`             | Agent      | Performance              |
-| 26  | GET    | `/api/agent/coaching-tips`           | Agent      | Home                     |
-| 27  | PATCH  | `/api/agent/coaching-tips/{tip_id}`  | Agent      | Home                     |
-| 28  | GET    | `/api/agent/exemplars`               | Agent      | Exemplars                |
-| 29  | GET    | `/api/agent/exemplars/{exemplar_id}` | Agent      | Exemplars                |
-| 30  | GET    | `/api/agent/notifications`           | Agent      | Notifications            |
-| 31  | PATCH  | `/api/agent/notifications/read-all`  | Agent      | Notifications            |
+| 10  | GET    | `/api/teams/members`                 | Supervisor | Team                     |
+| 11  | GET    | `/api/teams/available-agents`        | Supervisor | Team                     |
+| 12  | POST   | `/api/teams/members`                 | Supervisor | Team                     |
+| 13  | DELETE | `/api/teams/members/{agent_id}`      | Supervisor | Team                     |
+| 14  | GET    | `/api/alerts`                        | Supervisor | Alerts                   |
+| 15  | PATCH  | `/api/alerts/{alert_id}`             | Supervisor | Alerts                   |
+| 16  | PATCH  | `/api/alerts/read-all`               | Supervisor | Alerts                   |
+| 17  | POST   | `/api/alerts`                        | Supervisor | CallDetailDrawer         |
+| 18  | GET    | `/api/agents`                        | Supervisor | Search (agent dropdown)  |
+| 19  | GET    | `/api/calls`                         | Supervisor | Search                   |
+| 20  | POST   | `/api/calls/simulate`                | Agent      | Home                     |
+| 21  | GET    | `/api/calls/{call_id}`               | Both       | CallDetailDrawer         |
+| 22  | GET    | `/api/calls/{call_id}/notes`         | Both       | CallDetailDrawer         |
+| 23  | POST   | `/api/calls/{call_id}/notes`         | Both       | CallDetailDrawer         |
+| 24  | POST   | `/api/exemplars`                     | Supervisor | CallDetailDrawer         |
+| 25  | GET    | `/api/briefs`                        | Supervisor | Briefs                   |
+| 26  | POST   | `/api/briefs/generate`               | Supervisor | Briefs                   |
+| 27  | GET    | `/api/briefs/{brief_id}/export`      | Supervisor | Briefs                   |
+| 28  | GET    | `/api/settings`                      | Supervisor | Settings                 |
+| 29  | PATCH  | `/api/settings`                      | Supervisor | Settings                 |
+| 30  | GET    | `/api/agent/performance`             | Agent      | Performance              |
+| 31  | GET    | `/api/agent/coaching-tips`           | Agent      | Home                     |
+| 32  | PATCH  | `/api/agent/coaching-tips/{tip_id}`  | Agent      | Home                     |
+| 33  | GET    | `/api/agent/exemplars`               | Agent      | Exemplars                |
+| 34  | GET    | `/api/agent/exemplars/{exemplar_id}` | Agent      | Exemplars                |
+| 35  | GET    | `/api/agent/notifications`           | Agent      | Notifications            |
+| 36  | PATCH  | `/api/agent/notifications/read-all`  | Agent      | Notifications            |
 
 ---

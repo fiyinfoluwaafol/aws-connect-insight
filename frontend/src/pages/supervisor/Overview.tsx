@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { mockData } from '@/lib/mock-data';
+import { dashboardApi } from '@/lib/api';
 import { useAppStore } from '@/stores/app-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -10,6 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { OverviewStats } from './components/OverviewStats';
 import { SentimentTrendChart } from './components/SentimentTrendChart';
 import { CallVolumeChart } from './components/CallVolumeChart';
@@ -17,117 +24,81 @@ import { TopicDistribution } from './components/TopicDistribution';
 import { AgentPerformance } from './components/AgentPerformance';
 import { RecentAlerts } from './components/RecentAlerts';
 
+type DateRangeOption = '7' | '14' | '30';
+
+function OverviewSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Stats skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="p-6">
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-8 w-16 mb-2" />
+            <Skeleton className="h-3 w-32" />
+          </Card>
+        ))}
+      </div>
+      {/* Chart skeleton */}
+      <Card className="p-6">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <Skeleton className="h-[300px] w-full" />
+      </Card>
+    </div>
+  );
+}
+
+interface ErrorStateProps {
+  error: Error;
+  onRetry: () => void;
+}
+
+function ErrorState({ error, onRetry }: ErrorStateProps) {
+  return (
+    <Alert variant="destructive" className="mb-6">
+      <AlertCircle className="h-4 w-4" />
+      <AlertTitle>Failed to load dashboard data</AlertTitle>
+      <AlertDescription className="flex items-center justify-between">
+        <span>{error.message}</span>
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 export default function SupervisorOverview() {
   const navigate = useNavigate();
   const { alerts, setAlerts } = useAppStore();
-  const [dateRange, setDateRange] = useState<'7' | '14' | '30'>('14');
+  const [dateRange, setDateRange] = useState<DateRangeOption>('14');
 
+  // Fetch dashboard data from API
+  const {
+    data: dashboardData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['dashboard', 'trends', dateRange],
+    queryFn: () => dashboardApi.getTrendsTransformed(parseInt(dateRange)),
+    staleTime: 30 * 1000,
+    retry: 1,
+  });
+
+  // Initialize alerts from mock data if empty (alerts are managed separately)
   useEffect(() => {
     if (alerts.length === 0) {
       setAlerts(mockData.alerts);
     }
   }, [alerts.length, setAlerts]);
 
-  const { calls, dailyMetrics, agents } = mockData;
-
-  const cutoffDate = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - parseInt(dateRange));
-    return d;
-  }, [dateRange]);
-
-  const filteredCalls = useMemo(
-    () => calls.filter((c) => new Date(c.startedAt) >= cutoffDate),
-    [calls, cutoffDate]
-  );
-
-  const filteredMetrics = useMemo(
-    () => dailyMetrics.filter((m) => new Date(m.date) >= cutoffDate),
-    [dailyMetrics, cutoffDate]
-  );
-
-  const avgSentiment = useMemo(
-    () =>
-      filteredCalls.length > 0
-        ? filteredCalls.reduce((sum, c) => sum + c.sentimentScore, 0) / filteredCalls.length
-        : 0,
-    [filteredCalls]
-  );
-
-  const negativeCallCount = useMemo(
-    () => filteredCalls.filter((c) => c.sentimentLabel === 'negative').length,
-    [filteredCalls]
-  );
-
-  const negativePercent = useMemo(
-    () =>
-      filteredCalls.length > 0 ? (negativeCallCount / filteredCalls.length) * 100 : 0,
-    [filteredCalls.length, negativeCallCount]
-  );
-
+  // Computed values from alerts (not from API)
   const openAlerts = useMemo(
     () => alerts.filter((a) => a.status === 'open').length,
     [alerts]
-  );
-
-  const topicCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    filteredCalls.forEach((call) => {
-      call.topics.forEach((topic) => {
-        counts[topic] = (counts[topic] || 0) + 1;
-      });
-    });
-    return counts;
-  }, [filteredCalls]);
-
-  const topTopics = useMemo(
-    () =>
-      Object.entries(topicCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([name, value]) => ({ name: name.replace(/-/g, ' '), value })),
-    [topicCounts]
-  );
-
-  const sentimentDist = useMemo(
-    () => [
-      {
-        name: 'Positive' as const,
-        value: filteredCalls.filter((c) => c.sentimentLabel === 'positive').length,
-        color: 'hsl(var(--success))',
-      },
-      {
-        name: 'Neutral' as const,
-        value: filteredCalls.filter((c) => c.sentimentLabel === 'neutral').length,
-        color: 'hsl(var(--muted-foreground))',
-      },
-      {
-        name: 'Negative' as const,
-        value: filteredCalls.filter((c) => c.sentimentLabel === 'negative').length,
-        color: 'hsl(var(--destructive))',
-      },
-    ],
-    [filteredCalls]
-  );
-
-  const agentStats = useMemo(
-    () =>
-      agents
-        .slice(0, 6)
-        .map((agent) => {
-          const agentCalls = filteredCalls.filter((c) => c.agentId === agent.id);
-          const avgSent =
-            agentCalls.length > 0
-              ? agentCalls.reduce((sum, c) => sum + c.sentimentScore, 0) / agentCalls.length
-              : 0;
-          return {
-            name: agent.name.split(' ')[0],
-            sentiment: parseFloat(avgSent.toFixed(2)),
-            calls: agentCalls.length,
-          };
-        })
-        .sort((a, b) => b.sentiment - a.sentiment),
-    [agents, filteredCalls]
   );
 
   const recentAlerts = useMemo(
@@ -135,15 +106,19 @@ export default function SupervisorOverview() {
     [alerts]
   );
 
+  // Call lookup for alert details (still using mock for now)
   const callsById = useMemo(
-    () => Object.fromEntries(calls.map((c) => [c.id, c])),
-    [calls]
+    () => Object.fromEntries(mockData.calls.map((c) => [c.id, c])),
+    []
   );
 
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="flex justify-end mb-6">
-        <Select value={dateRange} onValueChange={(v) => setDateRange(v as '7' | '14' | '30')}>
+        <Select
+          value={dateRange}
+          onValueChange={(v) => setDateRange(v as DateRangeOption)}
+        >
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Select range" />
           </SelectTrigger>
@@ -155,36 +130,47 @@ export default function SupervisorOverview() {
         </Select>
       </div>
 
-      <OverviewStats
-        avgSentiment={avgSentiment}
-        filteredCallCount={filteredCalls.length}
-        dateRange={dateRange}
-        negativePercent={negativePercent}
-        negativeCallCount={negativeCallCount}
-        openAlerts={openAlerts}
-        totalAlerts={alerts.length}
-      />
+      {isError && <ErrorState error={error as Error} onRetry={() => refetch()} />}
 
-      <Tabs defaultValue="trends" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="topics">Topics</TabsTrigger>
-          <TabsTrigger value="agents">Agents</TabsTrigger>
-        </TabsList>
+      {isLoading ? (
+        <OverviewSkeleton />
+      ) : dashboardData ? (
+        <>
+          <OverviewStats
+            avgSentiment={dashboardData.avgSentiment}
+            filteredCallCount={dashboardData.totalCalls}
+            dateRange={dateRange}
+            negativePercent={dashboardData.negativePercent}
+            negativeCallCount={dashboardData.negativeCallCount}
+            openAlerts={openAlerts}
+            totalAlerts={alerts.length}
+          />
 
-        <TabsContent value="trends" className="space-y-6">
-          <SentimentTrendChart data={filteredMetrics} />
-          <CallVolumeChart data={filteredMetrics} />
-        </TabsContent>
+          <Tabs defaultValue="trends" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="trends">Trends</TabsTrigger>
+              <TabsTrigger value="topics">Topics</TabsTrigger>
+              <TabsTrigger value="agents">Agents</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="topics" className="space-y-6">
-          <TopicDistribution topTopics={topTopics} sentimentDist={sentimentDist} />
-        </TabsContent>
+            <TabsContent value="trends" className="space-y-6">
+              <SentimentTrendChart data={dashboardData.dailyMetrics} />
+              <CallVolumeChart data={dashboardData.dailyMetrics} />
+            </TabsContent>
 
-        <TabsContent value="agents">
-          <AgentPerformance data={agentStats} />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="topics" className="space-y-6">
+              <TopicDistribution
+                topTopics={dashboardData.topTopics}
+                sentimentDist={dashboardData.sentimentDist}
+              />
+            </TabsContent>
+
+            <TabsContent value="agents">
+              <AgentPerformance data={dashboardData.agentStats} />
+            </TabsContent>
+          </Tabs>
+        </>
+      ) : null}
 
       <RecentAlerts
         alerts={recentAlerts}
