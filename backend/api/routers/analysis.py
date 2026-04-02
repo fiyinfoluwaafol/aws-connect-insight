@@ -33,9 +33,7 @@ class AnalyzeTranscriptRequest(BaseModel):
 
     @field_validator("transcript")
     @classmethod
-    def validate_transcript(
-        cls, value: str | list[TranscriptTurn]
-    ) -> str | list[TranscriptTurn]:
+    def validate_transcript(cls, value: str | list[TranscriptTurn]) -> str | list[TranscriptTurn]:
         """Ensure transcript content is not empty."""
         if isinstance(value, str) and not value.strip():
             raise ValueError("Transcript cannot be empty")
