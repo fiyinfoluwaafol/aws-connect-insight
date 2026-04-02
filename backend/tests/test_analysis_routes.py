@@ -8,6 +8,12 @@ from fastapi.testclient import TestClient
 from api.routers import analysis as analysis_router
 from services.transcript_analysis import TranscriptAnalysisResponse
 
+LONG_SUMMARY = (
+    "The customer reached out to the agent regarding an issue with their account, "
+    "and the agent expressed willingness to assist. The conversation is just "
+    "beginning, indicating a potential for resolution."
+)
+
 
 @pytest.fixture
 def analysis_settings_override(app):
@@ -28,7 +34,7 @@ def test_analyze_transcript_returns_exact_contract(
     """POST /api/analysis returns the exact response shape."""
     analyze_mock = MagicMock(
         return_value=TranscriptAnalysisResponse(
-            summary="The customer reached out to the agent regarding an issue with their account, and the agent expressed willingness to assist. The conversation is just beginning, indicating a potential for resolution.",
+            summary=LONG_SUMMARY,
             sentiment_score=0.5,
             sentiment_label="positive",
             top_keywords=["active listening", "positive reinforcement"],
@@ -52,7 +58,7 @@ def test_analyze_transcript_returns_exact_contract(
 
     assert response.status_code == 200
     assert response.json() == {
-        "summary": "The customer reached out to the agent regarding an issue with their account, and the agent expressed willingness to assist. The conversation is just beginning, indicating a potential for resolution.",
+        "summary": LONG_SUMMARY,
         "sentiment_score": 0.5,
         "sentiment_label": "positive",
         "top_keywords": ["active listening", "positive reinforcement"],

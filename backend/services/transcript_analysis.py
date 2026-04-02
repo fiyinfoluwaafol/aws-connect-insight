@@ -64,7 +64,8 @@ Use exactly these top-level keys:
 - summary: string
 - sentiment_score: number from -1.0 to 1.0
 - sentiment_label: "positive", "neutral", or "negative"
-- top_keywords: array of short strings describing the most important interaction techniques, cues, or call signals
+- top_keywords: array of short strings describing the most important
+  interaction techniques, cues, or call signals
 - is_resolved: boolean
 - topics: array of topic strings
 - keywords: object where each key is a matched keyword and each value is boolean true
@@ -75,7 +76,8 @@ Rules:
 - Prefer these topics when they fit: {PREFERRED_TOPICS}
 - Prefer these keywords when they fit: {PREFERRED_KEYWORDS}
 - For keywords, only use keys from this list: {PREFERRED_KEYWORDS}
-- Only include matched keywords with value true. Example: {{"refund": true, "charge": true}}
+- Only include matched keywords with value true.
+  Example: {{"refund": true, "charge": true}}
 - If there are no matched keywords, return an empty object for keywords.
 """.strip()
 

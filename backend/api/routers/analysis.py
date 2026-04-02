@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field, field_validator
 
 from api.config import Settings, get_settings
 from services.transcript_analysis import (
-    AnalysisServiceError,
     DEFAULT_ANALYSIS_MODEL,
+    AnalysisServiceError,
     TranscriptAnalysisResponse,
     analyze_transcript_with_openai,
 )
@@ -33,7 +33,9 @@ class AnalyzeTranscriptRequest(BaseModel):
 
     @field_validator("transcript")
     @classmethod
-    def validate_transcript(cls, value: str | list[TranscriptTurn]) -> str | list[TranscriptTurn]:
+    def validate_transcript(
+        cls, value: str | list[TranscriptTurn]
+    ) -> str | list[TranscriptTurn]:
         """Ensure transcript content is not empty."""
         if isinstance(value, str) and not value.strip():
             raise ValueError("Transcript cannot be empty")
