@@ -4,8 +4,14 @@
 
 CREATE TYPE user_role AS ENUM ('agent', 'supervisor');
 CREATE TYPE sentiment_label AS ENUM ('positive', 'neutral', 'negative');
-CREATE TYPE alert_type AS ENUM ('threshold', 'keyword');
+CREATE TYPE alert_type AS ENUM (
+  'sentiment_threshold',
+  'keyword_match',
+  'recurring_topic',
+  'recurring_keyword'
+);
 CREATE TYPE alert_severity AS ENUM ('low', 'medium', 'high');
+CREATE TYPE alert_status AS ENUM ('open', 'closed');
 CREATE TYPE notification_type AS ENUM ('alert', 'coaching_tip', 'exemplar_added');
 CREATE TYPE notification_reference_type AS ENUM ('call', 'alert', 'coaching_tip', 'exemplar_call');
 
@@ -126,8 +132,12 @@ CREATE TABLE alert_configurations (
   supervisor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   type alert_type NOT NULL,
-  sentiment_threshold DECIMAL(4, 3) CHECK (sentiment_threshold BETWEEN -1.0 AND 1.0),
-  keyword_id UUID REFERENCES keywords(id) ON DELETE SET NULL,
+  severity alert_severity NOT NULL DEFAULT 'medium',
+  sentiment_below DECIMAL(4, 3) CHECK (sentiment_below BETWEEN -1.0 AND 1.0),
+  keyword VARCHAR(100),
+  topic VARCHAR(100),
+  min_occurrences INTEGER NOT NULL DEFAULT 3,
+  window_days INTEGER NOT NULL DEFAULT 7,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -139,11 +149,19 @@ CREATE TABLE alert_configurations (
 
 CREATE TABLE alerts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  call_id UUID NOT NULL UNIQUE REFERENCES calls(id) ON DELETE CASCADE,
+  call_id UUID REFERENCES calls(id) ON DELETE CASCADE,
+  rule_id UUID REFERENCES alert_configurations(id) ON DELETE SET NULL,
   supervisor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  type alert_type NOT NULL DEFAULT 'sentiment_threshold',
+  status alert_status NOT NULL DEFAULT 'open',
   severity alert_severity NOT NULL,
+  title VARCHAR(255),
+  description TEXT,
   is_read BOOLEAN DEFAULT FALSE,
+  matched_value VARCHAR(100),
+  matched_count INTEGER,
+  window_days INTEGER,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
