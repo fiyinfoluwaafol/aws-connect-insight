@@ -53,13 +53,20 @@ Make sure to create a `.env` file in the root of the `backend/` folder, followin
 ## Architecture
 
 ### Tech Stack
+
+**Frontend**
 - **Framework**: React 18 with Vite
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui components
 - **Charts**: Recharts
-- **State Management**: Zustand with localStorage persistence
+- **State Management**: Zustand
 - **Routing**: React Router DOM v6
 - **PDF Export**: jsPDF + html2canvas
+
+**Backend**
+- **Framework**: FastAPI (Python)
+- **Database & Auth**: Supabase (PostgreSQL + Supabase Auth)
+- **Call Analysis**: OpenAI API (GPT-based transcript analysis)
 
 ### Project Structure
 
@@ -71,77 +78,98 @@ frontend/src/
 │   ├── ProtectedRoute.tsx  # Auth route guard
 │   └── ...
 ├── pages/
-│   ├── SignIn.tsx      # Authentication page
-│   ├── SupervisorLayout.tsx  # Supervisor shell
+│   ├── SignIn.tsx           # Sign in page
+│   ├── SignUp.tsx           # Registration page
+│   ├── ForgotPassword.tsx   # Password reset request
+│   ├── ResetPassword.tsx    # Password reset confirmation
+│   ├── SupervisorLayout.tsx # Supervisor shell
 │   ├── AgentLayout.tsx      # Agent shell
-│   ├── supervisor/     # Supervisor pages
-│   └── agent/          # Agent pages
+│   ├── supervisor/          # Supervisor pages
+│   └── agent/               # Agent pages
 ├── stores/
-│   ├── auth-store.ts   # Authentication state
+│   ├── auth-store.ts   # Authentication state (backed by real API)
 │   └── app-store.ts    # Application state
 └── lib/
-    ├── mock-data.ts    # Generated mock call data
-    ├── mock-service.ts # Service layer for data operations
-    ├── seed.ts         # Initial data seeding logic
+    ├── api.ts          # API client for backend communication
+    ├── mock-data.ts    # Mock call data (used where backend not yet wired up)
+    ├── mock-service.ts # Service layer for mock data operations
     └── utils.ts        # Utility functions
+
+backend/
+├── api/
+│   ├── main.py         # FastAPI app entry point
+│   ├── config.py       # Settings and environment config
+│   ├── dependencies.py # Shared FastAPI dependencies (auth, DB client)
+│   └── routers/        # Route handlers
+│       ├── auth.py     # Registration, login, logout, password reset
+│       ├── analysis.py # Transcript analysis endpoint
+│       ├── calls.py    # Call simulation endpoint
+│       ├── dashboard.py # Supervisor analytics and trends
+│       ├── agent.py    # Agent performance metrics
+│       ├── teams.py    # Team management
+│       └── health.py   # Health check
+├── services/
+│   ├── auth.py                 # Authentication service layer
+│   └── transcript_analysis.py # OpenAI-backed transcript analysis helpers
+└── database/                   # Supabase database access layer
+    ├── auth.py, users.py, calls.py, analysis.py, metrics.py, teams.py
+    ├── constants.py            # Table name constants, role enums
+    └── exceptions.py           # Domain exception types
 ```
 
-## Mock Authentication
+## Authentication
 
-The app uses mock authentication with pre-defined demo users:
-
-### Supervisors
-- `supervisor.ada@demo.com` - Ada (Team East)
-- `supervisor.lee@demo.com` - Lee (Team West)
-
-### Agents
-- `agent.jordan@demo.com` - Jordan
-- `agent.sam@demo.com` - Sam
-- `agent.renee@demo.com` - Renee
+Authentication is backed by **Supabase Auth** with HTTP-only cookie sessions (access + refresh tokens). There are no pre-seeded demo accounts — users register themselves.
 
 ### How It Works
 
-1. Navigate to `/signin` (or you'll be redirected there automatically)
-2. Select a role tab (Supervisor or Agent)
-3. Click on a user account to sign in
-4. Session is stored in Zustand store + localStorage
-5. Protected routes check for valid session and correct role
-6. Sign out clears session and redirects to `/signin`
+1. Navigate to `/signup` to create an account (email, password, name, and role)
+   - Supervisors are automatically assigned a new team on registration
+2. Sign in at `/signin` with your email and password
+3. Sessions are maintained via HTTP-only cookies; the frontend calls `GET /api/auth/me` on load to restore state
+4. Protected routes check for a valid session and correct role
+5. Sign out calls `POST /api/auth/logout`, clears cookies, and redirects to `/signin`
+6. Password reset is available via `/forgot-password` → email link → `/reset-password`
 
-## Data Seeding
+### Roles
+- **Supervisor** — access to the supervisor dashboard, team management, and analytics
+- **Agent** — access to personal performance metrics, coaching tips, and exemplars
 
-### Automatic Seeding
-On first app load, if no data exists in localStorage, the app automatically seeds:
-- ~300 mock calls across 12 agents with realistic data
-- ~25 alerts based on negative sentiment and keywords
-- Daily metrics for the past 30 days
+## Core Call Analytics Pipeline
 
-### Data Structure
+Transcript analysis is powered by **OpenAI** via `POST /api/analysis`. The pipeline:
 
-**Calls include:**
-- Agent and customer information
-- Sentiment score (-1 to 1) and label (positive/neutral/negative)
-- Topics (billing, shipping, returns, etc.)
-- Duration, resolution status, CSAT score
-- Mock transcripts
+1. Accepts a transcript as either a plain string or a structured list of `{ speaker, text }` turns
+2. Calls OpenAI with a structured prompt that extracts:
+   - **Sentiment score** (−1.0 to 1.0) and label (positive / neutral / negative)
+   - **Summary** of the call
+   - **Topics** matched against a preferred list (billing, refund, technical support, etc.)
+   - **Keywords** extracted using pattern matching (frustrated, escalate, cancel, etc.)
+   - **Key moves** — notable agent actions during the call
+   - **Resolution status**
+3. Returns a structured `TranscriptAnalysisResponse` to the caller
 
-**Alerts include:**
-- Severity (high/medium/low)
-- Rule labels (Negative Sentiment, High-Risk Keyword, Unresolved Long Call)
-- Status (open/closed)
-- Linked call reference
+The `POST /api/calls/simulate` endpoint generates realistic call records in Supabase (with randomised sentiment, topics, and summaries) for testing and demo purposes.
 
-### Reset Demo Data
-Use the "Reset Demo" button in Supervisor Settings to:
-1. Clear all persisted data
-2. Re-seed with fresh mock data
-3. Reset all settings to defaults
+## Data
+
+### Live Data (Backend)
+When the backend is running and connected to Supabase:
+- Dashboard trends are fetched from `GET /api/dashboard/trends?days=N` (supervisor, scoped to their team)
+- Agent performance is fetched from `GET /api/agent/performance` (last 7 days)
+- Team membership is managed via `GET/POST/DELETE /api/teams/members`
+
+### Mock Data (Frontend Fallback)
+`frontend/src/lib/mock-data.ts` and `mock-service.ts` provide static data for parts of the UI not yet wired to the backend (alerts, daily briefs, exemplars, coaching tips). This is a transitional layer and will be replaced as each feature is connected.
 
 ## Routes
 
 ### Public
 - `/` - Redirect based on auth state
-- `/signin` - Sign in page
+- `/signin` - Sign in
+- `/signup` - Register a new account
+- `/forgot-password` - Request a password reset email
+- `/reset-password` - Set a new password via reset link
 
 ### Supervisor (requires supervisor role)
 - `/supervisor` - Overview dashboard
@@ -149,6 +177,7 @@ Use the "Reset Demo" button in Supervisor Settings to:
 - `/supervisor/alerts` - Alerts management
 - `/supervisor/search` - Call search
 - `/supervisor/briefs` - Daily briefs
+- `/supervisor/team` - Team management (add/remove agents)
 - `/supervisor/settings` - App settings
 
 ### Agent (requires agent role)
@@ -163,13 +192,9 @@ Use the "Reset Demo" button in Supervisor Settings to:
 ### Simulate Call End (Agent)
 Located in the Agent Home header:
 1. Click "Simulate Call End" button
-2. MockService picks a random call from the agent's history
-3. Generates coaching tips based on call attributes:
-   - Low sentiment → empathy suggestions
-   - Long duration → efficiency tips
-   - Unresolved → follow-up recommendations
-   - Retention topics → alternatives suggestions
-4. Creates a new tip card and notification
+2. Calls `POST /api/calls/simulate` on the backend
+3. A call record with randomised sentiment, topics, duration, and summary is written to Supabase
+4. The response is used to generate a new coaching tip card and notification in the UI
 
 ### CSV Export (Search)
 1. Perform a search with your desired filters
@@ -195,9 +220,8 @@ Located in the Agent Home header:
 
 ## State Persistence
 
-The following data persists across browser sessions via localStorage:
+Authentication is maintained via HTTP-only cookies managed by the backend. The following UI state still persists locally via localStorage for features not yet backed by the API:
 
-- **Auth Session**: Current user login
 - **Alerts**: Status changes (open/closed)
 - **Exemplar Flags**: Calls marked as exemplars
 - **Call Notes**: Notes added to calls
@@ -248,10 +272,12 @@ ruff format --check .     # Format check
 1. **New Pages**: Add to `frontend/src/pages/`, update routes in `App.tsx`
 2. **New Components**: Add to `frontend/src/components/`
 3. **State Changes**: Update stores in `frontend/src/stores/`
-4. **Mock Data**: Extend `frontend/src/lib/mock-data.ts` or `mock-service.ts`
+4. **New API Endpoints**: Add a router in `backend/api/routers/`, register it in `backend/api/main.py`, and add the corresponding client methods to `frontend/src/lib/api.ts`
+5. **Database Queries**: Add helpers to the relevant file under `backend/database/`
 
 ## Technologies Used
 
+**Frontend**
 - [Vite](https://vitejs.dev/) - Build tool
 - [React](https://react.dev/) - UI framework
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
@@ -264,3 +290,11 @@ ruff format --check .     # Format check
 - [html2canvas](https://html2canvas.hertzen.com/) - HTML to canvas
 - [Lucide React](https://lucide.dev/) - Icons
 - [date-fns](https://date-fns.org/) - Date utilities
+
+**Backend**
+- [FastAPI](https://fastapi.tiangolo.com/) - API framework
+- [Supabase](https://supabase.com/) - PostgreSQL database and authentication
+- [OpenAI API](https://platform.openai.com/) - Transcript analysis (sentiment, topics, summaries)
+- [Pydantic](https://docs.pydantic.dev/) - Data validation
+- [Ruff](https://docs.astral.sh/ruff/) - Linting and formatting
+- [pytest](https://pytest.org/) - Testing
