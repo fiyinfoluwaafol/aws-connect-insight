@@ -81,13 +81,25 @@ def test_simulate_call_returns_enriched_payload(
     add_topics_mock = MagicMock()
     add_keywords_mock = MagicMock()
 
-    monkeypatch.setattr(calls_router, "get_random_sample_transcript", MagicMock(return_value=sample_transcript))
-    monkeypatch.setattr(calls_router, "analyze_transcript_with_openai", MagicMock(return_value=analysis_result))
+    monkeypatch.setattr(
+        calls_router,
+        "get_random_sample_transcript",
+        MagicMock(return_value=sample_transcript),
+    )
+    monkeypatch.setattr(
+        calls_router,
+        "analyze_transcript_with_openai",
+        MagicMock(return_value=analysis_result),
+    )
     monkeypatch.setattr(calls_router, "create_call", create_call_mock)
     monkeypatch.setattr(calls_router, "create_analysis", create_analysis_mock)
     monkeypatch.setattr(calls_router, "add_topics_to_analysis", add_topics_mock)
     monkeypatch.setattr(calls_router, "add_keywords_to_analysis", add_keywords_mock)
-    monkeypatch.setattr(calls_router.random, "randint", MagicMock(side_effect=[2, 3, 15, 180, 99999]))
+    monkeypatch.setattr(
+        calls_router.random,
+        "randint",
+        MagicMock(side_effect=[2, 3, 15, 180, 99999]),
+    )
 
     response = authenticated_agent_client.post("/api/calls/simulate")
 
@@ -159,7 +171,12 @@ def test_simulate_call_returns_502_when_analysis_fails(
     monkeypatch.setattr(
         calls_router,
         "get_random_sample_transcript",
-        MagicMock(return_value={"id": "sample-1", "transcript": [{"speaker": "Customer", "text": "Hello"}]}),
+        MagicMock(
+            return_value={
+                "id": "sample-1",
+                "transcript": [{"speaker": "Customer", "text": "Hello"}],
+            }
+        ),
     )
     monkeypatch.setattr(
         calls_router,
@@ -204,7 +221,12 @@ def test_simulate_call_returns_500_on_database_failure(
     monkeypatch.setattr(
         calls_router,
         "get_random_sample_transcript",
-        MagicMock(return_value={"id": "sample-1", "transcript": [{"speaker": "Customer", "text": "Hello"}]}),
+        MagicMock(
+            return_value={
+                "id": "sample-1",
+                "transcript": [{"speaker": "Customer", "text": "Hello"}],
+            }
+        ),
     )
     monkeypatch.setattr(
         calls_router,
@@ -226,7 +248,11 @@ def test_simulate_call_returns_500_on_database_failure(
         "create_call",
         MagicMock(side_effect=DatabaseError("create_call failed: boom")),
     )
-    monkeypatch.setattr(calls_router.random, "randint", MagicMock(side_effect=[1, 2, 3, 180, 12345]))
+    monkeypatch.setattr(
+        calls_router.random,
+        "randint",
+        MagicMock(side_effect=[1, 2, 3, 180, 12345]),
+    )
 
     response = authenticated_agent_client.post("/api/calls/simulate")
 

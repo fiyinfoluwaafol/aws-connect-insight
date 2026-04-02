@@ -169,12 +169,17 @@ def simulate_call(
         if analysis_result.topics:
             add_topics_to_analysis(db_client, analysis["id"], analysis_result.topics)
         if analysis_result.keywords:
-            add_keywords_to_analysis(db_client, analysis["id"], list(analysis_result.keywords.keys()))
+            add_keywords_to_analysis(
+                db_client,
+                analysis["id"],
+                list(analysis_result.keywords.keys()),
+            )
 
         # Log for debugging
         print(
             "Created simulated call "
-            f"{call['id']} for agent {agent_id} using sample transcript {sample_transcript.get('id')}"
+            f"{call['id']} for agent {agent_id} "
+            f"using sample transcript {sample_transcript.get('id')}"
         )
 
         return SimulateCallResponse(

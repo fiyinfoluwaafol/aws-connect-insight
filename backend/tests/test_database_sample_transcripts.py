@@ -20,7 +20,10 @@ def test_get_random_sample_transcript_returns_random_row() -> None:
         ]
     )
 
-    with patch("database.sample_transcripts.random.choice", return_value=query.execute.return_value.data[0]):
+    with patch(
+        "database.sample_transcripts.random.choice",
+        return_value=query.execute.return_value.data[0],
+    ):
         result = get_random_sample_transcript(client)
 
     client.table.assert_called_once_with(Tables.SAMPLE_TRANSCRIPTS)
@@ -39,7 +42,10 @@ def test_get_random_sample_transcript_uses_random_choice() -> None:
         ]
     )
 
-    with patch("database.sample_transcripts.random.choice", return_value=query.execute.return_value.data[1]) as choice_mock:
+    with patch(
+        "database.sample_transcripts.random.choice",
+        return_value=query.execute.return_value.data[1],
+    ) as choice_mock:
         result = get_random_sample_transcript(client)
 
     choice_mock.assert_called_once_with(query.execute.return_value.data)
