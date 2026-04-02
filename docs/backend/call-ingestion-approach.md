@@ -37,9 +37,9 @@ Flow:
 
 Current implementation notes:
 
-- The button lives in the agent experience and is currently implemented in [frontend/src/pages/agent/Home.tsx](/Users/fiyinfoluwaafolayan/Dev-Doings/aws-connect-insight/frontend/src/pages/agent/Home.tsx).
-- The mock service has a matching simulation path in [frontend/src/lib/mock-service.ts](/Users/fiyinfoluwaafolayan/Dev-Doings/aws-connect-insight/frontend/src/lib/mock-service.ts).
-- On the backend side, calls can already be created without a transcript and later updated with one via [backend/database/calls.py](/Users/fiyinfoluwaafolayan/Dev-Doings/aws-connect-insight/backend/database/calls.py).
+- The button lives in the agent experience and is currently implemented in [frontend/src/pages/agent/Home.tsx](../../frontend/src/pages/agent/Home.tsx).
+- The mock service has a matching simulation path in [frontend/src/lib/mock-service.ts](../../frontend/src/lib/mock-service.ts).
+- On the backend side, calls can already be created without a transcript and later updated with one via [backend/database/calls.py](../../backend/database/calls.py).
 
 Why we have it:
 
