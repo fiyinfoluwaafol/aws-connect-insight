@@ -1,5 +1,6 @@
 """Call endpoints for agents and supervisors."""
 
+import logging
 import random
 from datetime import datetime, timedelta
 from typing import Annotated, Any
@@ -13,6 +14,8 @@ from database.analysis import add_keywords_to_analysis, add_topics_to_analysis, 
 from database.calls import create_call
 from database.exceptions import DatabaseError, NotFoundError
 from database.sample_transcripts import get_random_sample_transcript
+from database.teams import get_team_by_id
+from services.alerts import evaluate_alert_rules_for_call
 from services.transcript_analysis import (
     DEFAULT_ANALYSIS_MODEL,
     AnalysisServiceError,
@@ -20,6 +23,7 @@ from services.transcript_analysis import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -175,11 +179,31 @@ def simulate_call(
                 list(analysis_result.keywords.keys()),
             )
 
-        # Log for debugging
-        print(
-            "Created simulated call "
-            f"{call['id']} for agent {agent_id} "
-            f"using sample transcript {sample_transcript.get('id')}"
+        try:
+            team = get_team_by_id(db_client, team_id)
+            supervisor_id = team.get("supervisor_id")
+            if supervisor_id:
+                evaluate_alert_rules_for_call(
+                    db_client,
+                    team_id=team_id,
+                    supervisor_id=supervisor_id,
+                    call_id=call["id"],
+                    started_at=call["started_at"],
+                    sentiment_score=analysis_result.sentiment_score,
+                    topics=analysis_result.topics,
+                    keywords=analysis_result.keywords,
+                )
+        except Exception as exc:  # noqa: BLE001 - alerting must not block call simulation
+            logger.exception(
+                "Alert evaluation failed for simulated call %s",
+                call["id"],
+            )
+
+        logger.info(
+            "Created simulated call %s for agent %s using sample transcript %s",
+            call["id"],
+            agent_id,
+            sample_transcript.get("id"),
         )
 
         return SimulateCallResponse(

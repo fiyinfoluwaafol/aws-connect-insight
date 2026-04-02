@@ -13,6 +13,8 @@ class Tables:
     SAMPLE_TRANSCRIPTS = "sample_transcripts"
     TOPICS = "topics"
     KEYWORDS = "keywords"
+    ALERT_CONFIGURATIONS = "alert_configurations"
+    ALERTS = "alerts"
     USERS = "users"
     TEAMS = "teams"
 
@@ -29,3 +31,27 @@ class SortOrder(Enum):
 
     RECENT = "recent"
     OLDEST = "oldest"
+
+
+class AlertRuleType(str, Enum):
+    """Supported automated alert rule types."""
+
+    SENTIMENT_THRESHOLD = "sentiment_threshold"
+    KEYWORD_MATCH = "keyword_match"
+    RECURRING_TOPIC = "recurring_topic"
+    RECURRING_KEYWORD = "recurring_keyword"
+
+
+class AlertSeverity(str, Enum):
+    """Supported alert severity levels."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class AlertStatus(str, Enum):
+    """Supported alert lifecycle states."""
+
+    OPEN = "open"
+    CLOSED = "closed"
