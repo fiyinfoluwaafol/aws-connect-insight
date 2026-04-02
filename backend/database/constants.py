@@ -10,6 +10,7 @@ class Tables:
     CALL_ANALYSES = "call_analyses"
     CALL_ANALYSIS_TOPICS = "call_analysis_topics"
     CALL_ANALYSIS_KEYWORDS = "call_analysis_keywords"
+    SAMPLE_TRANSCRIPTS = "sample_transcripts"
     TOPICS = "topics"
     KEYWORDS = "keywords"
     USERS = "users"
