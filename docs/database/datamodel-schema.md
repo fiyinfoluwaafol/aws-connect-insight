@@ -38,6 +38,7 @@ The idea behind this is to create a living document that would continue to be up
 | 13 | `notifications` | User notification inbox |
 | 14 | `briefs` | Stored team reports |
 | 15 | `notes` | User notes on calls |
+| 16 | `sample_transcripts` | Sample transcript data for testing/training |
 
 ---
 
@@ -331,6 +332,21 @@ For insertion, we'd do the following:
 | `user_id` | **Foreign Key** → users | Who wrote it |
 | `content` | TEXT | Note text |
 | `created_at` | TIMESTAMP | |
+
+---
+
+### 16. `sample_transcripts`
+
+> Sample transcript data for testing and training purposes (standalone, not linked to other tables)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID, **Primary key** | Auto-generated |
+| `transcript` | JSONB | Array of `{speaker, text}` objects |
+
+💡 This table stores standalone transcript samples that are not associated with actual calls. Used for testing, training, and development purposes. Format matches the `transcript` field in the `calls` table for consistency.
+
+💡 To get a random sample transcript: `SELECT * FROM sample_transcripts ORDER BY random() LIMIT 1`
 
 ---
 
