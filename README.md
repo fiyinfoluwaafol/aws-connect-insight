@@ -48,7 +48,7 @@ uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
 The API listens at `http://127.0.0.1:8000` by default (see `/health` and OpenAPI docs at `/docs`).
 
-Make sure to create a `.env` file in the root of the `backend/` folder, following the structure and format provided in [`.env.example`](.env.example). Set values for `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `FRONTEND_ORIGIN` (set `FRONTEND_ORIGIN` to `http://localhost:5173` if you’re using the Vite dev server). Pydantic will load variables from this `.env` file or from your environment.
+Make sure to create a `.env` file in the root of the `backend/` folder, following the structure and format provided in [`.env.example`](.env.example). Set values for `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `OPENAI_API_KEY`.
 
 ## Architecture
 
