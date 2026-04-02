@@ -37,4 +37,3 @@ def test_create_call_includes_transcript_when_provided() -> None:
         }
     )
     assert result["id"] == "call-123"
-

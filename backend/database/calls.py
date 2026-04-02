@@ -36,11 +36,7 @@ def create_call(
     if transcript is not None:
         payload["transcript"] = transcript
 
-    result = (
-        client.table(Tables.CALLS)
-        .insert(payload)
-        .execute()
-    )
+    result = client.table(Tables.CALLS).insert(payload).execute()
     return result.data[0]
 
 

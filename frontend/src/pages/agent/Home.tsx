@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAppStore } from '@/stores/app-store';
 import { callsApi, type SimulateCallResponse } from '@/lib/api';
@@ -16,9 +16,17 @@ import {
   Phone,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from 'lucide-react';
 
 type TranscriptTurn = SimulateCallResponse['transcript'][number];
+
+const simulateStages = [
+  'Selecting a sample transcript',
+  'Running transcript analysis',
+  'Saving the call and insights',
+  'Preparing your coaching view',
+];
 
 export default function AgentHome() {
   const { user } = useAuthStore();
@@ -32,6 +40,9 @@ export default function AgentHome() {
   } = useAppStore();
   const [expandedTips, setExpandedTips] = useState<string[]>([]);
   const [expandedCalls, setExpandedCalls] = useState<string[]>([]);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulateStage, setSimulateStage] = useState(0);
+  const simulateTimerRef = useRef<number | null>(null);
 
   const userTips = useMemo(
     () => agentTips.filter((t) => t.agentId === user?.id && !t.dismissed),
@@ -60,6 +71,15 @@ export default function AgentHome() {
     );
   };
 
+  const clearSimulateTimer = () => {
+    if (simulateTimerRef.current !== null) {
+      window.clearInterval(simulateTimerRef.current);
+      simulateTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => () => clearSimulateTimer(), []);
+
   const normalizeTurn = (turn: unknown): TranscriptTurn => {
     if (
       turn &&
@@ -79,6 +99,10 @@ export default function AgentHome() {
   };
 
   const handleSimulateCallEnd = async () => {
+    if (isSimulating) {
+      return;
+    }
+
     if (!user?.id) {
       toast({
         title: 'Sign in required',
@@ -87,6 +111,15 @@ export default function AgentHome() {
       });
       return;
     }
+
+    setIsSimulating(true);
+    setSimulateStage(0);
+    clearSimulateTimer();
+    simulateTimerRef.current = window.setInterval(() => {
+      setSimulateStage((currentStage) =>
+        currentStage < simulateStages.length - 1 ? currentStage + 1 : currentStage
+      );
+    }, 900);
 
     try {
       const result = await callsApi.simulateCall();
@@ -159,6 +192,10 @@ export default function AgentHome() {
         description: error instanceof Error ? error.message : 'Failed to simulate call',
         variant: 'destructive',
       });
+    } finally {
+      clearSimulateTimer();
+      setIsSimulating(false);
+      setSimulateStage(0);
     }
   };
 
@@ -189,13 +226,68 @@ export default function AgentHome() {
           <h2 className="text-xl font-semibold">Welcome back, {user?.firstName || user?.email}</h2>
           <p className="text-sm text-muted-foreground">Your post-call coaching workspace</p>
         </div>
-        <Button onClick={handleSimulateCallEnd}>
-          <Phone className="h-4 w-4 mr-2" />
-          Simulate Call End
+        <Button onClick={handleSimulateCallEnd} disabled={isSimulating}>
+          {isSimulating ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Phone className="h-4 w-4 mr-2" />
+          )}
+          {isSimulating ? 'Simulating...' : 'Simulate Call End'}
         </Button>
       </div>
 
       <div className="space-y-8">
+        {isSimulating && (
+          <Card className="p-4 border-primary/20 bg-primary/5">
+            <div className="flex items-start gap-3">
+              <Loader2 className="h-5 w-5 text-primary animate-spin mt-0.5" />
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold">Simulating call in progress</h3>
+                    <p className="text-sm text-muted-foreground">
+                      We&apos;re moving through the call pipeline so the page does not feel stuck.
+                    </p>
+                  </div>
+                  <Badge variant="secondary">Working</Badge>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {simulateStages.map((stage, index) => {
+                    const isActive = index === simulateStage;
+
+                    return (
+                      <div
+                        key={stage}
+                        className={`rounded-lg border p-3 ${
+                          isActive
+                            ? 'border-primary/40 bg-background shadow-sm'
+                            : 'border-border/60 bg-background/70'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              isActive ? 'bg-primary animate-pulse' : 'bg-muted-foreground/30'
+                            }`}
+                          />
+                          <span
+                            className={`text-sm ${
+                              isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
+                            }`}
+                          >
+                            {stage}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <section>
           <h3 className="text-lg font-semibold mb-4">Recent Calls</h3>
           {userCalls.length === 0 ? (
