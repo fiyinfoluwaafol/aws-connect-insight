@@ -24,8 +24,9 @@ A comprehensive MVP demo application for contact center supervisors and agents, 
 ### Prerequisites
 - Node.js 18+ installed
 - npm or bun package manager
+- Python 3.9+ (for the backend API)
 
-### Installation
+### Frontend
 
 ```bash
 cd frontend
@@ -33,7 +34,21 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+The app will be available at `http://localhost:8080`
+
+### Backend API
+
+From the repository root, install dependencies and start the FastAPI server (equivalent to install + dev server):
+
+```bash
+cd backend
+pip install -e ".[dev]"
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The API listens at `http://127.0.0.1:8000` by default (see `/health` and OpenAPI docs at `/docs`).
+
+Make sure to create a `.env` file in the root of the `backend/` folder, following the structure and format provided in [`.env.example`](.env.example). Set values for `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `FRONTEND_ORIGIN` (set `FRONTEND_ORIGIN` to `http://localhost:5173` if you’re using the Vite dev server). Pydantic will load variables from this `.env` file or from your environment.
 
 ## Architecture
 
