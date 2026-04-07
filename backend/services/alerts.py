@@ -273,7 +273,7 @@ def evaluate_alert_rules_for_call(
                     title="Recurring topic detected",
                     description=(
                         f'Topic "{topic}" appeared in {matched_count} calls within '
-                        f'the last {rule["window_days"]} days.'
+                        f"the last {rule['window_days']} days."
                     ),
                 )
             )
@@ -301,7 +301,7 @@ def evaluate_alert_rules_for_call(
                     title="Recurring keyword detected",
                     description=(
                         f'Keyword "{keyword}" appeared in {matched_count} calls within '
-                        f'the last {rule["window_days"]} days.'
+                        f"the last {rule['window_days']} days."
                     ),
                 )
             )

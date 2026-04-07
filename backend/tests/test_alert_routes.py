@@ -110,7 +110,7 @@ def test_get_alerts_returns_paginated_results(
                     "matched_count": None,
                     "window_days": None,
                     "title": "Tracked keyword detected",
-                    "description": "Call matched the tracked keyword \"refund\".",
+                    "description": 'Call matched the tracked keyword "refund".',
                     "created_at": "2026-04-02T12:00:00Z",
                     "updated_at": "2026-04-02T12:00:00Z",
                 }
@@ -149,7 +149,7 @@ def test_patch_alert_updates_status_or_read_flag(
             "matched_count": None,
             "window_days": None,
             "title": "Tracked keyword detected",
-            "description": "Call matched the tracked keyword \"refund\".",
+            "description": 'Call matched the tracked keyword "refund".',
         }
 
         response = authenticated_supervisor_client.patch(
