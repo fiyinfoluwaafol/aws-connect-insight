@@ -55,6 +55,22 @@ def _count_recent_dimension_occurrences(
     return counts
 
 
+def _filter_matching_call_ids(
+    call_ids: list[str],
+    analyses: list[dict[str, Any]],
+    *,
+    key: str,
+    matched_value: str,
+) -> list[str]:
+    """Return matching call IDs while preserving the recent-call ordering."""
+    matched_by_call_id = {
+        analysis["call_id"]
+        for analysis in analyses
+        if matched_value in _normalize_values(analysis.get(key))
+    }
+    return [call_id for call_id in call_ids if call_id in matched_by_call_id]
+
+
 def _upsert_call_level_alert(
     client: Any,
     *,
@@ -291,3 +307,58 @@ def evaluate_alert_rules_for_call(
             )
 
     return triggered_alerts
+
+
+def get_related_call_ids_for_alert(
+    client: Any,
+    *,
+    team_id: str,
+    alert: dict[str, Any],
+    rule: dict[str, Any] | None = None,
+) -> list[str]:
+    """Return the related call IDs for a single-call, manual, or recurring alert."""
+    call_id = alert.get("call_id")
+    if call_id:
+        return [call_id]
+
+    alert_type = alert.get("type")
+    if alert_type not in {
+        AlertRuleType.RECURRING_TOPIC.value,
+        AlertRuleType.RECURRING_KEYWORD.value,
+    }:
+        return []
+
+    matched_value = alert_helpers.normalize_match_value(alert.get("matched_value"))
+    if not matched_value:
+        return []
+
+    window_days = alert.get("window_days") or (rule or {}).get("window_days")
+    if not window_days:
+        return []
+
+    window_end = alert.get("updated_at") or alert.get("created_at")
+    if not window_end:
+        return []
+
+    recent_call_ids = alert_helpers.get_recent_call_ids(
+        client,
+        team_id=team_id,
+        started_at_from=_window_start(window_end, int(window_days)),
+        started_at_to=window_end,
+    )
+    analyses = analysis_helpers.get_analyses_by_call_ids(client, recent_call_ids)
+
+    if alert_type == AlertRuleType.RECURRING_TOPIC.value:
+        return _filter_matching_call_ids(
+            recent_call_ids,
+            analyses,
+            key="topics",
+            matched_value=matched_value,
+        )
+
+    return _filter_matching_call_ids(
+        recent_call_ids,
+        analyses,
+        key="keywords",
+        matched_value=matched_value,
+    )

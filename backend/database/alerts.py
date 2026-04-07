@@ -13,6 +13,7 @@ from .exceptions import NotFoundError
 DEFAULT_RECURRING_MIN_OCCURRENCES = 3
 DEFAULT_RECURRING_WINDOW_DAYS = 7
 MAX_PER_PAGE = 100
+MANUAL_ALERT_TYPE = "manual"
 
 
 def normalize_match_value(value: str | None) -> str | None:
@@ -44,6 +45,28 @@ def normalize_alert_record(alert: dict[str, Any]) -> dict[str, Any]:
     normalized.setdefault("matched_count", None)
     normalized.setdefault("window_days", None)
     return normalized
+
+
+@db_operation
+def get_alert_by_id(
+    client: Client,
+    *,
+    alert_id: str,
+    team_id: str,
+    supervisor_id: str,
+) -> dict[str, Any]:
+    """Return a single alert scoped to the supervisor's team."""
+    result = (
+        client.table(Tables.ALERTS)
+        .select("*")
+        .eq("id", alert_id)
+        .eq("team_id", team_id)
+        .eq("supervisor_id", supervisor_id)
+        .execute()
+    )
+    if not result.data:
+        raise NotFoundError(f"Alert {alert_id} not found")
+    return normalize_alert_record(result.data[0])
 
 
 @db_operation
@@ -236,7 +259,7 @@ def update_alert(
 def create_alert(
     client: Client,
     *,
-    rule_id: str,
+    rule_id: str | None,
     call_id: str | None,
     supervisor_id: str,
     team_id: str,
@@ -269,6 +292,30 @@ def create_alert(
 
     result = client.table(Tables.ALERTS).insert(payload).execute()
     return normalize_alert_record(result.data[0])
+
+
+@db_operation
+def get_open_alert_for_call(
+    client: Client,
+    *,
+    call_id: str,
+    team_id: str,
+    supervisor_id: str,
+) -> dict[str, Any] | None:
+    """Return the most recent open alert for a call within the supervisor scope."""
+    result = (
+        client.table(Tables.ALERTS)
+        .select("*")
+        .eq("call_id", call_id)
+        .eq("team_id", team_id)
+        .eq("supervisor_id", supervisor_id)
+        .eq("status", AlertStatus.OPEN.value)
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    row = (result.data or [None])[0]
+    return normalize_alert_record(row) if row else None
 
 
 @db_operation
@@ -354,6 +401,7 @@ def get_recent_call_ids(
         .select("id")
         .eq("team_id", team_id)
         .gte("started_at", started_at_from)
+        .order("started_at", desc=True)
     )
     if started_at_to is not None:
         query = query.lte("started_at", started_at_to)

@@ -97,11 +97,49 @@ export default function AlertsCenter() {
     [callQueries]
   );
 
+  const {
+    data: relatedCallsResponse,
+    isLoading: isLoadingRelatedCalls,
+  } = useQuery({
+    queryKey: ['alerts', 'related-calls', detailAlert?.id],
+    queryFn: () => alertsApi.listAlertCalls(detailAlert!.id),
+    enabled: Boolean(detailAlert),
+    staleTime: 30 * 1000,
+    retry: 1,
+  });
+
+  const relatedCalls = useMemo(
+    () => (relatedCallsResponse?.calls ?? []).map(mapCallDetailToViewModel),
+    [relatedCallsResponse]
+  );
+
+  const relatedCallsById = useMemo(
+    () => Object.fromEntries(relatedCalls.map((call) => [call.id, call])),
+    [relatedCalls]
+  );
+
   const updateAlertMutation = useMutation({
     mutationFn: ({ alertId, patch }: { alertId: string; patch: { status?: 'open' | 'closed'; is_read?: boolean } }) =>
       alertsApi.updateAlert(alertId, patch),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    },
+  });
+
+  const createManualAlertMutation = useMutation({
+    mutationFn: (callId: string) => alertsApi.createManualAlert({ call_id: callId }),
+    onSuccess: (createdAlert, callId) => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      void queryClient.invalidateQueries({ queryKey: ['calls', 'detail', callId] });
+      setSelectedCall((prev) =>
+        prev && prev.id === callId
+          ? { ...prev, hasOpenAlert: true, openAlertId: createdAlert.id }
+          : prev
+      );
+      toast({
+        title: 'Alert Created',
+        description: 'The call has been flagged for manual review.',
+      });
     },
   });
 
@@ -159,7 +197,7 @@ export default function AlertsCenter() {
   };
 
   const openCallDetail = (callId: string) => {
-    const call = callsById[callId];
+    const call = relatedCallsById[callId] ?? callsById[callId];
     if (call) {
       setSelectedCall(call);
       setCallDrawerOpen(true);
@@ -176,8 +214,6 @@ export default function AlertsCenter() {
         return 'bg-muted text-muted-foreground';
     }
   };
-
-  const detailCall = detailAlert?.callId ? callsById[detailAlert.callId] : undefined;
 
   return (
     <div className="container mx-auto px-6 py-8">
@@ -210,7 +246,8 @@ export default function AlertsCenter() {
 
       <AlertDetail
         alert={detailAlert}
-        call={detailCall}
+        relatedCalls={relatedCalls}
+        isLoadingRelatedCalls={isLoadingRelatedCalls}
         onClose={() => setDetailAlert(null)}
         onOpenCall={openCallDetail}
         onCloseAlert={(id) => void handleCloseAlert(id)}
@@ -222,6 +259,9 @@ export default function AlertsCenter() {
         call={selectedCall}
         open={callDrawerOpen}
         onOpenChange={setCallDrawerOpen}
+        canCreateAlert
+        isCreatingAlert={createManualAlertMutation.isPending}
+        onCreateAlert={(callId) => createManualAlertMutation.mutateAsync(callId)}
       />
     </div>
   );

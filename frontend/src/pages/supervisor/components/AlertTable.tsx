@@ -131,7 +131,14 @@ export function AlertTable({
                       <span className="text-sm text-muted-foreground">{alert.issue}</span>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm">{call?.agentName || 'Unknown'}</span>
+                      <span className="text-sm">
+                        {call?.agentName ||
+                          (alert.type === 'recurring_topic' || alert.type === 'recurring_keyword'
+                            ? `${alert.matchedCount ?? 0} affected calls`
+                            : alert.type === 'manual'
+                              ? 'Manual review'
+                              : 'Unknown')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="text-sm text-muted-foreground">
@@ -147,8 +154,13 @@ export function AlertTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => alert.callId && onOpenCall(alert.callId)}
-                        disabled={!alert.callId}
+                        onClick={() => {
+                          if (alert.callId) {
+                            onOpenCall(alert.callId);
+                            return;
+                          }
+                          onOpenDetail(alert);
+                        }}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

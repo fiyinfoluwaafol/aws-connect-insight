@@ -154,6 +154,47 @@ def test_get_open_recurring_alert_normalizes_matched_value() -> None:
     assert result["rule_id"] is None
 
 
+def test_get_alert_by_id_returns_scoped_alert() -> None:
+    """get_alert_by_id should return an in-scope alert."""
+    client = MagicMock()
+    (
+        client.table.return_value.select.return_value.eq.return_value.eq.return_value.eq.return_value.execute.return_value
+    ) = SimpleNamespace(data=[{"id": "alert-1"}])
+
+    result = alert_helpers.get_alert_by_id(
+        client,
+        alert_id="alert-1",
+        team_id="team-1",
+        supervisor_id="sup-1",
+    )
+
+    assert result["id"] == "alert-1"
+
+
+def test_get_open_alert_for_call_returns_latest_open_alert() -> None:
+    """get_open_alert_for_call should find an open call-level alert."""
+    client = MagicMock()
+    (
+        client.table.return_value.select.return_value.eq.return_value.eq.return_value.eq.return_value.eq.return_value.order.return_value.limit.return_value.execute.return_value
+    ) = SimpleNamespace(data=[{"id": "alert-open", "call_id": "call-1"}])
+
+    result = alert_helpers.get_open_alert_for_call(
+        client,
+        call_id="call-1",
+        team_id="team-1",
+        supervisor_id="sup-1",
+    )
+
+    assert result == {
+        "id": "alert-open",
+        "call_id": "call-1",
+        "rule_id": None,
+        "matched_value": None,
+        "matched_count": None,
+        "window_days": None,
+    }
+
+
 def test_update_alert_raises_not_found_for_missing_record() -> None:
     """update_alert should raise NotFoundError when no row matches the scope."""
     client = MagicMock()

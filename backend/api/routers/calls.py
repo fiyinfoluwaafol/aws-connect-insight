@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from api.config import Settings, get_settings
 from api.dependencies import get_current_user, get_supabase_client
+from database.alerts import get_open_alert_for_call
 from database.analysis import (
     add_keywords_to_analysis,
     add_topics_to_analysis,
@@ -81,6 +82,8 @@ class CallDetailResponse(BaseModel):
     topics: list[str]
     summary: str | None = None
     transcript: list[CallDetailTranscriptTurn]
+    has_open_alert: bool = False
+    open_alert_id: str | None = None
 
 
 # =============================================================================
@@ -127,6 +130,19 @@ def _normalize_transcript(turns: Any) -> list[dict[str, str]]:
     return normalized_turns
 
 
+def _get_supervisor_id_for_call_metadata(
+    db_client: Any,
+    current_user: dict,
+    team_id: str,
+) -> str | None:
+    """Resolve the supervisor whose alert state should decorate call detail payloads."""
+    if current_user.get("role") == "supervisor":
+        return current_user.get("id")
+
+    team = get_team_by_id(db_client, team_id)
+    return team.get("supervisor_id")
+
+
 # =============================================================================
 # Endpoints
 # =============================================================================
@@ -148,10 +164,20 @@ def get_call_detail(
             raise NotFoundError(f"Call {call_id} not found")
 
         agent = get_user_by_id(db_client, call["agent_id"])
+        supervisor_id = _get_supervisor_id_for_call_metadata(db_client, current_user, team_id)
         try:
             analysis = get_analysis_by_call_id(db_client, call_id)
         except NotFoundError:
             analysis = None
+
+        open_alert = None
+        if supervisor_id:
+            open_alert = get_open_alert_for_call(
+                db_client,
+                call_id=call_id,
+                team_id=team_id,
+                supervisor_id=supervisor_id,
+            )
 
         transcript = _normalize_transcript(call.get("transcript"))
 
@@ -170,6 +196,8 @@ def get_call_detail(
             topics=analysis.get("topics", []) if analysis else [],
             summary=analysis.get("summary") if analysis else None,
             transcript=[CallDetailTranscriptTurn(**turn) for turn in transcript],
+            has_open_alert=open_alert is not None,
+            open_alert_id=open_alert.get("id") if open_alert else None,
         )
     except NotFoundError as exc:
         raise HTTPException(

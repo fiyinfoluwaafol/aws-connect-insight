@@ -215,6 +215,8 @@ Note: Each rule triggers independently (OR logic). So if a supervisor wants aler
 
 Note: `keyword` and `topic` values are normalized to lowercase in the app so matching stays consistent.
 
+Note: Manual alerts are not stored as rules. They are created directly in the `alerts` table by supervisors.
+
 ---
 
 ### 10. `alerts`
@@ -228,7 +230,7 @@ Note: `keyword` and `topic` values are normalized to lowercase in the app so mat
 | `rule_id` | **Foreign Key** → alert_configurations, nullable | Rule that generated the alert |
 | `supervisor_id` | **Foreign Key** → users | Alert recipient |
 | `team_id` | **Foreign Key** → teams | |
-| `type` | ENUM | `sentiment_threshold` · `keyword_match` · `recurring_topic` · `recurring_keyword` |
+| `type` | ENUM | `sentiment_threshold` · `keyword_match` · `recurring_topic` · `recurring_keyword` · `manual` |
 | `status` | ENUM | `open` · `closed` |
 | `severity` | ENUM | `low` · `medium` · `high` |
 | `title` | VARCHAR(255) | Alert headline |
@@ -390,7 +392,9 @@ user_role:  `agent`, `supervisor`
 
 sentiment_label:  `positive`, `neutral`, `negative`
 
-alert_type:  `sentiment_threshold`, `keyword_match`, `recurring_topic`, `recurring_keyword`
+alert_type:  `sentiment_threshold`, `keyword_match`, `recurring_topic`, `recurring_keyword`, `manual`
+
+Note: `alert_configurations.type` uses only the automated rule values. `manual` is used for supervisor-created alert rows in `alerts`.
 
 alert_status:  `open`, `closed`
 

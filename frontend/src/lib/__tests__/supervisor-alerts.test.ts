@@ -27,6 +27,7 @@ describe('supervisor alerts adapters', () => {
       })
     ).toEqual({
       id: 'alert-1',
+      type: 'sentiment_threshold',
       callId: 'call-1',
       createdAt: '2026-04-02T12:00:00Z',
       ruleId: 'rule-1',
@@ -34,6 +35,9 @@ describe('supervisor alerts adapters', () => {
       severity: 'high',
       status: 'open',
       issue: 'Call sentiment score -0.70 fell below the configured threshold.',
+      matchedValue: null,
+      matchedCount: null,
+      windowDays: null,
     });
   });
 
@@ -50,6 +54,8 @@ describe('supervisor alerts adapters', () => {
         is_resolved: false,
         topics: ['refund'],
         summary: 'Customer requested a refund.',
+        has_open_alert: true,
+        open_alert_id: 'alert-1',
         transcript: [{ speaker: 'Customer', text: 'I want a refund.', timestamp: null }],
       })
     ).toMatchObject({
@@ -63,6 +69,8 @@ describe('supervisor alerts adapters', () => {
       topics: ['refund'],
       resolved: false,
       customerName: 'Customer',
+      hasOpenAlert: true,
+      openAlertId: 'alert-1',
       callSummary: {
         summaryText: 'Customer requested a refund.',
         keyPhrases: ['refund'],

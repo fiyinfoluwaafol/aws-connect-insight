@@ -416,6 +416,11 @@ def test_get_call_detail_returns_call_for_same_team(
             }
         ),
     )
+    monkeypatch.setattr(
+        calls_router,
+        "get_open_alert_for_call",
+        MagicMock(return_value={"id": "alert-1"}),
+    )
 
     response = authenticated_supervisor_client.get("/api/calls/call-123")
 
@@ -431,6 +436,8 @@ def test_get_call_detail_returns_call_for_same_team(
         "is_resolved": False,
         "topics": ["refund"],
         "summary": "Customer requested a refund.",
+        "has_open_alert": True,
+        "open_alert_id": "alert-1",
         "transcript": [
             {"speaker": "Customer", "text": "I need help with a refund.", "timestamp": None},
             {"speaker": "Agent", "text": "I can help with that.", "timestamp": None},

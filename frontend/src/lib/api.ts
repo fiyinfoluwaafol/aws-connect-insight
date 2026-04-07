@@ -264,11 +264,12 @@ export const dashboardApi = {
 
 export type SupervisorAlertSeverity = 'low' | 'medium' | 'high';
 export type SupervisorAlertStatus = 'open' | 'closed';
-export type SupervisorAlertType =
+export type SupervisorAlertRuleType =
   | 'sentiment_threshold'
   | 'keyword_match'
   | 'recurring_topic'
   | 'recurring_keyword';
+export type SupervisorAlertType = SupervisorAlertRuleType | 'manual';
 
 export interface SupervisorAlertRecord {
   id: string;
@@ -299,9 +300,13 @@ export interface SupervisorAlertPatchRequest {
   is_read?: boolean;
 }
 
+export interface CreateManualAlertRequest {
+  call_id: string;
+}
+
 export interface SupervisorAlertRule {
   id: string;
-  type: SupervisorAlertType;
+  type: SupervisorAlertRuleType;
   severity: SupervisorAlertSeverity;
   is_active: boolean;
   team_id: string;
@@ -319,8 +324,12 @@ export interface SupervisorAlertRulesListResponse {
   rules: SupervisorAlertRule[];
 }
 
+export interface SupervisorAlertCallsResponse {
+  calls: SupervisorCallDetail[];
+}
+
 export interface CreateSupervisorAlertRuleRequest {
-  type: SupervisorAlertType;
+  type: SupervisorAlertRuleType;
   severity: SupervisorAlertSeverity;
   is_active?: boolean;
   sentiment_below?: number;
@@ -331,7 +340,7 @@ export interface CreateSupervisorAlertRuleRequest {
 }
 
 export interface UpdateSupervisorAlertRuleRequest {
-  type?: SupervisorAlertType;
+  type?: SupervisorAlertRuleType;
   severity?: SupervisorAlertSeverity;
   is_active?: boolean;
   sentiment_below?: number;
@@ -369,6 +378,12 @@ export const alertsApi = {
 
   updateAlert: (alertId: string, data: SupervisorAlertPatchRequest) =>
     api.patch<SupervisorAlertRecord>(`/api/alerts/${alertId}`, data),
+
+  createManualAlert: (data: CreateManualAlertRequest) =>
+    api.post<SupervisorAlertRecord>('/api/alerts/manual', data),
+
+  listAlertCalls: (alertId: string) =>
+    api.get<SupervisorAlertCallsResponse>(`/api/alerts/${alertId}/calls`),
 
   listRules: (params: { is_active?: boolean } = {}) =>
     api.get<SupervisorAlertRulesListResponse>(`/api/alerts/rules${toQueryString(params)}`),
@@ -411,6 +426,8 @@ export interface SupervisorCallDetail {
   is_resolved: boolean | null;
   topics: string[];
   summary: string | null;
+  has_open_alert: boolean;
+  open_alert_id: string | null;
   transcript: Array<{
     speaker: string;
     text: string;

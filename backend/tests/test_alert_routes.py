@@ -162,6 +162,140 @@ def test_patch_alert_updates_status_or_read_flag(
         update_alert_mock.assert_called_once()
 
 
+def test_post_manual_alert_creates_alert(
+    authenticated_supervisor_client: TestClient,
+) -> None:
+    """POST /api/alerts/manual should create a manual supervisor alert."""
+    with (
+        patch("api.routers.alerts.fetch_call_by_id") as fetch_call_mock,
+        patch("api.routers.alerts.get_open_alert_for_call") as get_open_alert_mock,
+        patch("api.routers.alerts.get_user_by_id") as get_user_mock,
+        patch("api.routers.alerts.create_alert") as create_alert_mock,
+    ):
+        fetch_call_mock.return_value = {
+            "id": "call-1",
+            "agent_id": "agent-1",
+            "team_id": "team-456",
+            "started_at": "2026-04-02T12:00:00Z",
+        }
+        get_open_alert_mock.return_value = None
+        get_user_mock.return_value = {
+            "id": "agent-1",
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "email": "ada@example.com",
+        }
+        create_alert_mock.return_value = {
+            "id": "alert-manual",
+            "rule_id": None,
+            "type": "manual",
+            "severity": "medium",
+            "status": "open",
+            "is_read": False,
+            "call_id": "call-1",
+            "matched_value": None,
+            "matched_count": None,
+            "window_days": None,
+            "title": "Manual review requested",
+            "description": (
+                "Supervisor manually flagged Ada Lovelace's call "
+                "from 2026-04-02T12:00:00Z for review."
+            ),
+        }
+
+        response = authenticated_supervisor_client.post(
+            "/api/alerts/manual",
+            json={"call_id": "call-1"},
+        )
+
+        assert response.status_code == 201
+        assert response.json()["type"] == "manual"
+        create_alert_mock.assert_called_once()
+
+
+def test_post_manual_alert_rejects_duplicate_open_alert(
+    authenticated_supervisor_client: TestClient,
+) -> None:
+    """POST /api/alerts/manual should reject calls that already have an open alert."""
+    with (
+        patch("api.routers.alerts.fetch_call_by_id") as fetch_call_mock,
+        patch("api.routers.alerts.get_open_alert_for_call") as get_open_alert_mock,
+    ):
+        fetch_call_mock.return_value = {
+            "id": "call-1",
+            "agent_id": "agent-1",
+            "team_id": "team-456",
+            "started_at": "2026-04-02T12:00:00Z",
+        }
+        get_open_alert_mock.return_value = {"id": "alert-1"}
+
+        response = authenticated_supervisor_client.post(
+            "/api/alerts/manual",
+            json={"call_id": "call-1"},
+        )
+
+        assert response.status_code == 409
+        assert response.json()["detail"] == "This call already has an open alert"
+
+
+def test_get_alert_calls_returns_related_calls(
+    authenticated_supervisor_client: TestClient,
+) -> None:
+    """GET /api/alerts/{id}/calls should return related call detail."""
+    with (
+        patch("api.routers.alerts.get_alert_by_id") as get_alert_mock,
+        patch("api.routers.alerts.get_alert_rule_by_id") as get_rule_mock,
+        patch("api.routers.alerts.get_related_call_ids_for_alert") as get_related_call_ids_mock,
+        patch("api.routers.alerts._build_call_detail_response") as build_call_mock,
+    ):
+        get_alert_mock.return_value = {
+            "id": "alert-1",
+            "rule_id": "rule-1",
+            "type": "recurring_keyword",
+            "call_id": None,
+        }
+        get_rule_mock.return_value = {"id": "rule-1", "type": "recurring_keyword"}
+        get_related_call_ids_mock.return_value = ["call-1", "call-2"]
+        build_call_mock.side_effect = [
+            {
+                "id": "call-1",
+                "agent_id": "agent-1",
+                "agent_name": "Ada Lovelace",
+                "started_at": "2026-04-02T12:00:00Z",
+                "duration_seconds": 240,
+                "sentiment_score": -0.4,
+                "sentiment_label": "negative",
+                "is_resolved": False,
+                "topics": ["refund"],
+                "summary": "Customer requested a refund.",
+                "transcript": [],
+                "has_open_alert": False,
+                "open_alert_id": None,
+            },
+            {
+                "id": "call-2",
+                "agent_id": "agent-2",
+                "agent_name": "Grace Hopper",
+                "started_at": "2026-04-01T10:00:00Z",
+                "duration_seconds": 180,
+                "sentiment_score": -0.2,
+                "sentiment_label": "negative",
+                "is_resolved": True,
+                "topics": ["refund"],
+                "summary": "Repeat refund complaint.",
+                "transcript": [],
+                "has_open_alert": False,
+                "open_alert_id": None,
+            },
+        ]
+
+        response = authenticated_supervisor_client.get("/api/alerts/alert-1/calls")
+
+        assert response.status_code == 200
+        assert [call["id"] for call in response.json()["calls"]] == ["call-1", "call-2"]
+        get_related_call_ids_mock.assert_called_once()
+
+
 def test_get_rules_returns_active_and_inactive_rules(
     authenticated_supervisor_client: TestClient,
 ) -> None:

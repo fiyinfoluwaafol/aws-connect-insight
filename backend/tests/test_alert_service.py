@@ -321,3 +321,95 @@ def test_evaluate_alert_rules_requests_only_active_rules(monkeypatch: pytest.Mon
     )
 
     assert list_rules.call_args.kwargs["is_active"] is True
+
+
+def test_get_related_call_ids_for_alert_returns_single_call_for_manual_alert() -> None:
+    """Manual and single-call alerts should resolve directly to their call_id."""
+    result = alert_service.get_related_call_ids_for_alert(
+        MagicMock(),
+        team_id="team-1",
+        alert={
+            "id": "alert-1",
+            "type": "manual",
+            "call_id": "call-1",
+            "created_at": "2026-04-02T12:00:00",
+            "updated_at": "2026-04-02T12:00:00",
+        },
+    )
+
+    assert result == ["call-1"]
+
+
+def test_get_related_call_ids_for_alert_filters_recurring_topic_matches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Recurring topic drill-down should return only calls matching the topic within the window."""
+    monkeypatch.setattr(
+        alert_service.alert_helpers,
+        "get_recent_call_ids",
+        MagicMock(return_value=["call-3", "call-2", "call-1"]),
+    )
+    monkeypatch.setattr(
+        alert_service.analysis_helpers,
+        "get_analyses_by_call_ids",
+        MagicMock(
+            return_value=[
+                {"call_id": "call-1", "topics": ["billing"], "keywords": []},
+                {"call_id": "call-2", "topics": ["refund"], "keywords": []},
+                {"call_id": "call-3", "topics": ["Refund"], "keywords": []},
+            ]
+        ),
+    )
+
+    result = alert_service.get_related_call_ids_for_alert(
+        MagicMock(),
+        team_id="team-1",
+        alert={
+            "id": "alert-1",
+            "type": AlertRuleType.RECURRING_TOPIC.value,
+            "call_id": None,
+            "matched_value": "refund",
+            "window_days": 7,
+            "created_at": "2026-04-02T12:00:00",
+            "updated_at": "2026-04-03T12:00:00",
+        },
+    )
+
+    assert result == ["call-3", "call-2"]
+
+
+def test_get_related_call_ids_for_alert_filters_recurring_keyword_matches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Recurring keyword drill-down should use the keyword dimension."""
+    monkeypatch.setattr(
+        alert_service.alert_helpers,
+        "get_recent_call_ids",
+        MagicMock(return_value=["call-2", "call-1"]),
+    )
+    monkeypatch.setattr(
+        alert_service.analysis_helpers,
+        "get_analyses_by_call_ids",
+        MagicMock(
+            return_value=[
+                {"call_id": "call-1", "topics": [], "keywords": ["chargeback"]},
+                {"call_id": "call-2", "topics": [], "keywords": ["refund", "chargeback"]},
+            ]
+        ),
+    )
+
+    result = alert_service.get_related_call_ids_for_alert(
+        MagicMock(),
+        team_id="team-1",
+        alert={
+            "id": "alert-2",
+            "type": AlertRuleType.RECURRING_KEYWORD.value,
+            "call_id": None,
+            "matched_value": "chargeback",
+            "window_days": 7,
+            "created_at": "2026-04-02T12:00:00",
+            "updated_at": "2026-04-02T12:30:00",
+        },
+    )
+
+    assert result == ["call-2", "call-1"]

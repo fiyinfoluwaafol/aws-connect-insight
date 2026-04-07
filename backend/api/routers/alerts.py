@@ -8,18 +8,27 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, model_validator
 
 from api.dependencies import get_current_user, get_supabase_client
+from api.routers.calls import CallDetailResponse, CallDetailTranscriptTurn
 from database.alerts import (
     DEFAULT_RECURRING_MIN_OCCURRENCES,
     DEFAULT_RECURRING_WINDOW_DAYS,
+    MANUAL_ALERT_TYPE,
+    create_alert,
     create_alert_rule,
+    get_alert_by_id,
     get_alert_rule_by_id,
+    get_open_alert_for_call,
     list_alert_rules,
     list_alerts,
     update_alert,
     update_alert_rule,
 )
+from database.analysis import get_analysis_by_call_id
+from database.calls import get_call_by_id as fetch_call_by_id
 from database.constants import AlertRuleType, AlertSeverity, AlertStatus
 from database.exceptions import DatabaseError, NotFoundError
+from database.users import get_user_by_id
+from services.alerts import get_related_call_ids_for_alert
 
 router = APIRouter()
 
@@ -74,6 +83,18 @@ class AlertRulesListResponse(BaseModel):
     """Alert rule listing response."""
 
     rules: list[AlertRuleResponse]
+
+
+class ManualAlertCreateRequest(BaseModel):
+    """Create payload for supervisor-triggered manual alerts."""
+
+    call_id: str
+
+
+class AlertRelatedCallsResponse(BaseModel):
+    """Alert-related call listing response."""
+
+    calls: list[CallDetailResponse]
 
 
 class AlertRuleCreateRequest(BaseModel):
@@ -194,6 +215,76 @@ def _validated_rule_payload(data: dict[str, Any]) -> dict[str, Any]:
     return validated.model_dump(mode="json")
 
 
+def _normalize_transcript(turns: Any) -> list[dict[str, str]]:
+    """Normalize stored transcript turns to the call detail shape."""
+    if not isinstance(turns, list):
+        return []
+
+    normalized_turns: list[dict[str, str]] = []
+    for turn in turns:
+        if not isinstance(turn, dict):
+            continue
+
+        speaker = str(turn.get("speaker", "")).strip()
+        text = str(turn.get("text", "")).strip()
+        if speaker and text:
+            normalized_turns.append(
+                {
+                    "speaker": speaker,
+                    "text": text,
+                    "timestamp": turn.get("timestamp"),
+                }
+            )
+
+    return normalized_turns
+
+
+def _build_call_detail_response(
+    db_client: Any,
+    *,
+    call_id: str,
+    team_id: str,
+    supervisor_id: str,
+) -> CallDetailResponse:
+    """Build the shared supervisor call-detail payload."""
+    call = fetch_call_by_id(db_client, call_id)
+    if call.get("team_id") != team_id:
+        raise NotFoundError(f"Call {call_id} not found")
+
+    agent = get_user_by_id(db_client, call["agent_id"])
+    try:
+        analysis = get_analysis_by_call_id(db_client, call_id)
+    except NotFoundError:
+        analysis = None
+
+    open_alert = get_open_alert_for_call(
+        db_client,
+        call_id=call_id,
+        team_id=team_id,
+        supervisor_id=supervisor_id,
+    )
+    transcript = _normalize_transcript(call.get("transcript"))
+
+    return CallDetailResponse(
+        id=call["id"],
+        agent_id=call["agent_id"],
+        agent_name=" ".join(
+            part for part in [agent.get("first_name"), agent.get("last_name")] if part
+        )
+        or agent.get("email", "Unknown Agent"),
+        started_at=call.get("started_at"),
+        duration_seconds=call.get("duration_seconds"),
+        sentiment_score=analysis.get("sentiment_score") if analysis else None,
+        sentiment_label=analysis.get("sentiment_label") if analysis else None,
+        is_resolved=analysis.get("is_resolved") if analysis else None,
+        topics=analysis.get("topics", []) if analysis else [],
+        summary=analysis.get("summary") if analysis else None,
+        transcript=[CallDetailTranscriptTurn(**turn) for turn in transcript],
+        has_open_alert=open_alert is not None,
+        open_alert_id=open_alert.get("id") if open_alert else None,
+    )
+
+
 @router.get("", response_model=AlertsListResponse)
 def get_alerts(
     current_user: Annotated[dict, Depends(get_current_user)],
@@ -261,6 +352,122 @@ def patch_alert(
         ) from exc
 
     return AlertResponse(**updated)
+
+
+@router.post("/manual", response_model=AlertResponse, status_code=status.HTTP_201_CREATED)
+def post_manual_alert(
+    payload: ManualAlertCreateRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    client: Annotated[Any, Depends(get_supabase_client)],
+) -> AlertResponse:
+    """Create a manual supervisor alert for a specific call."""
+    db_client = _require_client(client)
+    supervisor_id, team_id = _require_supervisor_context(current_user)
+
+    try:
+        call = fetch_call_by_id(db_client, payload.call_id)
+        if call.get("team_id") != team_id:
+            raise NotFoundError(f"Call {payload.call_id} not found")
+
+        existing_open_alert = get_open_alert_for_call(
+            db_client,
+            call_id=payload.call_id,
+            team_id=team_id,
+            supervisor_id=supervisor_id,
+        )
+        if existing_open_alert:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This call already has an open alert",
+            )
+
+        agent = get_user_by_id(db_client, call["agent_id"])
+        agent_name = " ".join(
+            part for part in [agent.get("first_name"), agent.get("last_name")] if part
+        ) or agent.get("email", "Unknown Agent")
+        description = (
+            f"Supervisor manually flagged {agent_name}'s call from "
+            f"{call.get('started_at') or 'an unknown time'} for review."
+        )
+        created = create_alert(
+            db_client,
+            rule_id=None,
+            call_id=payload.call_id,
+            supervisor_id=supervisor_id,
+            team_id=team_id,
+            alert_type=MANUAL_ALERT_TYPE,
+            severity=AlertSeverity.MEDIUM.value,
+            title="Manual review requested",
+            description=description,
+        )
+    except HTTPException:
+        raise
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except DatabaseError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create manual alert",
+        ) from exc
+
+    return AlertResponse(**created)
+
+
+@router.get("/{alert_id}/calls", response_model=AlertRelatedCallsResponse)
+def get_alert_calls(
+    alert_id: str,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    client: Annotated[Any, Depends(get_supabase_client)],
+) -> AlertRelatedCallsResponse:
+    """Return the calls related to an alert."""
+    db_client = _require_client(client)
+    supervisor_id, team_id = _require_supervisor_context(current_user)
+
+    try:
+        alert = get_alert_by_id(
+            db_client,
+            alert_id=alert_id,
+            team_id=team_id,
+            supervisor_id=supervisor_id,
+        )
+        rule = None
+        if alert.get("rule_id"):
+            rule = get_alert_rule_by_id(
+                db_client,
+                rule_id=alert["rule_id"],
+                team_id=team_id,
+                supervisor_id=supervisor_id,
+            )
+        related_call_ids = get_related_call_ids_for_alert(
+            db_client,
+            team_id=team_id,
+            alert=alert,
+            rule=rule,
+        )
+        calls = [
+            _build_call_detail_response(
+                db_client,
+                call_id=call_id,
+                team_id=team_id,
+                supervisor_id=supervisor_id,
+            )
+            for call_id in related_call_ids
+        ]
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except DatabaseError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch related alert calls",
+        ) from exc
+
+    return AlertRelatedCallsResponse(calls=calls)
 
 
 @router.get("/rules", response_model=AlertRulesListResponse)

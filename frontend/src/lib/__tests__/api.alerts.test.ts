@@ -109,8 +109,55 @@ describe('alerts api client', () => {
           is_resolved: false,
           topics: ['refund'],
           summary: 'Customer requested a refund.',
+          has_open_alert: true,
+          open_alert_id: 'alert-1',
           transcript: [{ speaker: 'Customer', text: 'I need a refund.' }],
         } satisfies SupervisorCallDetail)
+      ),
+      http.post('http://localhost:8000/api/alerts/manual', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        expect(body).toMatchObject({ call_id: 'call-1' });
+
+        return HttpResponse.json(
+          {
+            id: 'alert-1',
+            rule_id: null,
+            type: 'manual',
+            severity: 'medium',
+            status: 'open',
+            is_read: false,
+            call_id: 'call-1',
+            matched_value: null,
+            matched_count: null,
+            window_days: null,
+            title: 'Manual review requested',
+            description: 'Supervisor manually flagged the call for review.',
+            created_at: '2026-04-02T12:00:00Z',
+            updated_at: '2026-04-02T12:00:00Z',
+          } satisfies SupervisorAlertRecord,
+          { status: 201 }
+        );
+      }),
+      http.get('http://localhost:8000/api/alerts/alert-1/calls', () =>
+        HttpResponse.json({
+          calls: [
+            {
+              id: 'call-1',
+              agent_id: 'agent-1',
+              agent_name: 'Ada Lovelace',
+              started_at: '2026-04-02T12:00:00Z',
+              duration_seconds: 240,
+              sentiment_score: -0.3,
+              sentiment_label: 'negative',
+              is_resolved: false,
+              topics: ['refund'],
+              summary: 'Customer requested a refund.',
+              has_open_alert: true,
+              open_alert_id: 'alert-1',
+              transcript: [{ speaker: 'Customer', text: 'I need a refund.' }],
+            } satisfies SupervisorCallDetail,
+          ],
+        })
       )
     );
 
@@ -127,5 +174,12 @@ describe('alerts api client', () => {
 
     const call = await callsApi.getCallById('call-1');
     expect(call.agent_name).toBe('Ada Lovelace');
+    expect(call.has_open_alert).toBe(true);
+
+    const manualAlert = await alertsApi.createManualAlert({ call_id: 'call-1' });
+    expect(manualAlert.type).toBe('manual');
+
+    const relatedCalls = await alertsApi.listAlertCalls('alert-1');
+    expect(relatedCalls.calls).toHaveLength(1);
   });
 });

@@ -12,7 +12,8 @@ import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/su
 
 export interface AlertDetailProps {
   alert: SupervisorAlertViewModel | null;
-  call: SupervisorCallViewModel | undefined;
+  relatedCalls: SupervisorCallViewModel[];
+  isLoadingRelatedCalls?: boolean;
   onClose: () => void;
   onOpenCall: (callId: string) => void;
   onCloseAlert: (id: string) => void;
@@ -22,13 +23,18 @@ export interface AlertDetailProps {
 
 export function AlertDetail({
   alert,
-  call,
+  relatedCalls,
+  isLoadingRelatedCalls = false,
   onClose,
   onOpenCall,
   onCloseAlert,
   onReopenAlert,
   severityClassName,
 }: AlertDetailProps) {
+  const primaryCall = relatedCalls[0];
+  const isRecurringAlert =
+    alert?.type === 'recurring_topic' || alert?.type === 'recurring_keyword';
+
   return (
     <Sheet open={!!alert} onOpenChange={(open) => !open && onClose()}>
       <SheetContent>
@@ -54,34 +60,70 @@ export function AlertDetail({
               <p className="text-sm text-muted-foreground">{alert.issue}</p>
             </div>
 
-            {call && (
+            {!isRecurringAlert && primaryCall && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                 <h5 className="text-sm font-medium">Call Information</h5>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    {call.agentName}
+                    {primaryCall.agentName}
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    {Math.floor(call.durationSec / 60)}m {call.durationSec % 60}s
+                    {Math.floor(primaryCall.durationSec / 60)}m {primaryCall.durationSec % 60}s
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Sentiment:</span>
-                  <SentimentBadge sentiment={call.sentimentLabel} />
+                  <SentimentBadge sentiment={primaryCall.sentimentLabel} />
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full"
                   onClick={() => {
-                    onOpenCall(call.id);
+                    onOpenCall(primaryCall.id);
                     onClose();
                   }}
                 >
                   View Full Call Details
                 </Button>
+              </div>
+            )}
+
+            {isRecurringAlert && (
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <h5 className="text-sm font-medium">
+                  Affected Calls
+                  {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
+                </h5>
+                {isLoadingRelatedCalls ? (
+                  <p className="text-sm text-muted-foreground">Loading related calls...</p>
+                ) : relatedCalls.length > 0 ? (
+                  <div className="space-y-2">
+                    {relatedCalls.map((call) => (
+                      <Button
+                        key={call.id}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-between"
+                        onClick={() => {
+                          onOpenCall(call.id);
+                          onClose();
+                        }}
+                      >
+                        <span className="truncate text-left">
+                          {call.agentName} · {new Date(call.startedAt).toLocaleDateString()}
+                        </span>
+                        <SentimentBadge sentiment={call.sentimentLabel} />
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No contributing calls were found for this recurring alert.
+                  </p>
+                )}
               </div>
             )}
 

@@ -8,6 +8,7 @@ export type SupervisorSentimentLabel = 'positive' | 'neutral' | 'negative';
 
 export interface SupervisorAlertViewModel {
   id: string;
+  type: 'sentiment_threshold' | 'keyword_match' | 'recurring_topic' | 'recurring_keyword' | 'manual';
   callId: string | null;
   createdAt: string;
   ruleId: string;
@@ -15,6 +16,9 @@ export interface SupervisorAlertViewModel {
   severity: 'high' | 'medium' | 'low';
   status: 'open' | 'closed';
   issue: string;
+  matchedValue: string | null;
+  matchedCount: number | null;
+  windowDays: number | null;
 }
 
 export interface SupervisorCallSummaryViewModel {
@@ -38,6 +42,8 @@ export interface SupervisorCallViewModel {
   csat: number | null;
   customerName: string;
   callSummary?: SupervisorCallSummaryViewModel;
+  hasOpenAlert: boolean;
+  openAlertId: string | null;
 }
 
 export interface SupervisorAlertSettingsViewModel {
@@ -57,6 +63,7 @@ export function mapAlertRecordToViewModel(
 ): SupervisorAlertViewModel {
   return {
     id: record.id,
+    type: record.type,
     callId: record.call_id,
     createdAt: record.created_at ?? '',
     ruleId: record.rule_id ?? record.id,
@@ -64,6 +71,9 @@ export function mapAlertRecordToViewModel(
     severity: record.severity,
     status: record.status,
     issue: record.description,
+    matchedValue: record.matched_value,
+    matchedCount: record.matched_count,
+    windowDays: record.window_days,
   };
 }
 
@@ -89,6 +99,8 @@ export function mapCallDetailToViewModel(
     resolved: detail.is_resolved ?? false,
     csat: null,
     customerName: 'Customer',
+    hasOpenAlert: detail.has_open_alert,
+    openAlertId: detail.open_alert_id,
     callSummary: detail.summary
       ? {
           callId: detail.id,

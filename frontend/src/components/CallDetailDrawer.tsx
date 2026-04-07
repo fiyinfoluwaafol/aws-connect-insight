@@ -27,6 +27,8 @@ import {
 import { toast } from '@/hooks/use-toast';
 
 type CallDetailCall = Call & {
+  hasOpenAlert?: boolean;
+  openAlertId?: string | null;
   callSummary?: {
     callId: string;
     summaryText: string;
@@ -40,9 +42,19 @@ interface CallDetailDrawerProps {
   call: CallDetailCall | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  canCreateAlert?: boolean;
+  isCreatingAlert?: boolean;
+  onCreateAlert?: (callId: string) => Promise<void>;
 }
 
-export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerProps) {
+export function CallDetailDrawer({
+  call,
+  open,
+  onOpenChange,
+  canCreateAlert = false,
+  isCreatingAlert = false,
+  onCreateAlert,
+}: CallDetailDrawerProps) {
   const [newNote, setNewNote] = useState('');
   const { user } = useAuthStore();
   const { exemplarCallIds, toggleExemplar, callNotes, addNote } = useAppStore();
@@ -70,11 +82,9 @@ export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerP
     });
   };
 
-  const handleCreateAlert = () => {
-    toast({
-      title: 'Manual Alerts Coming Soon',
-      description: 'Manual alert creation has not been wired to the backend yet.',
-    });
+  const handleCreateAlert = async () => {
+    if (!onCreateAlert) return;
+    await onCreateAlert(call.id);
   };
 
   const handleAddNote = () => {
@@ -259,10 +269,17 @@ export function CallDetailDrawer({ call, open, onOpenChange }: CallDetailDrawerP
                 <Star className={`h-4 w-4 mr-2 ${isExemplar ? 'fill-current' : ''}`} />
                 {isExemplar ? 'Remove Exemplar' : 'Mark as Exemplar'}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleCreateAlert}>
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                Create Alert
-              </Button>
+              {canCreateAlert && !call.hasOpenAlert && onCreateAlert && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCreateAlert()}
+                  disabled={isCreatingAlert}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  {isCreatingAlert ? 'Creating Alert...' : 'Create Alert'}
+                </Button>
+              )}
             </div>
           </div>
         </ScrollArea>
