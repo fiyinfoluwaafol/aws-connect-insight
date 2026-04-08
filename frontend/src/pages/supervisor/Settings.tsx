@@ -1,4 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { alertsApi } from '@/lib/api';
+import {
+  deriveAlertSettingsViewModel,
+  normalizeKeywordInput,
+} from '@/lib/supervisor-alerts';
 import { useAppStore } from '@/stores/app-store';
 import { resetAndReseed } from '@/lib/seed';
 import { Card } from '@/components/ui/card';
@@ -29,13 +35,103 @@ import {
 } from 'lucide-react';
 
 export default function Settings() {
+  const queryClient = useQueryClient();
   const { settings, updateSettings, sentEmails } = useAppStore();
   const [newKeyword, setNewKeyword] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [sentimentThreshold, setSentimentThreshold] = useState(-0.5);
 
-  const handleAddKeyword = () => {
-    if (!newKeyword.trim()) return;
-    if (settings.keywords.includes(newKeyword.trim().toLowerCase())) {
+  const { data: rulesResponse, isLoading: rulesLoading } = useQuery({
+    queryKey: ['alerts', 'rules'],
+    queryFn: () => alertsApi.listRules(),
+    staleTime: 30 * 1000,
+    retry: 1,
+  });
+
+  const settingsView = useMemo(
+    () => deriveAlertSettingsViewModel(rulesResponse?.rules ?? []),
+    [rulesResponse]
+  );
+
+  useEffect(() => {
+    const backendThreshold = settingsView.thresholdRule?.sentiment_below;
+    if (backendThreshold !== null && backendThreshold !== undefined) {
+      setSentimentThreshold(backendThreshold);
+    } else {
+      setSentimentThreshold(-0.5);
+    }
+  }, [settingsView.thresholdRule?.id, settingsView.thresholdRule?.sentiment_below]);
+
+  const saveThresholdMutation = useMutation({
+    mutationFn: async (value: number) => {
+      const canonicalRule = settingsView.thresholdRule;
+      if (canonicalRule) {
+        await alertsApi.updateRule(canonicalRule.id, {
+          severity: 'high',
+          is_active: true,
+          sentiment_below: value,
+        });
+      } else {
+        await alertsApi.createRule({
+          type: 'sentiment_threshold',
+          severity: 'high',
+          sentiment_below: value,
+          is_active: true,
+        });
+      }
+
+      await Promise.all(
+        settingsView.duplicateThresholdRules.map((rule) =>
+          alertsApi.updateRule(rule.id, { is_active: false })
+        )
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts', 'rules'] });
+      toast({
+        title: 'Threshold Updated',
+        description: 'The supervisor sentiment alert threshold has been saved.',
+      });
+    },
+  });
+
+  const createKeywordMutation = useMutation({
+    mutationFn: (keyword: string) =>
+      alertsApi.createRule({
+        type: 'keyword_match',
+        severity: 'high',
+        keyword,
+        is_active: true,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts', 'rules'] });
+    },
+  });
+
+  const deactivateKeywordMutation = useMutation({
+    mutationFn: async (keyword: string) => {
+      const matchingRules = settingsView.keywordRules.filter((rule) => rule.keyword === keyword);
+      await Promise.all(
+        matchingRules.map((rule) =>
+          alertsApi.updateRule(rule.id, { is_active: false })
+        )
+      );
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts', 'rules'] });
+    },
+  });
+
+  const handleThresholdCommit = async (value: number) => {
+    setSentimentThreshold(value);
+    await saveThresholdMutation.mutateAsync(value);
+  };
+
+  const handleAddKeyword = async () => {
+    const normalizedKeyword = normalizeKeywordInput(newKeyword);
+    if (!normalizedKeyword) return;
+
+    if (settingsView.keywords.includes(normalizedKeyword)) {
       toast({
         title: 'Keyword Exists',
         description: 'This keyword is already in the list.',
@@ -43,20 +139,17 @@ export default function Settings() {
       });
       return;
     }
-    updateSettings({
-      keywords: [...settings.keywords, newKeyword.trim().toLowerCase()],
-    });
+
+    await createKeywordMutation.mutateAsync(normalizedKeyword);
     setNewKeyword('');
     toast({
       title: 'Keyword Added',
-      description: `"${newKeyword}" has been added to alert keywords.`,
+      description: `"${normalizedKeyword}" has been added to alert keywords.`,
     });
   };
 
-  const handleRemoveKeyword = (keyword: string) => {
-    updateSettings({
-      keywords: settings.keywords.filter((k) => k !== keyword),
-    });
+  const handleRemoveKeyword = async (keyword: string) => {
+    await deactivateKeywordMutation.mutateAsync(keyword);
     toast({
       title: 'Keyword Removed',
       description: `"${keyword}" has been removed from alert keywords.`,
@@ -65,18 +158,13 @@ export default function Settings() {
 
   const handleResetDemo = async () => {
     setResetLoading(true);
-    
-    // Small delay for UX
     await new Promise((r) => setTimeout(r, 500));
-    
-    // Reset and reseed data
     resetAndReseed();
-    
     setResetLoading(false);
-    
+
     toast({
       title: 'Demo Reset Complete',
-      description: 'All data has been cleared and re-seeded with fresh mock data.',
+      description: 'Local demo data has been cleared and refreshed. Backend alert rules were not changed.',
     });
   };
 
@@ -89,7 +177,6 @@ export default function Settings() {
         </h2>
 
         <div className="space-y-6">
-          {/* Alert Thresholds */}
           <Card className="p-6">
             <h3 className="font-semibold flex items-center gap-2 mb-4">
               <Bell className="h-4 w-4" />
@@ -98,19 +185,18 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <Label className="mb-2 block">
-                  Sentiment Threshold: {settings.sentimentThreshold.toFixed(1)}
+                  Sentiment Threshold: {sentimentThreshold.toFixed(1)}
                 </Label>
                 <p className="text-sm text-muted-foreground mb-3">
                   Calls with sentiment below this value will trigger alerts.
                 </p>
                 <Slider
                   min={-1}
-                  max={0}
+                  max={1}
                   step={0.1}
-                  value={[settings.sentimentThreshold]}
-                  onValueChange={(value) =>
-                    updateSettings({ sentimentThreshold: value[0] })
-                  }
+                  value={[sentimentThreshold]}
+                  onValueChange={(value) => setSentimentThreshold(value[0])}
+                  onValueCommit={(value) => void handleThresholdCommit(value[0])}
                 />
               </div>
               <Separator />
@@ -120,7 +206,7 @@ export default function Settings() {
                   Calls containing these keywords will trigger alerts.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {settings.keywords.map((keyword) => (
+                  {settingsView.keywords.map((keyword) => (
                     <Badge
                       key={keyword}
                       variant="secondary"
@@ -128,7 +214,7 @@ export default function Settings() {
                     >
                       {keyword}
                       <button
-                        onClick={() => handleRemoveKeyword(keyword)}
+                        onClick={() => void handleRemoveKeyword(keyword)}
                         className="ml-1 hover:text-destructive"
                       >
                         <X className="h-3 w-3" />
@@ -141,17 +227,19 @@ export default function Settings() {
                     placeholder="Add keyword..."
                     value={newKeyword}
                     onChange={(e) => setNewKeyword(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
+                    onKeyDown={(e) => e.key === 'Enter' && void handleAddKeyword()}
                   />
-                  <Button onClick={handleAddKeyword} size="icon">
+                  <Button onClick={() => void handleAddKeyword()} size="icon">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                {rulesLoading && (
+                  <p className="text-xs text-muted-foreground mt-2">Loading alert rules...</p>
+                )}
               </div>
             </div>
           </Card>
 
-          {/* Data Retention */}
           <Card className="p-6">
             <h3 className="font-semibold flex items-center gap-2 mb-4">
               <Database className="h-4 w-4" />
@@ -165,7 +253,7 @@ export default function Settings() {
               <Select
                 value={settings.dataRetentionDays.toString()}
                 onValueChange={(value) =>
-                  updateSettings({ dataRetentionDays: parseInt(value) })
+                  updateSettings({ dataRetentionDays: parseInt(value, 10) })
                 }
               >
                 <SelectTrigger className="w-48">
@@ -180,7 +268,6 @@ export default function Settings() {
             </div>
           </Card>
 
-          {/* Email Outbox */}
           <Card className="p-6">
             <h3 className="font-semibold flex items-center gap-2 mb-4">
               <Mail className="h-4 w-4" />
@@ -212,15 +299,14 @@ export default function Settings() {
             )}
           </Card>
 
-          {/* Reset Demo */}
           <Card className="p-6 border-destructive/50">
             <h3 className="font-semibold flex items-center gap-2 mb-4 text-destructive">
               <Trash2 className="h-4 w-4" />
               Reset Demo Data
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Clear all persisted state (alerts, briefs, notes, settings) and
-              re-seed with fresh mock data. This action cannot be undone.
+              Clear local persisted state used for demo-only features such as briefs, notes,
+              notifications, and local preferences. Backend alert rules are not reset here.
             </p>
             <Button
               variant="destructive"

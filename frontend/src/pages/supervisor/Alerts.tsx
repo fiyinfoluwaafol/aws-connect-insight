@@ -1,50 +1,153 @@
-import { useState, useEffect, useMemo } from 'react';
-import { mockData } from '@/lib/mock-data';
-import type { Call } from '@/lib/mock-data';
-import { useAppStore } from '@/stores/app-store';
+import { useMemo, useState } from 'react';
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { alertsApi, callsApi, type SupervisorAlertSeverity, type SupervisorAlertStatus } from '@/lib/api';
+import {
+  mapAlertRecordToViewModel,
+  mapCallDetailToViewModel,
+  type SupervisorAlertViewModel,
+  type SupervisorCallViewModel,
+} from '@/lib/supervisor-alerts';
 import { CallDetailDrawer } from '@/components/CallDetailDrawer';
 import { toast } from '@/hooks/use-toast';
 import { AlertTable } from './components/AlertTable';
 import { AlertDetail } from './components/AlertDetail';
 
 export default function AlertsCenter() {
-  const { alerts, setAlerts, updateAlert } = useAppStore();
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [detailAlert, setDetailAlert] = useState<(typeof alerts)[0] | null>(null);
+  const [detailAlert, setDetailAlert] = useState<SupervisorAlertViewModel | null>(null);
   const [callDrawerOpen, setCallDrawerOpen] = useState(false);
-  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [selectedCall, setSelectedCall] = useState<SupervisorCallViewModel | null>(null);
 
-  useEffect(() => {
-    if (alerts.length === 0) {
-      setAlerts(mockData.alerts);
-    }
-  }, [alerts.length, setAlerts]);
+  const {
+    data: alertsResponse,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['alerts', 'list', statusFilter, severityFilter],
+    queryFn: () =>
+      alertsApi.listAlerts({
+        status:
+          statusFilter === 'all'
+            ? undefined
+            : (statusFilter as SupervisorAlertStatus),
+        severity:
+          severityFilter === 'all'
+            ? undefined
+            : (severityFilter as SupervisorAlertSeverity),
+        page: 1,
+        per_page: 100,
+    }),
+    staleTime: 30 * 1000,
+    refetchInterval: 10 * 1000,
+    retry: 1,
+  });
 
-  const filteredAlerts = useMemo(
+  const { data: openAlertsResponse } = useQuery({
+    queryKey: ['alerts', 'open-count'],
+    queryFn: () => alertsApi.listAlerts({ status: 'open', page: 1, per_page: 1 }),
+    staleTime: 30 * 1000,
+    refetchInterval: 10 * 1000,
+    retry: 1,
+  });
+
+  const alerts = useMemo(
+    () => (alertsResponse?.alerts ?? []).map(mapAlertRecordToViewModel),
+    [alertsResponse]
+  );
+
+  const callIds = useMemo(
     () =>
-      alerts.filter((alert) => {
-        if (statusFilter !== 'all' && alert.status !== statusFilter) return false;
-        if (severityFilter !== 'all' && alert.severity !== severityFilter) return false;
-        return true;
-      }),
-    [alerts, statusFilter, severityFilter]
-  );
-
-  const callsById = useMemo(
-    () => Object.fromEntries(mockData.calls.map((c) => [c.id, c])),
-    []
-  );
-
-  const openAlertsCount = useMemo(
-    () => alerts.filter((a) => a.status === 'open').length,
+      Array.from(
+        new Set(
+          alerts
+            .map((alert) => alert.callId)
+            .filter((callId): callId is string => Boolean(callId))
+        )
+      ),
     [alerts]
   );
 
+  const callQueries = useQueries({
+    queries: callIds.map((callId) => ({
+      queryKey: ['calls', 'detail', callId],
+      queryFn: () => callsApi.getCallById(callId),
+      staleTime: 30 * 1000,
+      retry: 1,
+    })),
+  });
+
+  const callsById = useMemo(
+    () =>
+      Object.fromEntries(
+        callQueries
+          .filter((query) => query.data)
+          .map((query) => {
+            const call = mapCallDetailToViewModel(query.data!);
+            return [call.id, call];
+          })
+      ),
+    [callQueries]
+  );
+
+  const {
+    data: relatedCallsResponse,
+    isLoading: isLoadingRelatedCalls,
+  } = useQuery({
+    queryKey: ['alerts', 'related-calls', detailAlert?.id],
+    queryFn: () => alertsApi.listAlertCalls(detailAlert!.id),
+    enabled: Boolean(detailAlert),
+    staleTime: 30 * 1000,
+    retry: 1,
+  });
+
+  const relatedCalls = useMemo(
+    () => (relatedCallsResponse?.calls ?? []).map(mapCallDetailToViewModel),
+    [relatedCallsResponse]
+  );
+
+  const relatedCallsById = useMemo(
+    () => Object.fromEntries(relatedCalls.map((call) => [call.id, call])),
+    [relatedCalls]
+  );
+
+  const updateAlertMutation = useMutation({
+    mutationFn: ({ alertId, patch }: { alertId: string; patch: { status?: 'open' | 'closed'; is_read?: boolean } }) =>
+      alertsApi.updateAlert(alertId, patch),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    },
+  });
+
+  const createManualAlertMutation = useMutation({
+    mutationFn: (callId: string) => alertsApi.createManualAlert({ call_id: callId }),
+    onSuccess: (createdAlert, callId) => {
+      void queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      void queryClient.invalidateQueries({ queryKey: ['calls', 'detail', callId] });
+      setSelectedCall((prev) =>
+        prev && prev.id === callId
+          ? { ...prev, hasOpenAlert: true, openAlertId: createdAlert.id }
+          : prev
+      );
+      toast({
+        title: 'Alert Created',
+        description: 'The call has been flagged for manual review.',
+      });
+    },
+  });
+
+  const openAlertsCount = openAlertsResponse?.total ?? 0;
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(filteredAlerts.map((a) => a.id));
+      setSelectedIds(alerts.map((alert) => alert.id));
     } else {
       setSelectedIds([]);
     }
@@ -54,40 +157,47 @@ export default function AlertsCenter() {
     if (checked) {
       setSelectedIds((prev) => [...prev, id]);
     } else {
-      setSelectedIds((prev) => prev.filter((i) => i !== id));
+      setSelectedIds((prev) => prev.filter((item) => item !== id));
     }
   };
 
-  const handleCloseSelected = () => {
-    selectedIds.forEach((id) => {
-      updateAlert(id, { status: 'closed' });
-    });
+  const handleCloseSelected = async () => {
+    await Promise.all(
+      selectedIds.map((id) =>
+        updateAlertMutation.mutateAsync({ alertId: id, patch: { status: 'closed' } })
+      )
+    );
+
     toast({
       title: 'Alerts Closed',
       description: `${selectedIds.length} alert(s) have been closed.`,
     });
     setSelectedIds([]);
+    if (detailAlert && selectedIds.includes(detailAlert.id)) {
+      setDetailAlert(null);
+    }
   };
 
-  const handleCloseAlert = (id: string) => {
-    updateAlert(id, { status: 'closed' });
+  const handleCloseAlert = async (id: string) => {
+    await updateAlertMutation.mutateAsync({ alertId: id, patch: { status: 'closed' } });
     toast({
       title: 'Alert Closed',
       description: 'The alert has been marked as closed.',
     });
-    setDetailAlert(null);
+    setDetailAlert((prev) => (prev && prev.id === id ? { ...prev, status: 'closed' } : prev));
   };
 
-  const handleReopenAlert = (id: string) => {
-    updateAlert(id, { status: 'open' });
+  const handleReopenAlert = async (id: string) => {
+    await updateAlertMutation.mutateAsync({ alertId: id, patch: { status: 'open' } });
     toast({
       title: 'Alert Reopened',
       description: 'The alert has been reopened.',
     });
+    setDetailAlert((prev) => (prev && prev.id === id ? { ...prev, status: 'open' } : prev));
   };
 
   const openCallDetail = (callId: string) => {
-    const call = mockData.calls.find((c) => c.id === callId);
+    const call = relatedCallsById[callId] ?? callsById[callId];
     if (call) {
       setSelectedCall(call);
       setCallDrawerOpen(true);
@@ -105,12 +215,16 @@ export default function AlertsCenter() {
     }
   };
 
-  const detailCall = detailAlert ? callsById[detailAlert.callId] : undefined;
-
   return (
     <div className="container mx-auto px-6 py-8">
+      {isError && (
+        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
+          Failed to load alerts.
+        </div>
+      )}
+
       <AlertTable
-        alerts={filteredAlerts}
+        alerts={alerts}
         callsById={callsById}
         statusFilter={statusFilter}
         severityFilter={severityFilter}
@@ -122,17 +236,22 @@ export default function AlertsCenter() {
         onSelectRow={handleSelect}
         onOpenDetail={setDetailAlert}
         onOpenCall={openCallDetail}
-        onCloseSelected={handleCloseSelected}
+        onCloseSelected={() => void handleCloseSelected()}
         severityClassName={severityColor}
       />
 
+      {isLoading && (
+        <div className="mt-4 text-sm text-muted-foreground">Loading alerts...</div>
+      )}
+
       <AlertDetail
         alert={detailAlert}
-        call={detailCall}
+        relatedCalls={relatedCalls}
+        isLoadingRelatedCalls={isLoadingRelatedCalls}
         onClose={() => setDetailAlert(null)}
         onOpenCall={openCallDetail}
-        onCloseAlert={handleCloseAlert}
-        onReopenAlert={handleReopenAlert}
+        onCloseAlert={(id) => void handleCloseAlert(id)}
+        onReopenAlert={(id) => void handleReopenAlert(id)}
         severityClassName={severityColor}
       />
 
@@ -140,6 +259,9 @@ export default function AlertsCenter() {
         call={selectedCall}
         open={callDrawerOpen}
         onOpenChange={setCallDrawerOpen}
+        canCreateAlert
+        isCreatingAlert={createManualAlertMutation.isPending}
+        onCreateAlert={(callId) => createManualAlertMutation.mutateAsync(callId)}
       />
     </div>
   );

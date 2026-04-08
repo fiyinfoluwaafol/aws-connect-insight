@@ -259,6 +259,143 @@ export const dashboardApi = {
 };
 
 // =============================================================================
+// Alerts API Types
+// =============================================================================
+
+export type SupervisorAlertSeverity = 'low' | 'medium' | 'high';
+export type SupervisorAlertStatus = 'open' | 'closed';
+export type SupervisorAlertRuleType =
+  | 'sentiment_threshold'
+  | 'keyword_match'
+  | 'recurring_topic'
+  | 'recurring_keyword';
+export type SupervisorAlertType = SupervisorAlertRuleType | 'manual';
+
+export interface SupervisorAlertRecord {
+  id: string;
+  rule_id: string | null;
+  type: SupervisorAlertType;
+  severity: SupervisorAlertSeverity;
+  status: SupervisorAlertStatus;
+  is_read: boolean;
+  call_id: string | null;
+  matched_value: string | null;
+  matched_count: number | null;
+  window_days: number | null;
+  title: string;
+  description: string;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface SupervisorAlertsListResponse {
+  alerts: SupervisorAlertRecord[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+export interface SupervisorAlertPatchRequest {
+  status?: SupervisorAlertStatus;
+  is_read?: boolean;
+}
+
+export interface CreateManualAlertRequest {
+  call_id: string;
+}
+
+export interface SupervisorAlertRule {
+  id: string;
+  type: SupervisorAlertRuleType;
+  severity: SupervisorAlertSeverity;
+  is_active: boolean;
+  team_id: string;
+  supervisor_id: string;
+  sentiment_below: number | null;
+  keyword: string | null;
+  topic: string | null;
+  min_occurrences: number | null;
+  window_days: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface SupervisorAlertRulesListResponse {
+  rules: SupervisorAlertRule[];
+}
+
+export interface SupervisorAlertCallsResponse {
+  calls: SupervisorCallDetail[];
+}
+
+export interface CreateSupervisorAlertRuleRequest {
+  type: SupervisorAlertRuleType;
+  severity: SupervisorAlertSeverity;
+  is_active?: boolean;
+  sentiment_below?: number;
+  keyword?: string;
+  topic?: string;
+  min_occurrences?: number;
+  window_days?: number;
+}
+
+export interface UpdateSupervisorAlertRuleRequest {
+  type?: SupervisorAlertRuleType;
+  severity?: SupervisorAlertSeverity;
+  is_active?: boolean;
+  sentiment_below?: number;
+  keyword?: string;
+  topic?: string;
+  min_occurrences?: number;
+  window_days?: number;
+}
+
+// =============================================================================
+// Alerts API
+// =============================================================================
+
+function toQueryString(params: Record<string, string | number | boolean | undefined>) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined) {
+      search.set(key, String(value));
+    }
+  });
+  const query = search.toString();
+  return query ? `?${query}` : '';
+}
+
+export const alertsApi = {
+  listAlerts: (params: {
+    status?: SupervisorAlertStatus;
+    severity?: SupervisorAlertSeverity;
+    type?: SupervisorAlertType;
+    is_read?: boolean;
+    page?: number;
+    per_page?: number;
+  } = {}) =>
+    api.get<SupervisorAlertsListResponse>(`/api/alerts${toQueryString(params)}`),
+
+  updateAlert: (alertId: string, data: SupervisorAlertPatchRequest) =>
+    api.patch<SupervisorAlertRecord>(`/api/alerts/${alertId}`, data),
+
+  createManualAlert: (data: CreateManualAlertRequest) =>
+    api.post<SupervisorAlertRecord>('/api/alerts/manual', data),
+
+  listAlertCalls: (alertId: string) =>
+    api.get<SupervisorAlertCallsResponse>(`/api/alerts/${alertId}/calls`),
+
+  listRules: (params: { is_active?: boolean } = {}) =>
+    api.get<SupervisorAlertRulesListResponse>(`/api/alerts/rules${toQueryString(params)}`),
+
+  createRule: (data: CreateSupervisorAlertRuleRequest) =>
+    api.post<SupervisorAlertRule>('/api/alerts/rules', data),
+
+  updateRule: (ruleId: string, data: UpdateSupervisorAlertRuleRequest) =>
+    api.patch<SupervisorAlertRule>(`/api/alerts/rules/${ruleId}`, data),
+};
+
+// =============================================================================
 // Calls API Types
 // =============================================================================
 
@@ -278,11 +415,34 @@ export interface SimulateCallResponse {
   keywords: Record<string, boolean>;
 }
 
+export interface SupervisorCallDetail {
+  id: string;
+  agent_id: string;
+  agent_name: string;
+  started_at: string | null;
+  duration_seconds: number | null;
+  sentiment_score: number | null;
+  sentiment_label: 'positive' | 'neutral' | 'negative' | null;
+  is_resolved: boolean | null;
+  topics: string[];
+  summary: string | null;
+  has_open_alert: boolean;
+  open_alert_id: string | null;
+  transcript: Array<{
+    speaker: string;
+    text: string;
+    timestamp?: string | null;
+  }>;
+}
+
 // =============================================================================
 // Calls API
 // =============================================================================
 
 export const callsApi = {
+  getCallById: (callId: string) =>
+    api.get<SupervisorCallDetail>(`/api/calls/${callId}`),
+
   simulateCall: () =>
     api.post<SimulateCallResponse>('/api/calls/simulate'),
 };

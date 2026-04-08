@@ -10,11 +10,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Eye } from 'lucide-react';
-import type { Alert, Call } from '@/lib/mock-data';
+import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
 
 export interface AlertTableProps {
-  alerts: Alert[];
-  callsById: Record<string, Call>;
+  alerts: SupervisorAlertViewModel[];
+  callsById: Record<string, SupervisorCallViewModel>;
   statusFilter: string;
   severityFilter: string;
   selectedIds: string[];
@@ -23,7 +23,7 @@ export interface AlertTableProps {
   onSeverityFilterChange: (value: string) => void;
   onSelectAll: (checked: boolean) => void;
   onSelectRow: (id: string, checked: boolean) => void;
-  onOpenDetail: (alert: Alert) => void;
+  onOpenDetail: (alert: SupervisorAlertViewModel) => void;
   onOpenCall: (callId: string) => void;
   onCloseSelected: () => void;
   severityClassName: (severity: string) => string;
@@ -106,7 +106,7 @@ export function AlertTable({
             </thead>
             <tbody>
               {alerts.map((alert) => {
-                const call = callsById[alert.callId];
+                const call = alert.callId ? callsById[alert.callId] : undefined;
                 return (
                   <tr
                     key={alert.id}
@@ -131,7 +131,14 @@ export function AlertTable({
                       <span className="text-sm text-muted-foreground">{alert.issue}</span>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm">{call?.agentName || 'Unknown'}</span>
+                      <span className="text-sm">
+                        {call?.agentName ||
+                          (alert.type === 'recurring_topic' || alert.type === 'recurring_keyword'
+                            ? `${alert.matchedCount ?? 0} affected calls`
+                            : alert.type === 'manual'
+                              ? 'Manual review'
+                              : 'Unknown')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="text-sm text-muted-foreground">
@@ -147,7 +154,13 @@ export function AlertTable({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onOpenCall(alert.callId)}
+                        onClick={() => {
+                          if (alert.callId) {
+                            onOpenCall(alert.callId);
+                            return;
+                          }
+                          onOpenDetail(alert);
+                        }}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

@@ -1,4 +1,4 @@
-import { mockData, Call, Alert, CallSummary } from './mock-data';
+import { mockData, Call, CallSummary } from './mock-data';
 import { useAppStore } from '@/stores/app-store';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -71,31 +71,6 @@ export const MockService = {
 
   getSummary(callId: string): CallSummary | undefined {
     return mockData.getSummary(callId);
-  },
-
-  listAlerts(filters?: {
-    status?: 'open' | 'closed';
-    severity?: 'high' | 'medium' | 'low';
-    ruleLabel?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Alert[] {
-    const storeAlerts = useAppStore.getState().alerts;
-    const alerts = storeAlerts.length > 0 ? storeAlerts : mockData.alerts;
-    
-    return alerts.filter((alert) => {
-      if (filters?.status && alert.status !== filters.status) return false;
-      if (filters?.severity && alert.severity !== filters.severity) return false;
-      if (filters?.ruleLabel && alert.ruleLabel !== filters.ruleLabel) return false;
-      if (filters?.dateFrom && alert.createdAt < filters.dateFrom) return false;
-      if (filters?.dateTo && alert.createdAt > filters.dateTo) return false;
-      return true;
-    });
-  },
-
-  mutateAlert(alertId: string, patch: Partial<Alert>): Alert | undefined {
-    useAppStore.getState().updateAlert(alertId, patch);
-    return useAppStore.getState().alerts.find((a) => a.id === alertId);
   },
 
   generateDailyBrief(date: string) {

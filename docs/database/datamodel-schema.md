@@ -42,13 +42,13 @@ The idea behind this is to create a living document that would continue to be up
 
 ---
 
-## 💡 Entity Relationship Diagrams (ERDs)
+## Entity Relationship Diagrams (ERDs)
 
 ###  **[Click to see the ERDs](https://dbdiagram.io/d/AWS-Connect-Insights-698cc7c8bd82f5fce26e4beb)**
 
 ---
 
-## 💡 Table Definitions
+## Table Definitions
 
 ### 1. `users`
 
@@ -99,11 +99,11 @@ For insertion, we'd do the following:
 | `started_at` | TIMESTAMP | Call start time |
 | `created_at` | TIMESTAMP |  |
 
-💡 Team ID does seem redundant since we have agent ID and can get the information from the agent table but it could cause issues if the agent changes teams. This way all call history remains on the team.
+Note: Team ID does seem redundant since we have agent ID and can get the information from the agent table but it could cause issues if the agent changes teams. This way all call history remains on the team.
 
-💡 We also may not need an 'ended_at' field since we can just use calculate that on the frontend using duration + started_at
+Note: We also may not need an 'ended_at' field since we can just use calculate that on the frontend using duration + started_at.
 
-💡 Note: Transcript is now stored here (not in `call_analyses`) so we can re-run analysis without re-transcribing.
+Note: Transcript is now stored here (not in `call_analyses`) so we can re-run analysis without re-transcribing.
 
 ---
 
@@ -123,11 +123,11 @@ For insertion, we'd do the following:
 | `created_at` | TIMESTAMP |  |
 | `updated_at` | TIMESTAMP |  |
 
-💡 See `calls` table above as transcript has been moved there.
+Note: See `calls` table above as transcript has been moved there.
 
-💡 Another option is adding these fields directly in the calls table. The issue with that though would be that if we decide to change something major about our analysis, that would probably mess with our call records. So it might be better to have the call record separate and then store any analysis on it separately also.
+Note: Another option is adding these fields directly in the calls table. The issue with that though would be that if we decide to change something major about our analysis, that would probably mess with our call records. So it might be better to have the call record separate and then store any analysis on it separately also.
 
-💡 `key_moves` is stored here (not in `exemplar_calls`) so all calls have access to AI-identified techniques for coaching and pattern analysis.
+Note: `key_moves` is stored here (not in `exemplar_calls`) so all calls have access to AI-identified techniques for coaching and pattern analysis.
 
 ---
 
@@ -143,7 +143,7 @@ For insertion, we'd do the following:
 | `is_active` | BOOLEAN | Optional disable |
 | `created_at` | TIMESTAMP |  |
 
-💡 The optional disable exists in case we no longer need a tag and some other calls have already used it as deleting could cause issues.
+Note: The optional disable exists in case we no longer need a tag and some other calls have already used it as deleting could cause issues.
 
 
 ---
@@ -159,7 +159,7 @@ For insertion, we'd do the following:
 | `is_active` | BOOLEAN | Optional disable |
 | `created_at` | TIMESTAMP |  |
 
-💡 Mostly the same idea as the topic table.
+Note: Mostly the same idea as the topic table.
 
 ---
 
@@ -173,7 +173,7 @@ For insertion, we'd do the following:
 | `call_analysis_id` | **Foreign Key** → call_analyses |
 | `topic_id` | **Foreign Key** → topics |
 
-💡 Here we could alternatively use an enum instead and that'd mean adding them directly to the call table or even its own unique table. The issue would then be that if we wanted to filter by topics, we'd have to do an array search for all the rows in the table.
+Note: Here we could alternatively use an enum instead and that'd mean adding them directly to the call table or even its own unique table. The issue would then be that if we wanted to filter by topics, we'd have to do an array search for all the rows in the table.
 
 ---
 
@@ -187,52 +187,66 @@ For insertion, we'd do the following:
 | `call_analysis_id` | **Foreign Key** → call_analyses |
 | `keyword_id` | **Foreign Key** → keywords |
 
-💡 Same idea as  `call_analysis_topics`
+Note: Same idea as `call_analysis_topics`.
 
 ---
 
 ### 9. `alert_configurations`
 
-> Rules supervisors create to trigger alerts
+> Rules supervisors create to trigger alerts. The live schema now supports both call-level and recurring alert rules.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | UUID, **Primary key** | |
 | `supervisor_id` | **Foreign Key** → users | Alert rule owner |
 | `team_id` | **Foreign Key** → teams | Applies to this team |
-| `type` | ENUM | `threshold` · `keyword` |
-| `sentiment_threshold` | DECIMAL | For threshold type |
-| `keyword_id` | **Foreign Key** → keywords | For keyword type |
+| `type` | ENUM | `sentiment_threshold` · `keyword_match` · `recurring_topic` · `recurring_keyword` |
+| `severity` | ENUM | `low` · `medium` · `high` |
+| `sentiment_below` | DECIMAL | Used by `sentiment_threshold` rules |
+| `keyword` | VARCHAR(100) | Used by `keyword_match` and `recurring_keyword` rules |
+| `topic` | VARCHAR(100) | Used by `recurring_topic` rules |
+| `min_occurrences` | INTEGER | Default `3`, used by recurring rules |
+| `window_days` | INTEGER | Default `7`, used by recurring rules |
 | `is_active` | BOOLEAN | Enable/disable |
 | `created_at` | TIMESTAMP | |
 | `updated_at` | TIMESTAMP | |
 
-💡 Each rule triggers independently (OR logic). So if a supervisor has settings of < 0.5 sentiments and keywords "negative" and "refund", we create 3 separate entries. This makes it easier to update if the supervisor decides to remove one of them and leave the rest.
+Note: Each rule triggers independently (OR logic). So if a supervisor wants alerts for sentiment below `-0.5`, keyword `"refund"`, and recurring topic `"cancellation"`, we create three separate rule rows.
+
+Note: `keyword` and `topic` values are normalized to lowercase in the app so matching stays consistent.
+
+Note: Manual alerts are not stored as rules. They are created directly in the `alerts` table by supervisors.
 
 ---
 
 ### 10. `alerts`
 
-> Generated when calls match alert rules (one alert per call max)
+> Generated when calls match alert rules. Alerts can point to a single call or represent a recurring pattern across multiple calls.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | UUID, **Primary key** | |
-| `call_id` | **Foreign Key** → calls, UNIQUE | One alert per call |
+| `call_id` | **Foreign Key** → calls, nullable | Present for call-level alerts, null for recurring alerts |
+| `rule_id` | **Foreign Key** → alert_configurations, nullable | Rule that generated the alert |
 | `supervisor_id` | **Foreign Key** → users | Alert recipient |
 | `team_id` | **Foreign Key** → teams | |
-| `type` | ENUM | `threshold` · `keyword` · `manual` |
+| `type` | ENUM | `sentiment_threshold` · `keyword_match` · `recurring_topic` · `recurring_keyword` · `manual` |
 | `status` | ENUM | `open` · `closed` |
 | `severity` | ENUM | `low` · `medium` · `high` |
 | `title` | VARCHAR(255) | Alert headline |
 | `description` | TEXT | Alert details |
 | `is_read` | BOOLEAN | Read status |
+| `matched_value` | VARCHAR(100) | Matching keyword or topic for recurring alerts |
+| `matched_count` | INTEGER | Number of matching calls inside the alert window |
+| `window_days` | INTEGER | Rolling window size for recurring alerts |
 | `created_at` | TIMESTAMP | |
 | `updated_at` | TIMESTAMP | |
 
-💡 Making call_id unique helps ensure we can only get one alert per call.
+Note: The live schema no longer enforces one alert per call globally. Instead, call-level alerts are deduped per `(rule_id, call_id)`, which means the same call can produce multiple alerts if it matches different rules.
 
-💡 **Severity calculation (standardized):** We can manually decide on ranges for call severity
+Note: Recurring alerts keep `call_id = NULL` because they summarize a pattern across several calls instead of pointing to one specific call.
+
+Note: Severity calculation is standardized by the backend rule configuration and alert generation flow.
 
 
 ---
@@ -250,11 +264,11 @@ For insertion, we'd do the following:
 | `note` | TEXT | Why it's a good example |
 | `created_at` | TIMESTAMP | |
 
-💡 We can get examplar calls transcript using a join on `call_id` → `calls.transcript`.
+Note: We can get examplar calls transcript using a join on `call_id` → `calls.transcript`.
 
-💡 `key_moves` is accessed via the call's analysis (`call_id` → `call_analyses.key_moves`), not stored here.
+Note: `key_moves` is accessed via the call's analysis (`call_id` → `call_analyses.key_moves`), not stored here.
 
-💡 Again, this could also be part of the calls table and is very much up for discussion but in light of trying to treat the calls table as the source of truth, this might be the better option since we also might want to add more content as to why the call is an examplar later on.
+Note: Again, this could also be part of the calls table and is very much up for discussion but in light of trying to treat the calls table as the source of truth, this might be the better option since we also might want to add more content as to why the call is an examplar later on.
 
 ---
 
@@ -275,7 +289,7 @@ For insertion, we'd do the following:
 | `dismissed` | BOOLEAN DEFAULT false | Agent can dismiss tips |
 | `created_at` | TIMESTAMP |  |
 
-💡 Content is stored as JSONB array to support multiple tips per coaching session.
+Note: Content is stored as JSONB array to support multiple tips per coaching session.
 
 ---
 
@@ -317,7 +331,7 @@ For insertion, we'd do the following:
 | `content` | JSONB | Full brief + exemplar IDs |
 | `created_at` | TIMESTAMP |  |
 
-💡 This would also store some AI generated content so using JSON may not be the best long term since some models might not follow the instructions. Putting the JSON as a place holder for now.
+Note: This would also store some AI generated content so using JSON may not be the best long term since some models might not follow the instructions. Putting the JSON as a place holder for now.
 
 ---
 
@@ -344,9 +358,9 @@ For insertion, we'd do the following:
 | `id` | UUID, **Primary key** | Auto-generated |
 | `transcript` | JSONB | Array of `{speaker, text}` objects |
 
-💡 This table stores standalone transcript samples that are not associated with actual calls. Used for simulation, testing, training, and development purposes. Format matches the `transcript` field in the `calls` table for consistency.
+Note: This table stores standalone transcript samples that are not associated with actual calls. Used for simulation, testing, training, and development purposes. Format matches the `transcript` field in the `calls` table for consistency.
 
-💡 The app picks one random sample transcript from this pool, then runs the canonical analysis flow to determine sentiment, topics, and coaching signals.
+Note: The app picks one random sample transcript from this pool, then runs the canonical analysis flow to determine sentiment, topics, and coaching signals.
 
 ---
 
@@ -361,7 +375,8 @@ For insertion, we'd do the following:
 | Analysis ↔ Topics | Many-to-Many |
 | Analysis ↔ Keywords | Many-to-Many |
 | Supervisor → Alert Configs | One-to-Many |
-| Call → Alert | One-to-One (optional) |
+| Alert Config → Alerts | One-to-Many |
+| Call → Alerts | One-to-Many (optional) |
 | Call → Exemplar | One-to-One (optional) |
 | Agent → Coaching Tips | One-to-Many |
 | User → Notifications | One-to-Many |
@@ -377,7 +392,9 @@ user_role:  `agent`, `supervisor`
 
 sentiment_label:  `positive`, `neutral`, `negative`
 
-alert_type:  `threshold`, `keyword`, `manual`
+alert_type:  `sentiment_threshold`, `keyword_match`, `recurring_topic`, `recurring_keyword`, `manual`
+
+Note: `alert_configurations.type` uses only the automated rule values. `manual` is used for supervisor-created alert rows in `alerts`.
 
 alert_status:  `open`, `closed`
 
@@ -390,7 +407,7 @@ notification_reference_type:  `call`, `alert`, `coaching_tip`, `exemplar_call`
 
 ---
 
-## 💡 Key Design Decisions
+## Key Design Decisions
 
 | Decision | Why |
 |----------|-----|
@@ -400,14 +417,14 @@ notification_reference_type:  `call`, `alert`, `coaching_tip`, `exemplar_call`
 
 ---
 
-## 💡 Open Questions
+## Open Questions
 
 - [ ] How  do we want to handle it when we delete a call and how do we handle all its other associated information?
 - [ ] Check for normalization and denormalization and make plan for how to handle them.
 - [ ] Calls currently are tied to a team meaning that if the user changes team that information starts to seem redundant
 - [ ] Decide on whether to add ended_at from the calls since that can be calculated using the started_at + duration
 - [ ] Thoughts on having call analysis as a separate table.
-- [x] For alerts status, just realized a boolean might even be simpler like is_read (RESOLVED)
+- [x] Alerts keep both `status` and `is_read`, since "closed" and "read" solve different problems
 - [ ] It does indeed seem like a lot of tables, so i'd love to hear thoughts and alternatives.
 
 ---

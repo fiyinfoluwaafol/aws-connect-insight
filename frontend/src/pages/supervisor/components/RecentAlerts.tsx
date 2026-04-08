@@ -3,13 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SentimentBadge } from '@/components/SentimentBadge';
 import { AlertTriangle, ArrowUpRight, Users, Clock } from 'lucide-react';
-import type { Alert, Call } from '@/lib/mock-data';
+import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
 
 export interface RecentAlertsProps {
-  alerts: Alert[];
-  callsById: Record<string, Call>;
+  alerts: SupervisorAlertViewModel[];
+  callsById: Record<string, SupervisorCallViewModel>;
   onViewAll: () => void;
-  onAlertClick: (alert: Alert) => void;
+  onAlertClick: (alert: SupervisorAlertViewModel) => void;
 }
 
 export function RecentAlerts({ alerts, callsById, onViewAll, onAlertClick }: RecentAlertsProps) {
@@ -30,7 +30,7 @@ export function RecentAlerts({ alerts, callsById, onViewAll, onAlertClick }: Rec
           <p className="text-muted-foreground text-center py-8">No open alerts</p>
         ) : (
           alerts.map((alert) => {
-            const call = callsById[alert.callId];
+            const call = alert.callId ? callsById[alert.callId] : undefined;
             return (
               <div
                 key={alert.id}

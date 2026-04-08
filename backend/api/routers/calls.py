@@ -1,5 +1,6 @@
 """Call endpoints for agents and supervisors."""
 
+import logging
 import random
 from datetime import datetime, timedelta
 from typing import Annotated, Any
@@ -9,10 +10,20 @@ from pydantic import BaseModel
 
 from api.config import Settings, get_settings
 from api.dependencies import get_current_user, get_supabase_client
-from database.analysis import add_keywords_to_analysis, add_topics_to_analysis, create_analysis
+from database.alerts import get_open_alert_for_call
+from database.analysis import (
+    add_keywords_to_analysis,
+    add_topics_to_analysis,
+    create_analysis,
+    get_analysis_by_call_id,
+)
 from database.calls import create_call
+from database.calls import get_call_by_id as fetch_call_by_id
 from database.exceptions import DatabaseError, NotFoundError
 from database.sample_transcripts import get_random_sample_transcript
+from database.teams import get_team_by_id
+from database.users import get_user_by_id
+from services.alerts import evaluate_alert_rules_for_call
 from services.transcript_analysis import (
     DEFAULT_ANALYSIS_MODEL,
     AnalysisServiceError,
@@ -20,6 +31,7 @@ from services.transcript_analysis import (
 )
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -46,6 +58,32 @@ class SimulateCallResponse(BaseModel):
     is_resolved: bool
     topics: list[str]
     keywords: dict[str, bool]
+
+
+class CallDetailTranscriptTurn(BaseModel):
+    """A transcript turn returned for supervisor call detail views."""
+
+    speaker: str
+    text: str
+    timestamp: str | None = None
+
+
+class CallDetailResponse(BaseModel):
+    """Detailed call payload used by the supervisor alerts workflow."""
+
+    id: str
+    agent_id: str
+    agent_name: str
+    started_at: str | None = None
+    duration_seconds: int | None = None
+    sentiment_score: float | None = None
+    sentiment_label: str | None = None
+    is_resolved: bool | None = None
+    topics: list[str]
+    summary: str | None = None
+    transcript: list[CallDetailTranscriptTurn]
+    has_open_alert: bool = False
+    open_alert_id: str | None = None
 
 
 # =============================================================================
@@ -92,9 +130,85 @@ def _normalize_transcript(turns: Any) -> list[dict[str, str]]:
     return normalized_turns
 
 
+def _get_supervisor_id_for_call_metadata(
+    db_client: Any,
+    current_user: dict,
+    team_id: str,
+) -> str | None:
+    """Resolve the supervisor whose alert state should decorate call detail payloads."""
+    if current_user.get("role") == "supervisor":
+        return current_user.get("id")
+
+    team = get_team_by_id(db_client, team_id)
+    return team.get("supervisor_id")
+
+
 # =============================================================================
 # Endpoints
 # =============================================================================
+
+
+@router.get("/{call_id}", response_model=CallDetailResponse)
+def get_call_detail(
+    call_id: str,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    client: Annotated[Any, Depends(get_supabase_client)],
+) -> CallDetailResponse:
+    """Return a single call with enough detail for supervisor alert investigation."""
+    db_client = _require_client(client)
+    team_id = _get_user_team_id(current_user)
+
+    try:
+        call = fetch_call_by_id(db_client, call_id)
+        if call.get("team_id") != team_id:
+            raise NotFoundError(f"Call {call_id} not found")
+
+        agent = get_user_by_id(db_client, call["agent_id"])
+        supervisor_id = _get_supervisor_id_for_call_metadata(db_client, current_user, team_id)
+        try:
+            analysis = get_analysis_by_call_id(db_client, call_id)
+        except NotFoundError:
+            analysis = None
+
+        open_alert = None
+        if supervisor_id:
+            open_alert = get_open_alert_for_call(
+                db_client,
+                call_id=call_id,
+                team_id=team_id,
+                supervisor_id=supervisor_id,
+            )
+
+        transcript = _normalize_transcript(call.get("transcript"))
+
+        return CallDetailResponse(
+            id=call["id"],
+            agent_id=call["agent_id"],
+            agent_name=" ".join(
+                part for part in [agent.get("first_name"), agent.get("last_name")] if part
+            )
+            or agent.get("email", "Unknown Agent"),
+            started_at=call.get("started_at"),
+            duration_seconds=call.get("duration_seconds"),
+            sentiment_score=analysis.get("sentiment_score") if analysis else None,
+            sentiment_label=analysis.get("sentiment_label") if analysis else None,
+            is_resolved=analysis.get("is_resolved") if analysis else None,
+            topics=analysis.get("topics", []) if analysis else [],
+            summary=analysis.get("summary") if analysis else None,
+            transcript=[CallDetailTranscriptTurn(**turn) for turn in transcript],
+            has_open_alert=open_alert is not None,
+            open_alert_id=open_alert.get("id") if open_alert else None,
+        )
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except DatabaseError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch call",
+        ) from exc
 
 
 @router.post("/simulate", response_model=SimulateCallResponse)
@@ -175,11 +289,31 @@ def simulate_call(
                 list(analysis_result.keywords.keys()),
             )
 
-        # Log for debugging
-        print(
-            "Created simulated call "
-            f"{call['id']} for agent {agent_id} "
-            f"using sample transcript {sample_transcript.get('id')}"
+        try:
+            team = get_team_by_id(db_client, team_id)
+            supervisor_id = team.get("supervisor_id")
+            if supervisor_id:
+                evaluate_alert_rules_for_call(
+                    db_client,
+                    team_id=team_id,
+                    supervisor_id=supervisor_id,
+                    call_id=call["id"],
+                    started_at=call["started_at"],
+                    sentiment_score=analysis_result.sentiment_score,
+                    topics=analysis_result.topics,
+                    keywords=analysis_result.keywords,
+                )
+        except Exception:  # noqa: BLE001 - alerting must not block call simulation
+            logger.exception(
+                "Alert evaluation failed for simulated call %s",
+                call["id"],
+            )
+
+        logger.info(
+            "Created simulated call %s for agent %s using sample transcript %s",
+            call["id"],
+            agent_id,
+            sample_transcript.get("id"),
         )
 
         return SimulateCallResponse(

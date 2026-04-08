@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import get_settings
-from api.routers import agent, analysis, auth, calls, dashboard, health, teams
+from api.routers import agent, alerts, analysis, auth, calls, dashboard, health, teams
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
     app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
     app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
+    app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
     app.include_router(calls.router, prefix="/api/calls", tags=["calls"])
     app.include_router(teams.router, prefix="/api/teams", tags=["teams"])
     app.include_router(agent.router, prefix="/api/agent", tags=["agent"])

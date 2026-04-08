@@ -1,4 +1,3 @@
-import { mockData } from './mock-data';
 import { useAppStore } from '@/stores/app-store';
 
 const SEEDED_KEY = 'demo-data-seeded';
@@ -8,13 +7,6 @@ export function seedInitialData(force = false): void {
   
   if (alreadySeeded && !force) {
     return;
-  }
-
-  const store = useAppStore.getState();
-  
-  // Seed alerts from mock data
-  if (store.alerts.length === 0 || force) {
-    store.setAlerts(mockData.alerts);
   }
 
   // Mark as seeded
@@ -31,4 +23,3 @@ export function resetAndReseed(): void {
   // Re-seed with fresh data
   seedInitialData(true);
 }
-
