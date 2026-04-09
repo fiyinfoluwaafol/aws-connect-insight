@@ -74,6 +74,10 @@ def search_calls(
     client: Client,
     team_id: str,
     agent_id: str = None,
+    sentiment_min: float = None,
+    sentiment_max: float = None,
+    keyword: str = None,
+    topic: str = None,
     date_from: str = None,
     date_to: str = None,
     sort: SortOrder = SortOrder.RECENT,
@@ -85,8 +89,6 @@ def search_calls(
 
     page: min 1
     per_page: max 100
-
-    TODO: sentiment filter/sort (needs calls_with_analysis view)
     """
     if page < 1:
         page = 1
@@ -94,7 +96,11 @@ def search_calls(
 
     query = (
         client.table(Tables.CALLS)
-        .select(f"*, {Tables.CALL_ANALYSES}(*)", count="exact")
+        .select(
+            f"*, {Tables.CALL_ANALYSES}!inner(*, "
+            f"{Tables.CALL_ANALYSIS_TOPICS}({Tables.TOPICS}(name)))",
+            count="exact",
+        )
         .eq("team_id", team_id)
     )
 
@@ -105,6 +111,15 @@ def search_calls(
     if date_to is not None:
         next_day = (datetime.fromisoformat(date_to) + timedelta(days=1)).strftime("%Y-%m-%d")
         query = query.lt("started_at", next_day)
+
+    if sentiment_min is not None:
+        query = query.gte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_min)
+    if sentiment_max is not None:
+        query = query.lte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_max)
+    if keyword:
+        query = query.ilike("call_analyses.summary", f"%{keyword}%")
+    if topic:
+        query = query.contains(f"{Tables.CALL_ANALYSES}.topics", f'["{topic}"]')
 
     if sort == SortOrder.OLDEST:
         query = query.order("started_at", desc=False)

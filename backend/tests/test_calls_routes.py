@@ -442,6 +442,7 @@ def test_get_call_detail_returns_call_for_same_team(
             {"speaker": "Customer", "text": "I need help with a refund.", "timestamp": None},
             {"speaker": "Agent", "text": "I can help with that.", "timestamp": None},
         ],
+        "keywords": [],
     }
 
 
@@ -467,3 +468,70 @@ def test_get_call_detail_returns_404_for_other_team(
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Call call-123 not found"}
+
+
+def test_search_calls_endpoint(
+    authenticated_supervisor_client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GET /api/calls should correctly parse query parameters and return a list of call results."""
+    from database.constants import SortOrder
+
+    mock_search_result = {
+        "calls": [
+            {
+                "id": "call-1",
+                "agent_id": "agent-1",
+                "started_at": "2026-03-10T12:00:00Z",
+                "duration_seconds": 120,
+                "call_analyses": [
+                    {
+                        "sentiment_score": -0.6,
+                        "sentiment_label": "negative",
+                        "topics": ["refund"],
+                        "summary": "test summary",
+                    }
+                ],
+            }
+        ],
+        "total": 1,
+    }
+
+    mock_search = MagicMock(return_value=mock_search_result)
+    mock_get_user = MagicMock(return_value={"first_name": "Marcus", "last_name": "Johnson"})
+
+    monkeypatch.setattr(calls_router, "search_calls", mock_search)
+    monkeypatch.setattr(calls_router, "get_user_by_id", mock_get_user)
+
+    response = authenticated_supervisor_client.get(
+        "/api/calls",
+        params={
+            "q": "refund",
+            "sentiment_min": -0.8,
+            "sentiment_max": -0.2,
+            "agent_id": "agent-1",
+            "sort": "recent",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert len(data["calls"]) == 1
+    assert data["calls"][0]["agent_name"] == "Marcus Johnson"
+    assert data["calls"][0]["sentiment_score"] == -0.6
+
+    mock_search.assert_called_once_with(
+        client=ANY,
+        team_id="team-456",
+        agent_id="agent-1",
+        date_from=None,
+        date_to=None,
+        sentiment_min=-0.8,
+        sentiment_max=-0.2,
+        keyword="refund",
+        topic=None,
+        sort=SortOrder.RECENT,
+        page=1,
+        per_page=20,
+    )
