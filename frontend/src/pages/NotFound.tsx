@@ -31,20 +31,20 @@ const NotFound = () => {
         <div className="relative mb-12 flex h-52 w-52 items-center justify-center">
           {/* Expanding ripple rings */}
           <div
-            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.14]"
             style={{ height: "100%", width: "100%", animationDelay: "0s" }}
           />
           <div
-            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.14]"
             style={{ height: "100%", width: "100%", animationDelay: "1.2s" }}
           />
           <div
-            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.14]"
             style={{ height: "100%", width: "100%", animationDelay: "2.4s" }}
           />
 
           {/* Static inner ring */}
-          <div className="absolute h-24 w-24 rounded-full border border-border/40" />
+          <div className="absolute h-24 w-24 rounded-full border border-border/55" />
 
           {/* Center icon */}
           <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-destructive/[0.08] ring-1 ring-destructive/20">
