@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { mockData } from '@/lib/mock-data';
 import type { Call } from '@/lib/mock-data';
 import { MockService, SearchResult } from '@/lib/mock-service';
-import { CallDetailDrawer } from '@/components/CallDetailDrawer';
+import { callsApi, teamsApi, alertsApi, AgentInfo } from '@/lib/api';
+import { CallDetailDrawer, CallDetailCall } from '@/components/CallDetailDrawer';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Search as SearchIcon } from 'lucide-react';
@@ -19,12 +20,43 @@ export default function CallSearch() {
   const [loading, setLoading] = useState(false);
   const [selectedCall, setSelectedCall] = useState<Call | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isCreatingAlert, setIsCreatingAlert] = useState(false);
+  const [agents, setAgents] = useState<AgentInfo[]>([]);
+
+  useEffect(() => {
+    teamsApi.getMembers().then(res => {
+      setAgents(res.members || []);
+    }).catch(err => console.error('Failed to load agents:', err));
+  }, []);
+
+  const handleCreateAlert = async (callId: string) => {
+    setIsCreatingAlert(true);
+    try {
+      const createdAlert = await alertsApi.createManualAlert({ call_id: callId });
+      setSelectedCall((prev) =>
+        prev && prev.id === callId
+          ? { ...prev, hasOpenAlert: true, openAlertId: createdAlert.id } as Call
+          : prev
+      );
+      toast({
+        title: 'Alert Created',
+        description: 'The call has been flagged for manual review.',
+      });
+    } catch (err) {
+      console.error('Failed to create manual alert', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to flag call.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCreatingAlert(false);
+    }
+  };
 
   const handleAgentToggle = (agentId: string) => {
     setSelectedAgentIds((prev) =>
-      prev.includes(agentId)
-        ? prev.filter((id) => id !== agentId)
-        : [...prev, agentId]
+      prev.includes(agentId) ? [] : [agentId]
     );
   };
 
@@ -35,17 +67,48 @@ export default function CallSearch() {
   const handleSearch = async (page = 1) => {
     setLoading(true);
     try {
-      const result = await MockService.searchCalls({
-        keyword: keyword || undefined,
-        agentIds: selectedAgentIds.length > 0 ? selectedAgentIds : undefined,
-        sentimentMin: sentimentRange[0],
-        sentimentMax: sentimentRange[1],
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
+      const agentIdParam = selectedAgentIds.length > 0 ? selectedAgentIds[0] : undefined;
+      
+      const data = await callsApi.searchCalls({
+        q: keyword || undefined,
+        agent_id: agentIdParam,
+        sentiment_min: sentimentRange[0],
+        sentiment_max: sentimentRange[1],
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
         page,
-        pageSize: 20,
+        per_page: 20,
       });
-      setResults(result);
+
+      const mappedResult: SearchResult = {
+        calls: data.calls.map((c) => ({
+          id: c.id,
+          agentId: c.agent_id,
+          agentName: c.agent_name || 'Unknown',
+          startedAt: c.started_at || new Date().toISOString(),
+          durationSec: c.duration_seconds || 0,
+          sentimentScore: c.sentiment_score || 0,
+          sentimentLabel: (c.sentiment_label as 'positive' | 'neutral' | 'negative') || 'neutral',
+          topics: c.topics || [],
+          resolved: false,
+          csat: null,
+          customerName: 'Unknown Customer',
+          summaryStr: c.summary,
+        } as unknown as Call)),
+        total: data.total,
+        page: data.page,
+        pageSize: data.per_page,
+        totalPages: Math.ceil(data.total / data.per_page) || 1,
+      };
+      
+      setResults(mappedResult);
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to search calls.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -89,6 +152,10 @@ export default function CallSearch() {
   };
 
   const getSnippet = (call: Call): string => {
+    const extendedCall = call as Call & { summaryStr?: string };
+    if (extendedCall.summaryStr) {
+      return extendedCall.summaryStr;
+    }
     const summary = MockService.getSummary(call.id);
     if (summary?.transcript) {
       for (const turn of summary.transcript) {
@@ -108,7 +175,7 @@ export default function CallSearch() {
   };
 
   const selectedAgentNames = selectedAgentIds
-    .map((id) => mockData.agents.find((a) => a.id === id)?.name)
+    .map((id) => agents.find((a) => a.id === id) ? `${agents.find((a) => a.id === id)?.first_name || ''} ${agents.find((a) => a.id === id)?.last_name || ''}`.trim() || agents.find((a) => a.id === id)?.email : undefined)
     .filter((n): n is string => Boolean(n));
 
   return (
@@ -117,7 +184,13 @@ export default function CallSearch() {
         keyword={keyword}
         selectedAgentIds={selectedAgentIds}
         selectedAgentNames={selectedAgentNames}
-        agents={mockData.agents}
+        agents={agents.map(a => ({
+          id: a.id,
+          name: `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email,
+          team: 'Team',
+          hireDate: new Date().toISOString(),
+          status: 'active' as const
+        }))}
         sentimentRange={sentimentRange}
         dateFrom={dateFrom}
         dateTo={dateTo}
@@ -160,9 +233,12 @@ export default function CallSearch() {
       )}
 
       <CallDetailDrawer
-        call={selectedCall}
+        call={selectedCall as CallDetailCall}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
+        canCreateAlert
+        isCreatingAlert={isCreatingAlert}
+        onCreateAlert={handleCreateAlert}
       />
     </div>
   );

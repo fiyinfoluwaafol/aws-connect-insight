@@ -399,6 +399,38 @@ export const alertsApi = {
 // Calls API Types
 // =============================================================================
 
+export interface CallSearchParams {
+  q?: string;
+  agent_id?: string;
+  sentiment_min?: number;
+  sentiment_max?: number;
+  date_from?: string;
+  date_to?: string;
+  topic?: string;
+  sort?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface CallSearchItem {
+  id: string;
+  agent_id: string;
+  agent_name: string | null;
+  started_at: string | null;
+  duration_seconds: number | null;
+  sentiment_score: number | null;
+  sentiment_label: string | null;
+  topics: string[];
+  summary: string | null;
+}
+
+export interface CallSearchResponse {
+  calls: CallSearchItem[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
 export interface SimulateCallResponse {
   call_id: string;
   sentiment_score: number;
@@ -425,6 +457,7 @@ export interface SupervisorCallDetail {
   sentiment_label: 'positive' | 'neutral' | 'negative' | null;
   is_resolved: boolean | null;
   topics: string[];
+  keywords?: string[];
   summary: string | null;
   has_open_alert: boolean;
   open_alert_id: string | null;
@@ -440,6 +473,16 @@ export interface SupervisorCallDetail {
 // =============================================================================
 
 export const callsApi = {
+  searchCalls: (params: CallSearchParams) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query.append(key, value.toString());
+      }
+    });
+    return api.get<CallSearchResponse>(`/api/calls?${query.toString()}`);
+  },
+
   getCallById: (callId: string) =>
     api.get<SupervisorCallDetail>(`/api/calls/${callId}`),
 

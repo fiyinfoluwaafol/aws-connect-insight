@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Call, CallSummary } from '@/lib/mock-data';
 import { MockService } from '@/lib/mock-service';
+import { callsApi, SupervisorCallDetail } from '@/lib/api';
 import { useAppStore } from '@/stores/app-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { SentimentBadge } from './SentimentBadge';
@@ -26,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
-type CallDetailCall = Call & {
+export type CallDetailCall = Call & {
   hasOpenAlert?: boolean;
   openAlertId?: string | null;
   callSummary?: {
@@ -56,13 +57,45 @@ export function CallDetailDrawer({
   onCreateAlert,
 }: CallDetailDrawerProps) {
   const [newNote, setNewNote] = useState('');
+  const [liveCallDetail, setLiveCallDetail] = useState<SupervisorCallDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+
+  useEffect(() => {
+    if (call && open) {
+      setLoadingDetail(true);
+      callsApi.getCallById(call.id).then(res => {
+        setLiveCallDetail(res);
+      }).catch(err => {
+        console.error('Failed to fetch call details', err);
+      }).finally(() => setLoadingDetail(false));
+    } else {
+      setLiveCallDetail(null);
+    }
+  }, [call, open]);
+
   const { user } = useAuthStore();
   const { exemplarCallIds, toggleExemplar, callNotes, addNote } = useAppStore();
 
   if (!call) return null;
 
-  const summary: CallSummary | CallDetailCall['callSummary'] | undefined =
-    call.callSummary ?? MockService.getSummary(call.id);
+  let summaryText = '';
+  let transcript = [] as Array<{ speaker: string; text: string; timestamp?: string }>;
+  let topics: string[] = [];
+  let keywords: string[] = [];
+  let isResolved = call?.resolved || false;
+  
+  if (liveCallDetail) {
+    summaryText = liveCallDetail.summary || '';
+    transcript = liveCallDetail.transcript || [];
+    topics = liveCallDetail.topics || [];
+    keywords = liveCallDetail.keywords || [];
+    isResolved = liveCallDetail.is_resolved ?? isResolved;
+  } else if (call) {
+    const backupSummary = call.callSummary ?? MockService.getSummary(call.id);
+    summaryText = backupSummary?.summaryText || (call as Call & { summaryStr?: string })?.summaryStr || '';
+    transcript = backupSummary?.transcript || [];
+    topics = call.topics || [];
+  }
   const isExemplar = exemplarCallIds.includes(call.id);
   const notes = callNotes.filter((n) => n.callId === call.id);
 
@@ -125,7 +158,7 @@ export function CallDetailDrawer({
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Customer</p>
-                <p className="font-medium">{call.customerName}</p>
+                <p className="font-medium">{'Customer'}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Duration</p>
@@ -147,7 +180,7 @@ export function CallDetailDrawer({
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Resolution</p>
                 <p className="font-medium flex items-center gap-2">
-                  {call.resolved ? (
+                  {isResolved ? (
                     <>
                       <CheckCircle className="h-4 w-4 text-success" />
                       Resolved
@@ -166,7 +199,7 @@ export function CallDetailDrawer({
             <div>
               <p className="text-sm text-muted-foreground mb-2">Topics</p>
               <div className="flex flex-wrap gap-2">
-                {call.topics.map((topic) => (
+                {topics.map((topic) => (
                   <Badge key={topic} variant="secondary">
                     {topic.replace(/-/g, ' ')}
                   </Badge>
@@ -175,31 +208,29 @@ export function CallDetailDrawer({
             </div>
 
             {/* Summary */}
-            {summary && (
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-semibold mb-2">AI Summary</h4>
-                <p className="text-sm text-muted-foreground">{summary.summaryText}</p>
-                {summary.keyPhrases.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-xs text-muted-foreground mb-1">Key Phrases</p>
-                    <div className="flex flex-wrap gap-1">
-                      {summary.keyPhrases.map((phrase) => (
-                        <Badge key={phrase} variant="outline" className="text-xs">
-                          {phrase}
-                        </Badge>
-                      ))}
-                    </div>
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-semibold mb-2">AI Summary</h4>
+              <p className="text-sm text-muted-foreground">{loadingDetail ? 'Loading summary...' : (summaryText || 'Summary not available.')}</p>
+              {keywords.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs text-muted-foreground mb-1">Key Phrases</p>
+                  <div className="flex flex-wrap gap-1">
+                    {keywords.map((phrase) => (
+                      <Badge key={phrase} variant="outline" className="text-xs">
+                        {phrase}
+                      </Badge>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
             {/* Transcript */}
-            {summary?.transcript && (
+            {transcript && transcript.length > 0 && (
               <div>
                 <h4 className="font-semibold mb-3">Transcript</h4>
                 <div className="space-y-3">
-                  {summary.transcript.map((turn, idx) => (
+                  {transcript.map((turn, idx) => (
                     <div
                       key={idx}
                       className={`p-3 rounded-lg ${
@@ -269,7 +300,7 @@ export function CallDetailDrawer({
                 <Star className={`h-4 w-4 mr-2 ${isExemplar ? 'fill-current' : ''}`} />
                 {isExemplar ? 'Remove Exemplar' : 'Mark as Exemplar'}
               </Button>
-              {canCreateAlert && !call.hasOpenAlert && onCreateAlert && (
+              {canCreateAlert && !liveCallDetail?.has_open_alert && !call?.hasOpenAlert && onCreateAlert && (
                 <Button
                   variant="outline"
                   size="sm"

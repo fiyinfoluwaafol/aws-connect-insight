@@ -66,7 +66,7 @@ export function SearchFilters({
           />
         </div>
         <div className="space-y-2">
-          <Label>Agents</Label>
+          <Label>Agent</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -74,10 +74,10 @@ export function SearchFilters({
                 className="w-full justify-between font-normal"
               >
                 {selectedAgentIds.length === 0 ? (
-                  <span className="text-muted-foreground">Select agents...</span>
+                  <span className="text-muted-foreground">Select agent...</span>
                 ) : (
                   <span className="truncate">
-                    {selectedAgentIds.length} agent{selectedAgentIds.length !== 1 ? 's' : ''} selected
+                    {selectedAgentNames[0]}
                   </span>
                 )}
                 <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
@@ -86,7 +86,7 @@ export function SearchFilters({
             <PopoverContent className="w-64 p-0" align="start">
               <div className="p-2 border-b">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Select Agents</span>
+                  <span className="text-sm font-medium">Select Agent</span>
                   {selectedAgentIds.length > 0 && (
                     <Button
                       variant="ghost"
@@ -94,7 +94,7 @@ export function SearchFilters({
                       className="h-auto p-1 text-xs"
                       onClick={onClearAgents}
                     >
-                      Clear all
+                      Clear
                     </Button>
                   )}
                 </div>
@@ -118,20 +118,6 @@ export function SearchFilters({
               </div>
             </PopoverContent>
           </Popover>
-          {selectedAgentIds.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {selectedAgentNames.slice(0, 3).map((name) => (
-                <Badge key={name} variant="secondary" className="text-xs">
-                  {name}
-                </Badge>
-              ))}
-              {selectedAgentIds.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{selectedAgentIds.length - 3} more
-                </Badge>
-              )}
-            </div>
-          )}
         </div>
         <div className="space-y-2">
           <Label>
