@@ -3,7 +3,10 @@ import { agentApi, PerformanceResponse } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth-store';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, Phone, Users, Loader2, AlertCircle } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { PageSkeleton } from '@/components/PageSkeleton';
+import { pageShellClassName } from '@/lib/page-animation';
+import { TrendingUp, Phone, Users, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   LineChart,
@@ -43,10 +46,9 @@ export default function AgentPerformance() {
     loadPerformance();
   }, []);
 
-  // Show message if not in a team
   if (!user?.teamId) {
     return (
-      <div className="container mx-auto px-6 py-8">
+      <div className={pageShellClassName()}>
         <div className="flex items-center justify-center py-12">
           <Card className="p-8 max-w-md text-center">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -63,9 +65,15 @@ export default function AgentPerformance() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className={pageShellClassName()}>
+        <PageHeader
+          title="Performance"
+          description="Your weekly trends and how you compare to the team."
+        />
+        <PageSkeleton variant="stats" className="mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PageSkeleton variant="chart" />
+          <PageSkeleton variant="chart" />
         </div>
       </div>
     );
@@ -73,7 +81,8 @@ export default function AgentPerformance() {
 
   if (!performance) {
     return (
-      <div className="container mx-auto px-6 py-8">
+      <div className={pageShellClassName()}>
+        <PageHeader title="Performance" description="No performance data available." />
         <div className="text-center py-12 text-muted-foreground">
           <p>No performance data available</p>
         </div>
@@ -82,21 +91,24 @@ export default function AgentPerformance() {
   }
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <h2 className="text-xl font-semibold mb-6">Your Performance</h2>
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Performance"
+        description="Your weekly trends and how you compare to the team."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 text-center">
+        <Card className="p-6 text-center shadow-sm">
           <Phone className="h-8 w-8 mx-auto mb-2 text-primary" />
           <p className="text-3xl font-bold">{performance.total_calls}</p>
           <p className="text-sm text-muted-foreground">Calls This Week</p>
         </Card>
-        <Card className="p-6 text-center">
+        <Card className="p-6 text-center shadow-sm">
           <TrendingUp className="h-8 w-8 mx-auto mb-2 text-success" />
           <p className="text-3xl font-bold">{performance.avg_sentiment.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground">Avg Sentiment</p>
         </Card>
-        <Card className="p-6">
+        <Card className="p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Users className="h-5 w-5 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Team Percentile</span>
@@ -104,83 +116,97 @@ export default function AgentPerformance() {
           <p className="text-3xl font-bold mb-2">{performance.percentile}%</p>
           <Progress value={performance.percentile} className="h-2" />
           <p className="text-xs text-muted-foreground mt-1">
-            You're outperforming {performance.percentile}% of your team
+            You&apos;re outperforming {performance.percentile}% of your team
           </p>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sentiment Trend Chart */}
-        <Card className="p-6">
+        <Card className="p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Weekly Sentiment Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performance.weekly_trend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="day"
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-              />
-              <YAxis
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                domain={[-1, 1]}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                formatter={(value: number) => [value.toFixed(2), 'Sentiment']}
-              />
-              <Line
-                type="monotone"
-                dataKey="sentiment"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <p className="text-sm text-muted-foreground mb-4">
+            Average sentiment by day for the current week.
+          </p>
+          <div className="h-[300px] w-full min-w-0" role="img" aria-label="Weekly sentiment trend chart">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={performance.weekly_trend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="day"
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  domain={[-1, 1]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: number) => [value.toFixed(2), 'Sentiment']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="sentiment"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--primary))' }}
+                  isAnimationActive
+                  animationDuration={800}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
 
-        {/* Call Volume Chart */}
-        <Card className="p-6">
+        <Card className="p-6 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Weekly Call Volume</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={performance.weekly_trend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="day"
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-              />
-              <YAxis
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                formatter={(value: number) => [value, 'Calls']}
-              />
-              <Bar
-                dataKey="calls"
-                fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <p className="text-sm text-muted-foreground mb-4">
+            Number of calls handled each day this week.
+          </p>
+          <div className="h-[300px] w-full min-w-0" role="img" aria-label="Weekly call volume chart">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={performance.weekly_trend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="day"
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: number) => [value, 'Calls']}
+                />
+                <Bar
+                  dataKey="calls"
+                  fill="hsl(var(--primary))"
+                  radius={[4, 4, 0, 0]}
+                  isAnimationActive
+                  animationDuration={800}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
       </div>
 
-      {/* Comparison Section */}
-      <Card className="p-6 mt-6">
+      <Card className="p-6 mt-6 shadow-sm">
         <h3 className="text-lg font-semibold mb-4">Team Comparison</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Illustrative percentile bands for coaching conversations (demo data).
+        </p>
         <div className="space-y-4">
           <div>
             <div className="flex justify-between text-sm mb-1">

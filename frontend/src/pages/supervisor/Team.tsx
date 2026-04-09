@@ -4,6 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Users, UserPlus, UserMinus, Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { PageSkeleton } from '@/components/PageSkeleton';
+import { pageShellClassName } from '@/lib/page-animation';
 
 /**
  * Team Management Page for Supervisors
@@ -114,23 +117,22 @@ export default function Team() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
+      <div className={pageShellClassName()}>
+        <PageHeader
+          title="Team"
+          description="Manage your team members and add available agents."
+        />
+        <PageSkeleton variant="list" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Team Management</h2>
-        <p className="text-muted-foreground">
-          Manage your team members and add available agents
-        </p>
-      </div>
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Team"
+        description="Manage your team members and add available agents."
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Current Team Members */}

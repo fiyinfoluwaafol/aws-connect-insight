@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { mockData } from '@/lib/mock-data';
 import type { Call } from '@/lib/mock-data';
 import { MockService, SearchResult } from '@/lib/mock-service';
 import { callsApi, teamsApi, alertsApi, AgentInfo } from '@/lib/api';
 import { CallDetailDrawer, CallDetailCall } from '@/components/CallDetailDrawer';
-import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { toast } from '@/hooks/use-toast';
+import { pageShellClassName } from '@/lib/page-animation';
 import { Search as SearchIcon } from 'lucide-react';
 import { SearchFilters } from './components/SearchFilters';
 import { SearchResults } from './components/SearchResults';
@@ -179,7 +181,12 @@ export default function CallSearch() {
     .filter((n): n is string => Boolean(n));
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Search"
+        description="Find calls by transcript keywords, agent, sentiment, and date range."
+      />
+
       <SearchFilters
         keyword={keyword}
         selectedAgentIds={selectedAgentIds}
@@ -206,30 +213,37 @@ export default function CallSearch() {
         onExportCSV={handleExportCSV}
       />
 
+      {loading && !results && (
+        <div className="mt-6">
+          <PageSkeleton variant="list" />
+        </div>
+      )}
+
       {results && (
-        <SearchResults
-          results={results}
-          keyword={keyword}
-          loading={loading}
-          onPageChange={handleSearch}
-          onSelectCall={(call) => {
-            setSelectedCall(call);
-            setDrawerOpen(true);
-          }}
-          getSnippet={getSnippet}
-          highlightKeyword={highlightKeyword}
-          formatDuration={formatDuration}
-        />
+        <div className="mt-6">
+          <SearchResults
+            results={results}
+            keyword={keyword}
+            loading={loading}
+            onPageChange={handleSearch}
+            onSelectCall={(call) => {
+              setSelectedCall(call);
+              setDrawerOpen(true);
+            }}
+            getSnippet={getSnippet}
+            highlightKeyword={highlightKeyword}
+            formatDuration={formatDuration}
+          />
+        </div>
       )}
 
       {!results && !loading && (
-        <Card className="p-12 text-center">
-          <SearchIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">Search Calls</h3>
-          <p className="text-muted-foreground">
-            Use the filters above to search through call transcripts, agents, and topics.
-          </p>
-        </Card>
+        <EmptyState
+          icon={SearchIcon}
+          title="Search calls"
+          description="Use the filters above to search transcripts, agents, and topics. Results will appear here."
+          className="mt-6"
+        />
       )}
 
       <CallDetailDrawer

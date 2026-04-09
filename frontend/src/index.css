@@ -121,3 +121,5 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Page entrance uses tailwindcss-animate utilities: animate-in fade-in slide-in-from-bottom-2 */

@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { MockService } from '@/lib/mock-service';
 import { toast } from '@/hooks/use-toast';
+import { PageHeader } from '@/components/PageHeader';
+import { pageShellClassName } from '@/lib/page-animation';
 import { BriefGenerator } from './components/BriefGenerator';
 import { BriefList } from './components/BriefList';
 import type { DailyBrief } from './components/BriefList';
@@ -100,7 +102,12 @@ ${brief.content.exemplarLinks.join(', ')}
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Daily briefs"
+        description="AI-generated summaries of team performance, top issues, and coaching opportunities."
+      />
+
       <BriefGenerator
         selectedDate={selectedDate}
         generating={generating}
@@ -109,10 +116,7 @@ ${brief.content.exemplarLinks.join(', ')}
         onGenerate={handleGenerate}
       />
 
-      <BriefList
-        briefs={sortedBriefs}
-        onSelectBrief={setViewBrief}
-      />
+      <BriefList briefs={sortedBriefs} onSelectBrief={setViewBrief} />
 
       <BriefDetail
         brief={viewBrief}

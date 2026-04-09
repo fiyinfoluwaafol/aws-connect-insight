@@ -2,19 +2,22 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SentimentBadge } from '@/components/SentimentBadge';
+import { EmptyState } from '@/components/EmptyState';
 import { AlertTriangle, ArrowUpRight, Users, Clock } from 'lucide-react';
 import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
+import { cn } from '@/lib/utils';
 
 export interface RecentAlertsProps {
   alerts: SupervisorAlertViewModel[];
   callsById: Record<string, SupervisorCallViewModel>;
   onViewAll: () => void;
   onAlertClick: (alert: SupervisorAlertViewModel) => void;
+  className?: string;
 }
 
-export function RecentAlerts({ alerts, callsById, onViewAll, onAlertClick }: RecentAlertsProps) {
+export function RecentAlerts({ alerts, callsById, onViewAll, onAlertClick, className }: RecentAlertsProps) {
   return (
-    <Card className="mt-8 p-6">
+    <Card className={cn('p-6', className)}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold">Recent Alerts</h3>
@@ -27,7 +30,12 @@ export function RecentAlerts({ alerts, callsById, onViewAll, onAlertClick }: Rec
       </div>
       <div className="space-y-4">
         {alerts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No open alerts</p>
+          <EmptyState
+            icon={AlertTriangle}
+            title="No open alerts"
+            description="You're all caught up. New issues will appear here when rules trigger."
+            className="border-0 bg-transparent py-8"
+          />
         ) : (
           alerts.map((alert) => {
             const call = alert.callId ? callsById[alert.callId] : undefined;

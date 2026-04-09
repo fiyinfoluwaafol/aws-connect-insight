@@ -36,10 +36,10 @@ export function SupervisorNav() {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap rounded-t-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   isActive
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-muted/50'
                 )}
               >
                 <Icon className="h-4 w-4" />

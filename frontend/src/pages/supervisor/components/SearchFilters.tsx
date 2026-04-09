@@ -54,7 +54,7 @@ export function SearchFilters({
 }: SearchFiltersProps) {
   return (
     <Card className="p-6 mb-6">
-      <h2 className="text-lg font-semibold mb-4">Search Calls</h2>
+      <h2 className="text-lg font-semibold mb-4">Filters</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label>Keyword</Label>
@@ -148,8 +148,8 @@ export function SearchFilters({
             onChange={(e) => onDateToChange(e.target.value)}
           />
         </div>
-        <div className="flex items-end gap-2">
-          <Button onClick={onSearch} disabled={loading} className="flex-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-2 md:col-span-2 lg:col-span-1">
+          <Button onClick={onSearch} disabled={loading} className="w-full sm:flex-1">
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : (
@@ -158,7 +158,7 @@ export function SearchFilters({
             Search
           </Button>
           {canExport && (
-            <Button variant="outline" onClick={onExportCSV}>
+            <Button variant="outline" onClick={onExportCSV} className="w-full sm:w-auto shrink-0">
               <Download className="h-4 w-4 mr-2" />
               CSV
             </Button>
