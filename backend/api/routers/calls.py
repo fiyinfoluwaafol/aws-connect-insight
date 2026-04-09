@@ -17,8 +17,9 @@ from database.analysis import (
     create_analysis,
     get_analysis_by_call_id,
 )
-from database.calls import create_call
+from database.calls import create_call, search_calls
 from database.calls import get_call_by_id as fetch_call_by_id
+from database.constants import SortOrder, Tables
 from database.exceptions import DatabaseError, NotFoundError
 from database.sample_transcripts import get_random_sample_transcript
 from database.teams import get_team_by_id
@@ -80,10 +81,34 @@ class CallDetailResponse(BaseModel):
     sentiment_label: str | None = None
     is_resolved: bool | None = None
     topics: list[str]
+    keywords: list[str] = []
     summary: str | None = None
     transcript: list[CallDetailTranscriptTurn]
     has_open_alert: bool = False
     open_alert_id: str | None = None
+
+
+class CallSearchItem(BaseModel):
+    """A minimal call representation returned in search results."""
+
+    id: str
+    agent_id: str
+    agent_name: str
+    started_at: str | None = None
+    duration_seconds: int | None = None
+    sentiment_score: float | None = None
+    sentiment_label: str | None = None
+    topics: list[str]
+    summary: str | None = None
+
+
+class CallSearchResponse(BaseModel):
+    """Payload for the calls search endpoint."""
+
+    calls: list[CallSearchItem]
+    total: int
+    page: int
+    per_page: int
 
 
 # =============================================================================
@@ -148,6 +173,105 @@ def _get_supervisor_id_for_call_metadata(
 # =============================================================================
 
 
+@router.get("/", response_model=CallSearchResponse)
+def get_calls(
+    current_user: Annotated[dict, Depends(get_current_user)],
+    client: Annotated[Any, Depends(get_supabase_client)],
+    q: str | None = None,
+    agent_id: str | None = None,
+    sentiment_min: float | None = None,
+    sentiment_max: float | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    topic: str | None = None,
+    sort: str = "recent",
+    page: int = 1,
+    per_page: int = 20,
+) -> CallSearchResponse:
+    """Retrieve conversations that match selected filters."""
+    db_client = _require_client(client)
+    team_id = _get_user_team_id(current_user)
+
+    try:
+        sort_enum = SortOrder(sort)
+    except ValueError:
+        # Fallback to recent if an invalid sort string is provided
+        sort_enum = SortOrder.RECENT
+
+    try:
+        search_result = search_calls(
+            client=db_client,
+            team_id=team_id,
+            agent_id=agent_id,
+            date_from=date_from,
+            date_to=date_to,
+            sentiment_min=sentiment_min,
+            sentiment_max=sentiment_max,
+            keyword=q,
+            topic=topic,
+            sort=sort_enum,
+            page=page,
+            per_page=per_page,
+        )
+
+        calls_data = search_result.get("calls", [])
+        total = search_result.get("total", 0)
+
+        formatted_calls = []
+        for call in calls_data:
+            agent_details = (
+                get_user_by_id(db_client, call["agent_id"]) if call.get("agent_id") else {}
+            )
+            agent_name_parts = [agent_details.get("first_name"), agent_details.get("last_name")]
+            agent_name = " ".join(part for part in agent_name_parts if part) or agent_details.get(
+                "email", "Unknown Agent"
+            )
+
+            analysis = call.get(Tables.CALL_ANALYSES, {})
+
+            if isinstance(analysis, list) and analysis:
+                analysis = analysis[0]
+            elif isinstance(analysis, list):
+                analysis = {}
+
+            # Extract topics from junction table if present
+            topics = []
+            for t in analysis.get(Tables.CALL_ANALYSIS_TOPICS, []):
+                topic_data = t.get(Tables.TOPICS)
+                if topic_data and isinstance(topic_data, dict):
+                    name = topic_data.get("name")
+                    if name:
+                        topics.append(name)
+
+            formatted_calls.append(
+                CallSearchItem(
+                    id=call["id"],
+                    agent_id=call["agent_id"],
+                    agent_name=agent_name,
+                    started_at=call.get("started_at"),
+                    duration_seconds=call.get("duration_seconds"),
+                    sentiment_score=analysis.get("sentiment_score"),
+                    sentiment_label=analysis.get("sentiment_label"),
+                    topics=topics,
+                    summary=analysis.get("summary"),
+                )
+            )
+
+        return CallSearchResponse(
+            calls=formatted_calls,
+            total=total,
+            page=page,
+            per_page=per_page,
+        )
+
+    except DatabaseError as exc:
+        logger.error(f"Database error during call search: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to search calls",
+        ) from exc
+
+
 @router.get("/{call_id}", response_model=CallDetailResponse)
 def get_call_detail(
     call_id: str,
@@ -181,6 +305,9 @@ def get_call_detail(
 
         transcript = _normalize_transcript(call.get("transcript"))
 
+        topics = analysis.get("topics", []) if analysis else []
+        keywords = analysis.get("keywords", []) if analysis else []
+
         return CallDetailResponse(
             id=call["id"],
             agent_id=call["agent_id"],
@@ -193,7 +320,8 @@ def get_call_detail(
             sentiment_score=analysis.get("sentiment_score") if analysis else None,
             sentiment_label=analysis.get("sentiment_label") if analysis else None,
             is_resolved=analysis.get("is_resolved") if analysis else None,
-            topics=analysis.get("topics", []) if analysis else [],
+            topics=topics,
+            keywords=keywords,
             summary=analysis.get("summary") if analysis else None,
             transcript=[CallDetailTranscriptTurn(**turn) for turn in transcript],
             has_open_alert=open_alert is not None,
