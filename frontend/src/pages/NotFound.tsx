@@ -58,18 +58,19 @@ const NotFound = () => {
         {/* Status badge */}
         <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-card/50 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive/80" />
-          Connection failed
+          404 · Not found
         </div>
 
         {/* Heading */}
         <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Your request didn&apos;t connect
+          Page not found
         </h1>
 
         {/* Description */}
         <p className="mt-4 max-w-sm text-[0.95rem] leading-relaxed text-muted-foreground">
-          It looks like your call got misplaced somewhere along the line. The
-          route you dialed doesn&apos;t match any active line in our system.
+          There isn&apos;t a page at this URL. It looks like your call got
+          misplaced somewhere along the line—the route you dialed doesn&apos;t
+          match any active line in our system.
         </p>
 
         {/* Attempted path */}
