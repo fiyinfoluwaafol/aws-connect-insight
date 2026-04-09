@@ -1,144 +1,99 @@
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Home, PhoneOff, Radio, Route } from "lucide-react";
+import { ArrowLeft, Home, PhoneOff } from "lucide-react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const missingPath = location.pathname === "/" ? "/unknown-route" : location.pathname;
-  const pathLabel = `${missingPath}${location.search}${location.hash}`;
+  const attemptedPath = `${location.pathname}${location.search}${location.hash}`;
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    console.error(
+      "404 Error: User attempted to access non-existent route:",
+      location.pathname,
+    );
   }, [location.pathname]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-6 py-12">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6">
       <ThemeToggle className="absolute right-4 top-4 z-20 h-10 w-10" />
 
+      {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-8rem] top-[-10rem] h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute bottom-[-8rem] right-[-6rem] h-80 w-80 rounded-full bg-accent/20 blur-3xl" />
-        <div className="absolute inset-x-0 top-24 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.03] blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-6rem)] max-w-6xl items-center">
-        <div className="grid w-full gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-4 py-2 text-sm text-muted-foreground backdrop-blur">
-              <PhoneOff className="h-4 w-4 text-destructive" />
-              Call disconnected
-            </div>
+      <div className="relative z-10 flex max-w-lg flex-col items-center text-center animate-in fade-in slide-in-from-bottom-3 duration-500">
+        {/* Signal ripple visual */}
+        <div className="relative mb-12 flex h-52 w-52 items-center justify-center">
+          {/* Expanding ripple rings */}
+          <div
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            style={{ height: "100%", width: "100%", animationDelay: "0s" }}
+          />
+          <div
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            style={{ height: "100%", width: "100%", animationDelay: "1.2s" }}
+          />
+          <div
+            className="notfound-ripple absolute rounded-full border border-muted-foreground/[0.07]"
+            style={{ height: "100%", width: "100%", animationDelay: "2.4s" }}
+          />
 
-            <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              This route dropped like a customer call in a dead zone.
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              The page you dialed never made it through our queue. The signal cut out before the route could connect,
-              so we parked you on a safe line instead of leaving you in silence.
-            </p>
+          {/* Static inner ring */}
+          <div className="absolute h-24 w-24 rounded-full border border-border/40" />
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Back to dashboard
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="gap-2" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-4 w-4" />
-                Go back
-              </Button>
-            </div>
+          {/* Center icon */}
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-destructive/[0.08] ring-1 ring-destructive/20">
+            <PhoneOff
+              className="h-7 w-7 text-destructive/70"
+              strokeWidth={1.5}
+            />
+          </div>
+        </div>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              <Card className="border-border/70 bg-card/70 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Route className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">Route missing</p>
-                  <p className="mt-1 text-sm text-muted-foreground">No page answered this path.</p>
-                </CardContent>
-              </Card>
-              <Card className="border-border/70 bg-card/70 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    <Radio className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">Signal lost</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Connection broke before render.</p>
-                </CardContent>
-              </Card>
-              <Card className="border-border/70 bg-card/70 backdrop-blur">
-                <CardContent className="p-4">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                    <PhoneOff className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">Fallback engaged</p>
-                  <p className="mt-1 text-sm text-muted-foreground">You were rerouted to a safe landing page.</p>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+        {/* Status badge */}
+        <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-card/50 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive/80" />
+          Connection failed
+        </div>
 
-          <section className="animate-in fade-in zoom-in-95 duration-500 lg:justify-self-end">
-            <Card className="relative overflow-hidden border-border/70 bg-card/80 shadow-2xl backdrop-blur">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-accent to-destructive" />
-              <CardContent className="p-6 sm:p-8">
-                <div className="mb-8 flex items-center justify-between border-b border-border/70 pb-5">
-                  <div>
-                    <p className="text-sm font-medium uppercase tracking-[0.28em] text-muted-foreground">
-                      Failed connection
-                    </p>
-                    <p className="mt-2 text-3xl font-semibold text-foreground">404</p>
-                  </div>
-                  <div className="rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-sm font-medium text-destructive">
-                    Line dropped
-                  </div>
-                </div>
+        {/* Heading */}
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Your request didn&apos;t connect
+        </h1>
 
-                <div className="relative mx-auto flex h-64 max-w-sm items-center justify-center">
-                  <div className="absolute h-56 w-56 rounded-full border border-primary/15" />
-                  <div className="absolute h-44 w-44 rounded-full border border-accent/20 animate-pulse" />
-                  <div className="absolute h-32 w-32 rounded-full border border-destructive/30" />
+        {/* Description */}
+        <p className="mt-4 max-w-sm text-[0.95rem] leading-relaxed text-muted-foreground">
+          It looks like your call got misplaced somewhere along the line. The
+          route you dialed doesn&apos;t match any active line in our system.
+        </p>
 
-                  <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-destructive/30 bg-destructive/10 shadow-lg shadow-destructive/10">
-                    <PhoneOff className="h-12 w-12 text-destructive" strokeWidth={1.75} />
-                  </div>
+        {/* Attempted path */}
+        <code className="mt-6 inline-block max-w-xs truncate rounded-lg border border-border/40 bg-muted/40 px-3.5 py-1.5 text-xs text-muted-foreground/80">
+          {attemptedPath}
+        </code>
 
-                  <div className="absolute left-4 top-12 h-px w-24 -rotate-12 bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-                  <div className="absolute right-4 top-16 h-px w-20 rotate-12 bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
-                  <div className="absolute bottom-16 left-10 h-px w-16 rotate-[18deg] bg-gradient-to-r from-transparent via-destructive/70 to-transparent" />
-                </div>
-
-                <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                  <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    <span>Route log</span>
-                    <span>Unresolved</span>
-                  </div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between rounded-xl bg-muted/50 px-3 py-2">
-                      <span className="text-muted-foreground">Requested path</span>
-                      <code className="max-w-[13rem] truncate font-medium text-foreground">{pathLabel}</code>
-                    </div>
-                    <div className="flex items-center justify-between rounded-xl bg-muted/50 px-3 py-2">
-                      <span className="text-muted-foreground">Connection status</span>
-                      <span className="font-medium text-destructive">Disconnected</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-xl bg-muted/50 px-3 py-2">
-                      <span className="text-muted-foreground">Suggested action</span>
-                      <span className="font-medium text-foreground">Return to an active line</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+        {/* Actions */}
+        <div className="mt-9 flex gap-3">
+          <Button asChild size="lg" className="gap-2">
+            <Link to="/">
+              <Home className="h-4 w-4" />
+              Back to dashboard
+            </Link>
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="gap-2"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go back
+          </Button>
         </div>
       </div>
     </main>
