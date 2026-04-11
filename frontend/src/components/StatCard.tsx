@@ -13,6 +13,8 @@ interface StatCardProps {
     /** Use `points` for sentiment deltas on -1..1 scale; default is percentage */
     format?: 'percent' | 'points';
   };
+  /** For metrics where lower values are better (e.g. negative-call rate), invert green/red trend colors */
+  trendPolarity?: 'higher_is_better' | 'lower_is_better';
   variant?: 'default' | 'success' | 'warning' | 'destructive';
   /** Visually emphasize key metrics (e.g. sentiment, open alerts) */
   emphasis?: boolean;
@@ -38,9 +40,14 @@ export function StatCard({
   subtitle,
   icon: Icon,
   trend,
+  trendPolarity = 'higher_is_better',
   variant = 'default',
   emphasis = false,
 }: StatCardProps) {
+  const trendPositiveClass =
+    trendPolarity === 'lower_is_better' ? 'text-destructive' : 'text-success';
+  const trendNegativeClass =
+    trendPolarity === 'lower_is_better' ? 'text-success' : 'text-destructive';
   return (
     <Card
       className={cn(
@@ -69,9 +76,9 @@ export function StatCard({
                 className={cn(
                   'font-medium',
                   trend.value > 0
-                    ? 'text-success'
+                    ? trendPositiveClass
                     : trend.value < 0
-                      ? 'text-destructive'
+                      ? trendNegativeClass
                       : 'text-muted-foreground'
                 )}
               >

@@ -5,10 +5,20 @@ import { ArrowLeft, Home, PhoneOff } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
+/** Path safe to show in the UI (no query/hash — they may contain tokens). */
+function safeAttemptedPathDisplay(pathname: string, search: string, hash: string): string {
+  const hasSensitive = Boolean(search || hash);
+  return hasSensitive ? `${pathname} (query and hash omitted)` : pathname;
+}
+
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const attemptedPath = `${location.pathname}${location.search}${location.hash}`;
+  const attemptedPath = safeAttemptedPathDisplay(
+    location.pathname,
+    location.search,
+    location.hash
+  );
 
   useEffect(() => {
     console.error(

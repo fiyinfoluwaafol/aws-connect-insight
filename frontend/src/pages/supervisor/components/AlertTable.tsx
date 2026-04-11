@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Eye } from 'lucide-react';
+import type { KeyboardEvent } from 'react';
 import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
 import { cn } from '@/lib/utils';
 
@@ -69,11 +70,12 @@ export function AlertTable({
   };
 
   const rowKeyHandlers =
-    (alert: SupervisorAlertViewModel) => (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openRow(alert);
-      }
+    (alert: SupervisorAlertViewModel) => (e: KeyboardEvent<HTMLTableRowElement | HTMLDivElement>) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      // Only activate the row when focus is on the row itself, not nested controls (checkbox, actions).
+      if (e.target !== e.currentTarget) return;
+      e.preventDefault();
+      openRow(alert);
     };
 
   return (

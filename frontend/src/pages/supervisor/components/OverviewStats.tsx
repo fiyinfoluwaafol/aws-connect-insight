@@ -57,6 +57,7 @@ export function OverviewStats({
         icon={AlertTriangle}
         variant="warning"
         trend={negativeTrend}
+        trendPolarity="lower_is_better"
       />
       <StatCard
         title="Open Alerts"

@@ -76,10 +76,11 @@ export default function AgentExemplars() {
               className="p-4 hover:bg-muted/50 cursor-pointer transition-colors shadow-sm"
               onClick={() => setViewCall(call)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setViewCall(call);
-                }
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                // Ignore when focus is on the bookmark button or other nested controls.
+                if (e.target !== e.currentTarget) return;
+                e.preventDefault();
+                setViewCall(call);
               }}
               tabIndex={0}
               role="button"
