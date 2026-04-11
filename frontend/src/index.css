@@ -139,3 +139,19 @@ All colors MUST be HSL.
 .notfound-ripple {
   animation: notfound-ripple 3.6s ease-out infinite;
 }
+
+/* Landing page — softer ripple for hero signal */
+@keyframes landing-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.landing-ripple {
+  animation: landing-ripple 3.2s ease-out infinite;
+}

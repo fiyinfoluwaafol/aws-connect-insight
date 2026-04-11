@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth-store";
+import Landing from "@/pages/Landing";
 
 const Index = () => {
   const { user, isLoading } = useAuthStore();
@@ -25,7 +26,7 @@ const Index = () => {
   }
   
   if (!user) {
-    return <Navigate to="/signin" replace />;
+    return <Landing />;
   }
   
   if (user.role === 'supervisor') {
