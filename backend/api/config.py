@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:8080"
     environment: str = "development"
 
+    # Twilio — required only for real call ingestion via /api/twilio/*
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_demo_agent_email: str = ""
+
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"

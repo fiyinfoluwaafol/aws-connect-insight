@@ -47,6 +47,15 @@ def get_user_by_id(client: Client, user_id: str) -> dict:
 
 
 @db_operation
+def get_user_by_email(client: Client, email: str) -> dict:
+    """Get a user by email address."""
+    result = client.table(Tables.USERS).select("*").eq("email", email).execute()
+    if not result.data:
+        raise NotFoundError(f"User with email {email} not found")
+    return result.data[0]
+
+
+@db_operation
 def get_users_by_team(client: Client, team_id: str) -> list:
     """Get all users in a team."""
     result = client.table(Tables.USERS).select("*").eq("team_id", team_id).execute()

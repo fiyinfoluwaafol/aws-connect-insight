@@ -137,7 +137,7 @@ def _get_user_team_id(current_user: dict) -> str:
     return team_id
 
 
-def _normalize_transcript(turns: Any) -> list[dict[str, str]]:
+def normalize_transcript(turns: Any) -> list[dict[str, str]]:
     """Normalize transcript turns from the sample pool into the calls table shape."""
     if not isinstance(turns, list):
         return []
@@ -303,7 +303,7 @@ def get_call_detail(
                 supervisor_id=supervisor_id,
             )
 
-        transcript = _normalize_transcript(call.get("transcript"))
+        transcript = normalize_transcript(call.get("transcript"))
 
         topics = analysis.get("topics", []) if analysis else []
         keywords = analysis.get("keywords", []) if analysis else []
@@ -373,7 +373,7 @@ def simulate_call(
 
     try:
         sample_transcript = get_random_sample_transcript(db_client)
-        transcript = _normalize_transcript(sample_transcript.get("transcript"))
+        transcript = normalize_transcript(sample_transcript.get("transcript"))
         if not transcript:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
