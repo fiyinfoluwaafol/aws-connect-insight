@@ -168,15 +168,18 @@ def _process_recording(
             logger.exception("Alert evaluation failed for call %s", call["id"])
 
         # Broadcast completion with call data
-        _broadcast_event("call_complete", {
-            "call_sid": call_sid,
-            "call_id": call["id"],
-            "summary": analysis_result.summary,
-            "sentiment_score": analysis_result.sentiment_score,
-            "sentiment_label": analysis_result.sentiment_label,
-            "topics": analysis_result.topics,
-            "is_resolved": analysis_result.is_resolved,
-        })
+        _broadcast_event(
+            "call_complete",
+            {
+                "call_sid": call_sid,
+                "call_id": call["id"],
+                "summary": analysis_result.summary,
+                "sentiment_score": analysis_result.sentiment_score,
+                "sentiment_label": analysis_result.sentiment_label,
+                "topics": analysis_result.topics,
+                "is_resolved": analysis_result.is_resolved,
+            },
+        )
         logger.info("Twilio call %s fully processed (call %s)", call_sid, call["id"])
 
     except TranscriptionError:
@@ -282,10 +285,13 @@ async def handle_recording_status(
     )
 
     # Notify connected clients that a call is being processed
-    _broadcast_event("call_received", {
-        "call_sid": call_sid,
-        "duration": recording_duration,
-    })
+    _broadcast_event(
+        "call_received",
+        {
+            "call_sid": call_sid,
+            "duration": recording_duration,
+        },
+    )
 
     background_tasks.add_task(
         _process_recording,

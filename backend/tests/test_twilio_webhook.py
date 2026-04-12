@@ -220,9 +220,7 @@ def test_process_recording_full_pipeline(monkeypatch: pytest.MonkeyPatch) -> Non
         auth_token="test-auth-token",
         openai_api_key="test-openai-key",
     )
-    twilio_router._resolve_demo_agent.assert_called_once_with(
-        mock_db_client, "agent@example.com"
-    )
+    twilio_router._resolve_demo_agent.assert_called_once_with(mock_db_client, "agent@example.com")
     twilio_router.create_call.assert_called_once_with(
         mock_db_client,
         agent_id="demo-agent-id",
