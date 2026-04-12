@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.config import get_settings
-from api.routers import agent, alerts, analysis, auth, calls, dashboard, health, teams
+from api.routers import agent, alerts, analysis, auth, calls, dashboard, health, teams, twilio
 
 
 @asynccontextmanager
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(calls.router, prefix="/api/calls", tags=["calls"])
     app.include_router(teams.router, prefix="/api/teams", tags=["teams"])
     app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
+    app.include_router(twilio.router, prefix="/api/twilio", tags=["twilio"])
     return app
 
 
