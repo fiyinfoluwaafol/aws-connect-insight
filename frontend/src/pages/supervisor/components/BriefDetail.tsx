@@ -38,21 +38,21 @@ export function BriefDetail({
         </DialogHeader>
         {brief && (
           <div className="space-y-6">
-            <div id="brief-content" className="space-y-6 bg-background p-4 rounded-lg">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{brief.content.totalCalls}</p>
+            <div id="brief-content" className="space-y-6 bg-muted/20 p-4 rounded-lg border">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <Card className="p-4 text-center shadow-sm">
+                  <p className="text-2xl font-bold tabular-nums">{brief.content.totalCalls}</p>
                   <p className="text-xs text-muted-foreground">Total Calls</p>
                 </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{brief.content.avgSentiment}</p>
+                <Card className="p-4 text-center shadow-sm">
+                  <p className="text-2xl font-bold tabular-nums">{brief.content.avgSentiment}</p>
                   <p className="text-xs text-muted-foreground">Avg Sentiment</p>
                 </Card>
-                <Card className="p-4 text-center">
-                  <p className="text-2xl font-bold">{brief.content.negativePercent}%</p>
+                <Card className="p-4 text-center shadow-sm">
+                  <p className="text-2xl font-bold tabular-nums">{brief.content.negativePercent}%</p>
                   <p className="text-xs text-muted-foreground">Negative</p>
                 </Card>
-                <Card className="p-4 text-center">
+                <Card className="p-4 text-center shadow-sm">
                   <p
                     className={`text-2xl font-bold ${
                       brief.content.deltaVsPrior > 0 ? 'text-success' : 'text-destructive'

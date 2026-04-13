@@ -6,6 +6,12 @@ interface SentimentBadgeProps {
   score?: number;
 }
 
+const sentimentLabels: Record<SentimentBadgeProps['sentiment'], string> = {
+  positive: 'Positive sentiment',
+  neutral: 'Neutral sentiment',
+  negative: 'Negative sentiment',
+};
+
 export function SentimentBadge({ sentiment, score }: SentimentBadgeProps) {
   const variants = {
     positive: 'bg-success/10 text-success hover:bg-success/20',
@@ -13,8 +19,17 @@ export function SentimentBadge({ sentiment, score }: SentimentBadgeProps) {
     negative: 'bg-destructive/10 text-destructive hover:bg-destructive/20',
   };
 
+  const label =
+    score !== undefined
+      ? `${sentimentLabels[sentiment]}, score ${score > 0 ? '+' : ''}${score.toFixed(2)}`
+      : sentimentLabels[sentiment];
+
   return (
-    <Badge variant="secondary" className={cn("font-medium", variants[sentiment])}>
+    <Badge
+      variant="secondary"
+      className={cn("font-medium", variants[sentiment])}
+      aria-label={label}
+    >
       {sentiment}
       {score !== undefined && ` (${score > 0 ? '+' : ''}${score.toFixed(2)})`}
     </Badge>

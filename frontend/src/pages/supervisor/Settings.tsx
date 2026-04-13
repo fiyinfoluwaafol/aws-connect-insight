@@ -24,7 +24,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 import {
-  Settings as SettingsIcon,
   Bell,
   Database,
   Mail,
@@ -33,6 +32,8 @@ import {
   X,
   RefreshCw,
 } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { pageShellClassName } from '@/lib/page-animation';
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -169,12 +170,12 @@ export default function Settings() {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className={pageShellClassName()}>
       <div className="max-w-3xl">
-        <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-          <SettingsIcon className="h-5 w-5" />
-          Settings
-        </h2>
+        <PageHeader
+          title="Settings"
+          description="Alert rules, data preferences, and demo utilities."
+        />
 
         <div className="space-y-6">
           <Card className="p-6">

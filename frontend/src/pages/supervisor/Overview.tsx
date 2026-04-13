@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { alertsApi, callsApi, dashboardApi } from '@/lib/api';
+import { alertsApi, callsApi, dashboardApi, type DailyMetric } from '@/lib/api';
 import { mapAlertRecordToViewModel, mapCallDetailToViewModel } from '@/lib/supervisor-alerts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -12,11 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { OverviewStats } from './components/OverviewStats';
+import { PageHeader } from '@/components/PageHeader';
+import { PageSkeleton } from '@/components/PageSkeleton';
+import { pageShellClassName } from '@/lib/page-animation';
+import { OverviewStats, type StatTrend } from './components/OverviewStats';
 import { SentimentTrendChart } from './components/SentimentTrendChart';
 import { CallVolumeChart } from './components/CallVolumeChart';
 import { TopicDistribution } from './components/TopicDistribution';
@@ -25,26 +27,21 @@ import { RecentAlerts } from './components/RecentAlerts';
 
 type DateRangeOption = '7' | '14' | '30';
 
-function OverviewSkeleton() {
-  return (
-    <div className="space-y-6">
-      {/* Stats skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-8 w-16 mb-2" />
-            <Skeleton className="h-3 w-32" />
-          </Card>
-        ))}
-      </div>
-      {/* Chart skeleton */}
-      <Card className="p-6">
-        <Skeleton className="h-6 w-40 mb-4" />
-        <Skeleton className="h-[300px] w-full" />
-      </Card>
-    </div>
-  );
+function computeHalfOverHalfTrend(
+  daily: DailyMetric[],
+  key: 'avgSentiment' | 'negativePercent'
+): StatTrend | undefined {
+  if (daily.length < 2) return undefined;
+  const mid = Math.floor(daily.length / 2);
+  const first = daily.slice(0, mid);
+  const second = daily.slice(mid);
+  const mean = (arr: DailyMetric[], k: typeof key) =>
+    arr.reduce((s, m) => s + m[k], 0) / arr.length;
+  const delta = mean(second, key) - mean(first, key);
+  if (key === 'avgSentiment') {
+    return { value: delta, label: 'vs prior period', format: 'points' };
+  }
+  return { value: delta, label: 'vs prior period', format: 'percent' };
 }
 
 interface ErrorStateProps {
@@ -72,7 +69,6 @@ export default function SupervisorOverview() {
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState<DateRangeOption>('14');
 
-  // Fetch dashboard data from API
   const {
     data: dashboardData,
     isLoading,
@@ -163,23 +159,50 @@ export default function SupervisorOverview() {
   const alertsLoading = isRecentAlertsLoading || isTotalAlertsLoading;
   const alertsFailed = isRecentAlertsError || isTotalAlertsError;
 
+  const sentimentTrend = useMemo(
+    () =>
+      dashboardData?.dailyMetrics
+        ? computeHalfOverHalfTrend(dashboardData.dailyMetrics, 'avgSentiment')
+        : undefined,
+    [dashboardData?.dailyMetrics]
+  );
+
+  const negativeTrend = useMemo(
+    () =>
+      dashboardData?.dailyMetrics
+        ? computeHalfOverHalfTrend(dashboardData.dailyMetrics, 'negativePercent')
+        : undefined,
+    [dashboardData?.dailyMetrics]
+  );
+
+  const dateRangeActions = (
+    <div className="flex flex-col gap-1.5 sm:items-end">
+      <span id="overview-range-label" className="text-xs font-medium text-muted-foreground">
+        Reporting period
+      </span>
+      <Select
+        value={dateRange}
+        onValueChange={(v) => setDateRange(v as DateRangeOption)}
+      >
+        <SelectTrigger className="w-40" aria-labelledby="overview-range-label">
+          <SelectValue placeholder="Select range" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="7">Last 7 days</SelectItem>
+          <SelectItem value="14">Last 14 days</SelectItem>
+          <SelectItem value="30">Last 30 days</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="flex justify-end mb-6">
-        <Select
-          value={dateRange}
-          onValueChange={(v) => setDateRange(v as DateRangeOption)}
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Select range" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">Last 7 days</SelectItem>
-            <SelectItem value="14">Last 14 days</SelectItem>
-            <SelectItem value="30">Last 30 days</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Overview"
+        description="Real-time insights across your team"
+        actions={dateRangeActions}
+      />
 
       {(isError || alertsFailed) && (
         <ErrorState
@@ -192,7 +215,10 @@ export default function SupervisorOverview() {
       )}
 
       {isLoading || alertsLoading ? (
-        <OverviewSkeleton />
+        <div className="space-y-6">
+          <PageSkeleton variant="stats" />
+          <PageSkeleton variant="chart" />
+        </div>
       ) : dashboardData ? (
         <>
           <OverviewStats
@@ -203,7 +229,11 @@ export default function SupervisorOverview() {
             negativeCallCount={dashboardData.negativeCallCount}
             openAlerts={openAlerts}
             totalAlerts={totalAlerts}
+            sentimentTrend={sentimentTrend}
+            negativeTrend={negativeTrend}
           />
+
+          <Separator className="mb-6" />
 
           <Tabs defaultValue="trends" className="space-y-6">
             <TabsList>
@@ -215,6 +245,17 @@ export default function SupervisorOverview() {
             <TabsContent value="trends" className="space-y-6">
               <SentimentTrendChart data={dashboardData.dailyMetrics} />
               <CallVolumeChart data={dashboardData.dailyMetrics} />
+              <div className="pt-2">
+                <h2 className="text-sm font-medium text-muted-foreground mb-4">
+                  Recent activity
+                </h2>
+                <RecentAlerts
+                  alerts={recentAlerts}
+                  callsById={callsById}
+                  onViewAll={() => navigate('/supervisor/alerts')}
+                  onAlertClick={() => navigate('/supervisor/alerts')}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="topics" className="space-y-6">
@@ -230,13 +271,6 @@ export default function SupervisorOverview() {
           </Tabs>
         </>
       ) : null}
-
-      <RecentAlerts
-        alerts={recentAlerts}
-        callsById={callsById}
-        onViewAll={() => navigate('/supervisor/alerts')}
-        onAlertClick={() => navigate('/supervisor/alerts')}
-      />
     </div>
   );
 }

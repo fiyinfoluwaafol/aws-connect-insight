@@ -10,24 +10,61 @@ interface StatCardProps {
   trend?: {
     value: number;
     label: string;
+    /** Use `points` for sentiment deltas on -1..1 scale; default is percentage */
+    format?: 'percent' | 'points';
   };
+  /** For metrics where lower values are better (e.g. negative-call rate), invert green/red trend colors */
+  trendPolarity?: 'higher_is_better' | 'lower_is_better';
   variant?: 'default' | 'success' | 'warning' | 'destructive';
+  /** Visually emphasize key metrics (e.g. sentiment, open alerts) */
+  emphasis?: boolean;
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 'default' }: StatCardProps) {
-  const variantStyles = {
-    default: 'text-primary',
-    success: 'text-success',
-    warning: 'text-warning',
-    destructive: 'text-destructive',
-  };
+const variantTextStyles = {
+  default: 'text-primary',
+  success: 'text-success',
+  warning: 'text-warning',
+  destructive: 'text-destructive',
+} as const;
 
+const variantIconBgStyles = {
+  default: 'bg-primary/10',
+  success: 'bg-success/10',
+  warning: 'bg-warning/10',
+  destructive: 'bg-destructive/10',
+} as const;
+
+export function StatCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
+  trendPolarity = 'higher_is_better',
+  variant = 'default',
+  emphasis = false,
+}: StatCardProps) {
+  const trendPositiveClass =
+    trendPolarity === 'lower_is_better' ? 'text-destructive' : 'text-success';
+  const trendNegativeClass =
+    trendPolarity === 'lower_is_better' ? 'text-success' : 'text-destructive';
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
+    <Card
+      className={cn(
+        'p-6 shadow-sm transition-shadow hover:shadow-md',
+        emphasis && 'border-primary/20 bg-gradient-to-br from-card to-muted/40'
+      )}
+    >
       <div className="flex items-start justify-between">
         <div className="space-y-2 flex-1">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className={cn("text-3xl font-bold tracking-tight", variantStyles[variant])}>
+          <p
+            className={cn(
+              emphasis ? 'text-4xl' : 'text-3xl',
+              'font-bold tracking-tight',
+              variantTextStyles[variant]
+            )}
+          >
             {value}
           </p>
           {subtitle && (
@@ -35,18 +72,28 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
           )}
           {trend && (
             <div className="flex items-center gap-2 text-xs">
-              <span className={cn(
-                "font-medium",
-                trend.value > 0 ? "text-success" : trend.value < 0 ? "text-destructive" : "text-muted-foreground"
-              )}>
-                {trend.value > 0 ? '+' : ''}{trend.value}%
+              <span
+                className={cn(
+                  'font-medium',
+                  trend.value > 0
+                    ? trendPositiveClass
+                    : trend.value < 0
+                      ? trendNegativeClass
+                      : 'text-muted-foreground'
+                )}
+              >
+                {trend.value > 0 ? '+' : ''}
+                {trend.format === 'points'
+                  ? trend.value.toFixed(2)
+                  : Math.round(trend.value * 10) / 10}
+                {trend.format === 'points' ? ' pts' : '%'}
               </span>
               <span className="text-muted-foreground">{trend.label}</span>
             </div>
           )}
         </div>
-        <div className={cn("p-3 rounded-lg", `bg-${variant === 'default' ? 'primary' : variant}/10`)}>
-          <Icon className={cn("h-6 w-6", variantStyles[variant])} />
+        <div className={cn('p-3 rounded-lg', variantIconBgStyles[variant])}>
+          <Icon className={cn('h-6 w-6', variantTextStyles[variant])} />
         </div>
       </div>
     </Card>

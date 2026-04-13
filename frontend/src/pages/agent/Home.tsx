@@ -6,6 +6,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SentimentBadge } from '@/components/SentimentBadge';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { pageShellClassName } from '@/lib/page-animation';
 import { toast } from '@/hooks/use-toast';
 import {
   Lightbulb,
@@ -370,22 +373,24 @@ export default function AgentHome() {
     </div>
   );
 
+  const simulateAction = (
+    <Button onClick={handleSimulateCallEnd} disabled={isSimulating} className="shrink-0">
+      {isSimulating ? (
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      ) : (
+        <Phone className="h-4 w-4 mr-2" />
+      )}
+      {isSimulating ? 'Simulating...' : 'Simulate Call End'}
+    </Button>
+  );
+
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold">Welcome back, {user?.firstName || user?.email}</h2>
-          <p className="text-sm text-muted-foreground">Your post-call coaching workspace</p>
-        </div>
-        <Button onClick={handleSimulateCallEnd} disabled={isSimulating}>
-          {isSimulating ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Phone className="h-4 w-4 mr-2" />
-          )}
-          {isSimulating ? 'Simulating...' : 'Simulate Call End'}
-        </Button>
-      </div>
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title={`Welcome back, ${user?.firstName || user?.email || 'Agent'}`}
+        description="Your post-call coaching workspace—review calls, tips, and next steps."
+        actions={simulateAction}
+      />
 
       <div className="space-y-8">
         {isSimulating && (
@@ -526,14 +531,16 @@ export default function AgentHome() {
         <section>
           <h3 className="text-lg font-semibold mb-4">Recent Calls</h3>
           {userCalls.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground mb-4">
-                No recent calls yet. Tap Simulate Call End to run one, or make a live call.
-              </p>
-              <Button variant="outline" onClick={handleSimulateCallEnd}>
-                Simulate Call End
-              </Button>
-            </Card>
+            <EmptyState
+              icon={Phone}
+              title="No recent calls"
+              description="Run a simulated call or make a live call to see summary, transcript, and coaching signals here."
+              action={
+                <Button variant="outline" onClick={handleSimulateCallEnd}>
+                  Simulate Call End
+                </Button>
+              }
+            />
           ) : (
             <div className="space-y-4">
               {userCalls.slice(0, 5).map((call) => {
@@ -630,14 +637,12 @@ export default function AgentHome() {
           </div>
 
           {userTips.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Lightbulb className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No Tips Yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Complete a call (or simulate one) to receive coaching tips.
-              </p>
-              <Button onClick={handleSimulateCallEnd}>Simulate Call End</Button>
-            </Card>
+            <EmptyState
+              icon={Lightbulb}
+              title="No tips yet"
+              description="Complete a call (or simulate one) to receive personalized coaching tips."
+              action={<Button onClick={handleSimulateCallEnd}>Simulate Call End</Button>}
+            />
           ) : (
             <div className="space-y-4">
               {userTips.map((tip) => (
@@ -654,6 +659,7 @@ export default function AgentHome() {
                       variant="ghost"
                       size="icon"
                       onClick={() => updateAgentTip(tip.id, { dismissed: true })}
+                      aria-label="Dismiss tip"
                     >
                       <X className="h-4 w-4" />
                     </Button>

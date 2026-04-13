@@ -5,9 +5,13 @@ import { SentimentBadge } from '@/components/SentimentBadge';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { pageShellClassName } from '@/lib/page-animation';
 import { Star, Bookmark, Clock, User, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -31,74 +35,114 @@ export default function AgentExemplars() {
     setTimeout(() => setPlaying(false), 3000);
   };
 
-  return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Star className="h-5 w-5" />
-            Exemplar Calls
-          </h2>
-          <p className="text-sm text-muted-foreground">Learn from top-performing calls</p>
-        </div>
-        <Select value={topicFilter} onValueChange={setTopicFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Filter by topic" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Topics</SelectItem>
-            {topics.map((t) => (
-              <SelectItem key={t} value={t}>{t.replace(/-/g, ' ')}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+  const topicSelect = (
+    <div className="flex flex-col gap-1 w-full sm:w-auto">
+      <Label htmlFor="exemplar-topic" className="sr-only">
+        Filter by topic
+      </Label>
+      <Select value={topicFilter} onValueChange={setTopicFilter}>
+        <SelectTrigger id="exemplar-topic" className="w-full sm:w-40">
+          <SelectValue placeholder="Filter by topic" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Topics</SelectItem>
+          {topics.map((t) => (
+            <SelectItem key={t} value={t}>{t.replace(/-/g, ' ')}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 
-      <div className="grid gap-4">
-        {exemplars.map((call) => (
-          <Card key={call.id} className="p-4 hover:bg-muted/50 cursor-pointer" onClick={() => setViewCall(call)}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <SentimentBadge sentiment={call.sentimentLabel} />
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <User className="h-3 w-3" />{call.agentName}
-                  </span>
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Clock className="h-3 w-3" />{Math.floor(call.durationSec / 60)}m
-                  </span>
+  return (
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Exemplar calls"
+        description="Learn from curated, high-performing conversations."
+        actions={topicSelect}
+      />
+
+      {exemplars.length === 0 ? (
+        <EmptyState
+          icon={Star}
+          title="No exemplars for this topic"
+          description="Try choosing “All Topics” or another category to see sample calls."
+        />
+      ) : (
+        <div className="grid gap-4">
+          {exemplars.map((call) => (
+            <Card
+              key={call.id}
+              className="p-4 hover:bg-muted/50 cursor-pointer transition-colors shadow-sm"
+              onClick={() => setViewCall(call)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                // Ignore when focus is on the bookmark button or other nested controls.
+                if (e.target !== e.currentTarget) return;
+                e.preventDefault();
+                setViewCall(call);
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Open exemplar call ${call.id}`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <SentimentBadge sentiment={call.sentimentLabel} />
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <User className="h-3 w-3 shrink-0" aria-hidden />
+                      {call.agentName}
+                    </span>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3 shrink-0" aria-hidden />
+                      {Math.floor(call.durationSec / 60)}m
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {call.topics.map((t) => (
+                      <Badge key={t} variant="secondary" className="text-xs">{t.replace(/-/g, ' ')}</Badge>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {call.topics.map((t) => (
-                    <Badge key={t} variant="secondary" className="text-xs">{t.replace(/-/g, ' ')}</Badge>
-                  ))}
-                </div>
+                <Button
+                  variant={bookmarkedExemplars.includes(call.id) ? 'secondary' : 'outline'}
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={bookmarkedExemplars.includes(call.id) ? 'Remove bookmark' : 'Bookmark call'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleBookmark(call.id);
+                  }}
+                >
+                  <Bookmark className={`h-4 w-4 ${bookmarkedExemplars.includes(call.id) ? 'fill-current' : ''}`} />
+                </Button>
               </div>
-              <Button variant={bookmarkedExemplars.includes(call.id) ? 'secondary' : 'outline'} size="sm" onClick={(e) => { e.stopPropagation(); handleBookmark(call.id); }}>
-                <Bookmark className={`h-4 w-4 ${bookmarkedExemplars.includes(call.id) ? 'fill-current' : ''}`} />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Dialog open={!!viewCall} onOpenChange={() => setViewCall(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Exemplar Call Details</DialogTitle>
+            <DialogTitle>Exemplar call details</DialogTitle>
           </DialogHeader>
           {viewCall && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <SentimentBadge sentiment={viewCall.sentimentLabel} />
                 <span>{viewCall.agentName}</span>
-                <span className="text-muted-foreground">{Math.floor(viewCall.durationSec / 60)}m {viewCall.durationSec % 60}s</span>
+                <span className="text-muted-foreground">
+                  {Math.floor(viewCall.durationSec / 60)}m {viewCall.durationSec % 60}s
+                </span>
               </div>
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Audio Playback (Mock)</span>
-                  <Button size="sm" onClick={handlePlay} disabled={playing}>
-                    <Play className="h-4 w-4 mr-1" />{playing ? 'Playing...' : 'Play Snippet'}
+                  <span className="text-sm font-medium">Audio playback (mock)</span>
+                  <Button size="sm" onClick={handlePlay} disabled={playing} aria-busy={playing}>
+                    <Play className="h-4 w-4 mr-1" aria-hidden />
+                    {playing ? 'Playing...' : 'Play snippet'}
                   </Button>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -106,7 +150,7 @@ export default function AgentExemplars() {
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Key Moves</h4>
+                <h4 className="font-semibold mb-2">Key moves</h4>
                 <ul className="text-sm space-y-1 text-muted-foreground">
                   <li>• Acknowledged customer frustration early</li>
                   <li>• Offered clear next steps</li>

@@ -3,6 +3,12 @@ import { TrendingUp, AlertTriangle, Phone } from 'lucide-react';
 
 export type DateRangeOption = '7' | '14' | '30';
 
+export interface StatTrend {
+  value: number;
+  label: string;
+  format: 'percent' | 'points';
+}
+
 export interface OverviewStatsProps {
   avgSentiment: number;
   filteredCallCount: number;
@@ -11,6 +17,8 @@ export interface OverviewStatsProps {
   negativeCallCount: number;
   openAlerts: number;
   totalAlerts: number;
+  sentimentTrend?: StatTrend;
+  negativeTrend?: StatTrend;
 }
 
 export function OverviewStats({
@@ -21,6 +29,8 @@ export function OverviewStats({
   negativeCallCount,
   openAlerts,
   totalAlerts,
+  sentimentTrend,
+  negativeTrend,
 }: OverviewStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -30,6 +40,8 @@ export function OverviewStats({
         subtitle={`Across ${filteredCallCount} calls`}
         icon={TrendingUp}
         variant={avgSentiment > 0.3 ? 'success' : avgSentiment < -0.2 ? 'destructive' : 'default'}
+        trend={sentimentTrend}
+        emphasis
       />
       <StatCard
         title="Call Volume"
@@ -44,6 +56,8 @@ export function OverviewStats({
         subtitle={`${negativeCallCount} calls`}
         icon={AlertTriangle}
         variant="warning"
+        trend={negativeTrend}
+        trendPolarity="lower_is_better"
       />
       <StatCard
         title="Open Alerts"
@@ -51,6 +65,7 @@ export function OverviewStats({
         subtitle={`${totalAlerts} total alerts`}
         icon={AlertTriangle}
         variant={openAlerts > 10 ? 'destructive' : 'warning'}
+        emphasis
       />
     </div>
   );

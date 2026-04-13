@@ -13,7 +13,10 @@ import {
   type SupervisorCallViewModel,
 } from '@/lib/supervisor-alerts';
 import { CallDetailDrawer } from '@/components/CallDetailDrawer';
+import { PageHeader } from '@/components/PageHeader';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { toast } from '@/hooks/use-toast';
+import { pageShellClassName } from '@/lib/page-animation';
 import { AlertTable } from './components/AlertTable';
 import { AlertDetail } from './components/AlertDetail';
 
@@ -216,32 +219,36 @@ export default function AlertsCenter() {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className={pageShellClassName()}>
+      <PageHeader
+        title="Alerts"
+        description={`${openAlertsCount} open alert${openAlertsCount === 1 ? '' : 's'} · Triage sentiment, keywords, and recurring issues.`}
+      />
+
       {isError && (
         <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
           Failed to load alerts.
         </div>
       )}
 
-      <AlertTable
-        alerts={alerts}
-        callsById={callsById}
-        statusFilter={statusFilter}
-        severityFilter={severityFilter}
-        selectedIds={selectedIds}
-        openAlertsCount={openAlertsCount}
-        onStatusFilterChange={setStatusFilter}
-        onSeverityFilterChange={setSeverityFilter}
-        onSelectAll={handleSelectAll}
-        onSelectRow={handleSelect}
-        onOpenDetail={setDetailAlert}
-        onOpenCall={openCallDetail}
-        onCloseSelected={() => void handleCloseSelected()}
-        severityClassName={severityColor}
-      />
-
-      {isLoading && (
-        <div className="mt-4 text-sm text-muted-foreground">Loading alerts...</div>
+      {isLoading ? (
+        <PageSkeleton variant="table" />
+      ) : (
+        <AlertTable
+          alerts={alerts}
+          callsById={callsById}
+          statusFilter={statusFilter}
+          severityFilter={severityFilter}
+          selectedIds={selectedIds}
+          onStatusFilterChange={setStatusFilter}
+          onSeverityFilterChange={setSeverityFilter}
+          onSelectAll={handleSelectAll}
+          onSelectRow={handleSelect}
+          onOpenDetail={setDetailAlert}
+          onOpenCall={openCallDetail}
+          onCloseSelected={() => void handleCloseSelected()}
+          severityClassName={severityColor}
+        />
       )}
 
       <AlertDetail
