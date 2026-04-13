@@ -354,7 +354,7 @@ export default function AgentHome() {
   };
 
   const renderTranscript = (transcript: TranscriptTurn[]) => (
-    <div className="space-y-2">
+    <div className="max-h-80 space-y-2 overflow-y-auto pr-2">
       {transcript.map((turn, index) => {
         const isAgent = turn.speaker.toLowerCase() === 'agent';
         return (
