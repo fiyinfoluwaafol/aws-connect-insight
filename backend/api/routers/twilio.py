@@ -56,22 +56,51 @@ def _get_supabase_client_direct(settings: Settings) -> Any:
     return create_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
+def _twilio_proxy_headers_for_log(request: Request) -> dict[str, str]:
+    """Forwarded / host headers (no secrets) — compare to Twilio's signed public URL."""
+    h = request.headers
+    keys = (
+        "host",
+        "x-forwarded-proto",
+        "x-forwarded-host",
+        "x-forwarded-for",
+        "x-real-ip",
+    )
+    return {k: h[k] for k in keys if k in h}
+
+
 def _validate_twilio_signature(
     request: Request,
     form_data: dict[str, str],
     auth_token: str,
 ) -> bool:
     """Validate the X-Twilio-Signature header."""
+    url = str(request.url)
+    proxy_headers = _twilio_proxy_headers_for_log(request)
+
     try:
         from twilio.request_validator import RequestValidator
     except ImportError:
-        logger.error("twilio package is not installed — cannot validate signature")
+        logger.error(
+            "twilio package is not installed — cannot validate signature url=%s proxy_headers=%s",
+            url,
+            proxy_headers,
+        )
         return False
 
     validator = RequestValidator(auth_token)
     signature = request.headers.get("X-Twilio-Signature", "")
-    url = str(request.url)
-    return validator.validate(url, form_data, signature)
+    valid = validator.validate(url, form_data, signature)
+
+    log_fn = logger.info if valid else logger.warning
+    log_fn(
+        "Twilio signature check url=%s proxy_headers=%s signature_present=%s valid=%s",
+        url,
+        proxy_headers,
+        bool(signature),
+        valid,
+    )
+    return valid
 
 
 def _resolve_demo_agent(db_client: Any, email: str) -> tuple[str, str]:
