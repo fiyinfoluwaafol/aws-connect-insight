@@ -7,7 +7,7 @@ This backend is ready to deploy as its own Railway service from the
 
 - Root directory: `backend`
 - Build command: `pip install -e .`
-- Start command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+- Start command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT --forwarded-allow-ips '*'`
 - Health check path: `/health`
 
 If you use Railway config-as-code, the backend service config lives in

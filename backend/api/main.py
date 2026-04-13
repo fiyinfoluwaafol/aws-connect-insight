@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from api.config import get_settings
 from api.routers import agent, alerts, analysis, auth, calls, dashboard, health, teams, twilio
@@ -32,6 +33,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    # Behind Railway et al., clients use HTTPS but the hop to the container may be HTTP.
+    # Trust X-Forwarded-Proto so `request.url` matches Twilio's signed webhook URL.
+    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
     app.include_router(health.router, prefix="/health", tags=["health"])
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
