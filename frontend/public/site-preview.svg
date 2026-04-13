@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Amazon Connect Supervisor Insights">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7fbff"/>
+      <stop offset="1" stop-color="#e8f7f8"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="136" y1="114" x2="518" y2="496" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#178fe8"/>
+      <stop offset="1" stop-color="#00b8c8"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="22" stdDeviation="28" flood-color="#213245" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity="0.42">
+    <circle cx="958" cy="142" r="86" fill="#ffffff"/>
+    <circle cx="1035" cy="512" r="134" fill="#c9eff3"/>
+    <circle cx="160" cy="548" r="108" fill="#d9ecfb"/>
+  </g>
+  <g transform="translate(84 74)" filter="url(#shadow)">
+    <rect width="488" height="482" rx="36" fill="#ffffff"/>
+    <rect x="46" y="54" width="396" height="76" rx="18" fill="#f2f7fb"/>
+    <circle cx="98" cy="92" r="18" fill="#178fe8"/>
+    <rect x="138" y="78" width="250" height="16" rx="8" fill="#213245"/>
+    <rect x="138" y="104" width="164" height="12" rx="6" fill="#7c8b9b"/>
+    <g transform="translate(62 190)">
+      <path d="M0 176C36 118 84 120 124 142c46 25 76 18 110-42 33-58 76-83 128-96" fill="none" stroke="#178fe8" stroke-width="16" stroke-linecap="round"/>
+      <path d="M0 210h376" stroke="#e6eef6" stroke-width="8" stroke-linecap="round"/>
+      <path d="M0 126h376" stroke="#e6eef6" stroke-width="8" stroke-linecap="round"/>
+      <path d="M0 42h376" stroke="#e6eef6" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="362" cy="4" r="16" fill="#00b8c8"/>
+    </g>
+    <g transform="translate(62 384)">
+      <rect width="116" height="46" rx="12" fill="#e7f4ff"/>
+      <rect x="144" width="116" height="46" rx="12" fill="#e6fbf9"/>
+      <rect x="288" width="116" height="46" rx="12" fill="#ecf9f0"/>
+    </g>
+  </g>
+  <g transform="translate(628 148)">
+    <rect x="0" y="0" width="88" height="88" rx="20" fill="url(#accent)"/>
+    <path d="M25 53c0-12.3 8.2-22.4 19-22.4S63 40.7 63 53" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="44" cy="53" r="8" fill="#ffffff"/>
+    <text x="0" y="158" fill="#213245" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="800">Amazon Connect</text>
+    <text x="0" y="220" fill="#213245" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="800">Supervisor Insights</text>
+    <text x="0" y="306" fill="#496172" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="500">Call analytics, sentiment trends, alerts,</text>
+    <text x="0" y="344" fill="#496172" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="500">and coaching recommendations in one</text>
+    <text x="0" y="382" fill="#496172" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="500">supervisor view.</text>
+  </g>
+</svg>
