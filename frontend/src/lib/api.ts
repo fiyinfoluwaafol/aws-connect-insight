@@ -1,9 +1,48 @@
 // API client for backend communication. //
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getStoredRefreshToken,
+  notifyAuthFailure,
+  setAuthTokens,
+} from '@/lib/auth-tokens';
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface ApiError {
   detail: string;
+}
+
+/** Public auth routes: no Bearer header; 401 must not trigger refresh. */
+function needsBearerAuth(endpoint: string): boolean {
+  const publicPrefixes = [
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password',
+    '/api/auth/refresh',
+  ];
+  return !publicPrefixes.some((p) => endpoint === p || endpoint.startsWith(`${p}?`));
+}
+
+/** Raw refresh (bypasses ApiClient) to avoid recursive 401 handling. */
+export async function refreshSessionWithStoredToken(baseUrl: string = API_BASE_URL): Promise<boolean> {
+  const rt = getStoredRefreshToken();
+  if (!rt) return false;
+  try {
+    const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: rt }),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { access_token: string; refresh_token: string };
+    setAuthTokens(data.access_token, data.refresh_token);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 class ApiClient {
@@ -13,19 +52,37 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private buildHeaders(endpoint: string, options: RequestInit): Headers {
+    const headers = new Headers(options.headers);
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    if (needsBearerAuth(endpoint)) {
+      const token = getAccessToken();
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+    }
+    return headers;
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const headers = this.buildHeaders(endpoint, options);
+
     const response = await fetch(url, {
       ...options,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
+
+    if (response.status === 401 && needsBearerAuth(endpoint) && !isRetry) {
+      const refreshed = await refreshSessionWithStoredToken(this.baseUrl);
+      if (refreshed) {
+        return this.request<T>(endpoint, options, true);
+      }
+      clearAuthTokens();
+      notifyAuthFailure();
+    }
 
     if (!response.ok) {
       const error: ApiError = await response.json().catch(() => ({
@@ -84,6 +141,17 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface LoginResponse {
+  user: AuthUser;
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface RefreshTokenResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
 export interface RegisterCredentials {
   email: string;
   password: string;
@@ -113,7 +181,7 @@ export interface ChangePasswordRequest {
 
 export const authApi = {
   login: (credentials: LoginCredentials) =>
-    api.post<AuthUser>('/api/auth/login', credentials),
+    api.post<LoginResponse>('/api/auth/login', credentials),
 
   register: (credentials: RegisterCredentials) =>
     api.post<AuthUser>('/api/auth/register', credentials),
@@ -122,7 +190,10 @@ export const authApi = {
 
   me: () => api.get<AuthUser>('/api/auth/me'),
 
-  refresh: () => api.post<MessageResponse>('/api/auth/refresh'),
+  refresh: (refreshToken: string) =>
+    api.post<RefreshTokenResponse>('/api/auth/refresh', {
+      refresh_token: refreshToken,
+    }),
 
   forgotPassword: (data: ForgotPasswordRequest) =>
     api.post<MessageResponse>('/api/auth/forgot-password', data),

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { clearAuthTokens } from "@/lib/auth-tokens";
 import { useAuthStore, User } from "../auth-store";
 
 const mockUser: User = {
@@ -12,6 +13,7 @@ const mockUser: User = {
 
 describe("auth-store", () => {
   beforeEach(async () => {
+    clearAuthTokens();
     useAuthStore.setState({ user: null, isLoading: false, error: null });
   });
 

@@ -3,11 +3,10 @@
 from enum import Enum
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 
-from api.config import Settings, get_settings
-from api.dependencies import get_current_user, get_supabase_client
+from api.dependencies import get_bearer_raw_token, get_current_user, get_supabase_client
 from database.constants import Tables
 from database.exceptions import AuthenticationError, DatabaseError
 from database.teams import create_team
@@ -54,8 +53,21 @@ class UserResponse(BaseModel):
     team_id: str | None = None
 
 
-class RefreshResponse(BaseModel):
-    message: str
+class LoginResponse(BaseModel):
+    """Sign-in payload: user profile plus tokens for Authorization header flow."""
+
+    user: UserResponse
+    access_token: str
+    refresh_token: str
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -96,51 +108,6 @@ def _to_user_response(user: AuthUser) -> UserResponse:
         role=user.role,
         team_id=user.team_id,
     )
-
-
-def _auth_cookie_settings(settings: Settings) -> dict:
-    """HTTP-only cookie kwargs for set/delete.
-
-    In production, SameSite=lax blocks cookies on cross-origin fetch (e.g. Vercel SPA → Railway API).
-    SameSite=none + Secure is required for credentialed API calls across sites.
-    """
-    if settings.is_production:
-        return {
-            "httponly": True,
-            "samesite": "none",
-            "secure": True,
-            "path": "/",
-        }
-    return {
-        "httponly": True,
-        "samesite": "lax",
-        "secure": False,
-        "path": "/",
-    }
-
-
-def _set_auth_cookies(
-    response: Response,
-    access_token: str,
-    refresh_token: str,
-    settings: Settings,
-) -> None:
-    """Set HTTP-only auth cookies on the response."""
-    cookie_settings = _auth_cookie_settings(settings)
-    response.set_cookie(key="access_token", value=access_token, max_age=3600, **cookie_settings)
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        max_age=604800,
-        **cookie_settings,
-    )
-
-
-def _clear_auth_cookies(response: Response, settings: Settings) -> None:
-    """Clear auth cookies from the response."""
-    cookie_settings = _auth_cookie_settings(settings)
-    response.delete_cookie(key="access_token", **cookie_settings)
-    response.delete_cookie(key="refresh_token", **cookie_settings)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -184,14 +151,12 @@ def register(
     return _to_user_response(user)
 
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(
     request: LoginRequest,
-    response: Response,
     client: Annotated[Any, Depends(get_supabase_client)],
-    settings: Annotated[Settings, Depends(get_settings)],
-) -> UserResponse:
-    """Sign in and set auth cookies."""
+) -> LoginResponse:
+    """Sign in and return tokens plus user profile (Bearer auth; no cookies)."""
     auth_client = _require_client(client)
 
     try:
@@ -202,27 +167,22 @@ def login(
             detail="Invalid email or password",
         ) from exc
 
-    _set_auth_cookies(
-        response,
-        result.tokens.access_token,
-        result.tokens.refresh_token,
-        settings,
+    return LoginResponse(
+        user=_to_user_response(result.user),
+        access_token=result.tokens.access_token,
+        refresh_token=result.tokens.refresh_token,
     )
-    return _to_user_response(result.user)
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(
-    response: Response,
+    _: Annotated[dict, Depends(get_current_user)],
+    access_token: Annotated[str, Depends(get_bearer_raw_token)],
     client: Annotated[Any, Depends(get_supabase_client)],
-    settings: Annotated[Settings, Depends(get_settings)],
-    access_token: Annotated[str | None, Cookie()] = None,
 ) -> None:
-    """Sign out and clear auth cookies."""
-    _clear_auth_cookies(response, settings)
-
-    if client is not None:
-        logout_user(client, access_token)
+    """Sign out using Bearer access token; invalidate server-side session."""
+    auth_client = _require_client(client)
+    logout_user(auth_client, access_token)
 
 
 @router.get("/me", response_model=UserResponse)
@@ -240,32 +200,32 @@ def me(
     return _to_user_response(user)
 
 
-@router.post("/refresh", response_model=RefreshResponse)
+@router.post("/refresh", response_model=RefreshTokenResponse)
 def refresh(
-    response: Response,
+    request: RefreshRequest,
     client: Annotated[Any, Depends(get_supabase_client)],
-    settings: Annotated[Settings, Depends(get_settings)],
-    refresh_token: Annotated[str | None, Cookie()] = None,
-) -> RefreshResponse:
-    """Refresh access token using the refresh token cookie."""
+) -> RefreshTokenResponse:
+    """Rotate access and refresh tokens using refresh_token in the body."""
     auth_client = _require_client(client)
 
-    if not refresh_token:
+    if not request.refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No refresh token provided",
         )
 
     try:
-        tokens = refresh_user_tokens(auth_client, refresh_token)
+        tokens = refresh_user_tokens(auth_client, request.refresh_token)
     except AuthenticationError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",
         ) from exc
 
-    _set_auth_cookies(response, tokens.access_token, tokens.refresh_token, settings)
-    return RefreshResponse(message="Token refreshed successfully")
+    return RefreshTokenResponse(
+        access_token=tokens.access_token,
+        refresh_token=tokens.refresh_token,
+    )
 
 
 @router.post("/forgot-password", response_model=MessageResponse)

@@ -56,7 +56,6 @@ def authenticated_client(mock_supabase: MagicMock, mock_user_with_team: dict):
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         yield client
 
     _app.dependency_overrides.clear()
@@ -92,7 +91,6 @@ def client_without_team(mock_supabase: MagicMock, mock_user_without_team: dict):
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         yield client
 
     _app.dependency_overrides.clear()
@@ -112,7 +110,6 @@ def client_as_agent(mock_supabase: MagicMock, mock_agent_user: dict):
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         yield client
 
     _app.dependency_overrides.clear()
@@ -342,7 +339,6 @@ def test_trends_returns_503_when_client_unavailable(
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         response = client.get("/api/dashboard/trends")
 
     _app.dependency_overrides.clear()

@@ -48,7 +48,6 @@ def authenticated_agent_client(mock_supabase: MagicMock, agent_user: dict):
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         yield client
 
     _app.dependency_overrides.clear()
@@ -68,7 +67,6 @@ def authenticated_supervisor_client(mock_supabase: MagicMock, supervisor_user: d
     _app.dependency_overrides[dependencies.get_current_user] = _override_get_current_user
 
     with TestClient(_app) as client:
-        client.cookies.set("access_token", "valid-token")
         yield client
 
     _app.dependency_overrides.clear()
