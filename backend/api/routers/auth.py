@@ -98,6 +98,27 @@ def _to_user_response(user: AuthUser) -> UserResponse:
     )
 
 
+def _auth_cookie_settings(settings: Settings) -> dict:
+    """HTTP-only cookie kwargs for set/delete.
+
+    In production, SameSite=lax blocks cookies on cross-origin fetch (e.g. Vercel SPA → Railway API).
+    SameSite=none + Secure is required for credentialed API calls across sites.
+    """
+    if settings.is_production:
+        return {
+            "httponly": True,
+            "samesite": "none",
+            "secure": True,
+            "path": "/",
+        }
+    return {
+        "httponly": True,
+        "samesite": "lax",
+        "secure": False,
+        "path": "/",
+    }
+
+
 def _set_auth_cookies(
     response: Response,
     access_token: str,
@@ -105,12 +126,7 @@ def _set_auth_cookies(
     settings: Settings,
 ) -> None:
     """Set HTTP-only auth cookies on the response."""
-    cookie_settings = {
-        "httponly": True,
-        "samesite": "lax",
-        "secure": settings.is_production,
-        "path": "/",
-    }
+    cookie_settings = _auth_cookie_settings(settings)
     response.set_cookie(key="access_token", value=access_token, max_age=3600, **cookie_settings)
     response.set_cookie(
         key="refresh_token",
@@ -122,12 +138,7 @@ def _set_auth_cookies(
 
 def _clear_auth_cookies(response: Response, settings: Settings) -> None:
     """Clear auth cookies from the response."""
-    cookie_settings = {
-        "httponly": True,
-        "samesite": "lax",
-        "secure": settings.is_production,
-        "path": "/",
-    }
+    cookie_settings = _auth_cookie_settings(settings)
     response.delete_cookie(key="access_token", **cookie_settings)
     response.delete_cookie(key="refresh_token", **cookie_settings)
 
