@@ -22,11 +22,6 @@ def current_user_override(app):
     app.dependency_overrides.pop(dependencies.get_current_user, None)
 
 
-def _set_cookie_headers(response) -> list[str]:
-    """Return all Set-Cookie headers on the response."""
-    return response.headers.get_list("set-cookie")
-
-
 def test_register_returns_created_user(
     client: TestClient,
     mock_supabase: MagicMock,
@@ -137,12 +132,12 @@ def test_register_rejects_public_supervisor_signup(
     profile_mock.assert_called_once()
 
 
-def test_login_sets_auth_cookies(
+def test_login_returns_user_and_tokens_in_body(
     client: TestClient,
     mock_supabase: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """POST /api/auth/login returns the user and sets auth cookies."""
+    """POST /api/auth/login returns user plus access and refresh tokens (Bearer flow)."""
     login_mock = MagicMock(
         return_value=LoginResult(
             user=AuthUser(
@@ -168,36 +163,41 @@ def test_login_sets_auth_cookies(
 
     assert response.status_code == 200
     assert response.json() == {
-        "id": "user-1",
-        "email": "test@example.com",
-        "first_name": "Test",
-        "last_name": "User",
-        "role": "supervisor",
-        "team_id": "team-1",
+        "user": {
+            "id": "user-1",
+            "email": "test@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+            "role": "supervisor",
+            "team_id": "team-1",
+        },
+        "access_token": "access-token",
+        "refresh_token": "refresh-token",
     }
-    cookies = _set_cookie_headers(response)
-    assert any("access_token=access-token" in header for header in cookies)
-    assert any("refresh_token=refresh-token" in header for header in cookies)
     login_mock.assert_called_once_with(mock_supabase, "test@example.com", "password123")
 
 
-def test_logout_clears_auth_cookies(
+def test_logout_calls_service_with_bearer_access_token(
     client: TestClient,
+    app,
     mock_supabase: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """POST /api/auth/logout clears cookies and attempts service logout."""
+    """POST /api/auth/logout invokes service logout with the Bearer access token."""
     logout_mock = MagicMock()
     monkeypatch.setattr(auth_router, "logout_user", logout_mock)
-    client.cookies.set("access_token", "access-token")
-    client.cookies.set("refresh_token", "refresh-token")
-
-    response = client.post("/api/auth/logout")
+    app.dependency_overrides[dependencies.get_current_user] = lambda: {
+        "id": "user-1",
+        "email": "test@example.com",
+    }
+    app.dependency_overrides[dependencies.get_bearer_raw_token] = lambda: "access-token"
+    try:
+        response = client.post("/api/auth/logout")
+    finally:
+        app.dependency_overrides.pop(dependencies.get_current_user, None)
+        app.dependency_overrides.pop(dependencies.get_bearer_raw_token, None)
 
     assert response.status_code == 204
-    cookies = _set_cookie_headers(response)
-    assert any("access_token=" in header and "Max-Age=0" in header for header in cookies)
-    assert any("refresh_token=" in header and "Max-Age=0" in header for header in cookies)
     logout_mock.assert_called_once_with(mock_supabase, "access-token")
 
 
@@ -239,20 +239,20 @@ def test_me_returns_current_user_profile(
     )
 
 
-def test_refresh_requires_refresh_cookie(client: TestClient) -> None:
-    """POST /api/auth/refresh requires the refresh_token cookie."""
-    response = client.post("/api/auth/refresh")
+def test_refresh_requires_refresh_token_in_body(client: TestClient) -> None:
+    """POST /api/auth/refresh rejects an empty refresh_token in JSON body."""
+    response = client.post("/api/auth/refresh", json={"refresh_token": ""})
 
     assert response.status_code == 401
     assert response.json() == {"detail": "No refresh token provided"}
 
 
-def test_refresh_sets_new_auth_cookies(
+def test_refresh_returns_new_tokens_in_body(
     client: TestClient,
     mock_supabase: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """POST /api/auth/refresh rotates cookies when the token is valid."""
+    """POST /api/auth/refresh returns new tokens when the refresh token is valid."""
     refresh_mock = MagicMock(
         return_value=AuthTokens(
             access_token="new-access-token",
@@ -260,15 +260,17 @@ def test_refresh_sets_new_auth_cookies(
         )
     )
     monkeypatch.setattr(auth_router, "refresh_user_tokens", refresh_mock)
-    client.cookies.set("refresh_token", "old-refresh-token")
 
-    response = client.post("/api/auth/refresh")
+    response = client.post(
+        "/api/auth/refresh",
+        json={"refresh_token": "old-refresh-token"},
+    )
 
     assert response.status_code == 200
-    assert response.json() == {"message": "Token refreshed successfully"}
-    cookies = _set_cookie_headers(response)
-    assert any("access_token=new-access-token" in header for header in cookies)
-    assert any("refresh_token=new-refresh-token" in header for header in cookies)
+    assert response.json() == {
+        "access_token": "new-access-token",
+        "refresh_token": "new-refresh-token",
+    }
     refresh_mock.assert_called_once_with(mock_supabase, "old-refresh-token")
 
 

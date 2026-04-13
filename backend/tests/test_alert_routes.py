@@ -54,8 +54,6 @@ def _build_client(mock_supabase: MagicMock, user: dict | None) -> TestClient:
         _app.dependency_overrides.pop(dependencies.get_current_user, None)
 
     client = TestClient(_app)
-    if user is not None:
-        client.cookies.set("access_token", "valid-token")
     return client
 
 

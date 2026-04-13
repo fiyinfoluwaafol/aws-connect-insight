@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import { authApi, AuthUser, UserRole } from '@/lib/api';
+import { authApi, AuthUser, UserRole, refreshSessionWithStoredToken } from '@/lib/api';
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getStoredRefreshToken,
+  setAuthFailureHandler,
+  setAuthTokens,
+} from '@/lib/auth-tokens';
 
 export type { UserRole } from '@/lib/api';
 
@@ -46,9 +53,25 @@ export const useAuthStore = create<AuthState>()((set) => ({
   initAuth: async () => {
     set({ isLoading: true, error: null });
     try {
+      const rt = getStoredRefreshToken();
+      if (rt) {
+        const ok = await refreshSessionWithStoredToken();
+        if (!ok) {
+          clearAuthTokens();
+          set({ user: null, isLoading: false });
+          return;
+        }
+      }
+
+      if (!getAccessToken()) {
+        set({ user: null, isLoading: false });
+        return;
+      }
+
       const authUser = await authApi.me();
       set({ user: mapAuthUserToUser(authUser), isLoading: false });
     } catch {
+      clearAuthTokens();
       set({ user: null, isLoading: false });
     }
   },
@@ -56,8 +79,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
   signIn: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const authUser = await authApi.login({ email, password });
-      const user = mapAuthUserToUser(authUser);
+      const data = await authApi.login({ email, password });
+      setAuthTokens(data.access_token, data.refresh_token);
+      const user = mapAuthUserToUser(data.user);
       if (!user) {
         throw new Error('User profile not found. Please contact support.');
       }
@@ -76,9 +100,15 @@ export const useAuthStore = create<AuthState>()((set) => ({
     } catch {
       // Ignore logout errors - clear state anyway
     } finally {
+      clearAuthTokens();
       set({ user: null, isLoading: false });
     }
   },
 
   clearError: () => set({ error: null }),
 }));
+
+setAuthFailureHandler(() => {
+  clearAuthTokens();
+  useAuthStore.setState({ user: null, isLoading: false, error: null });
+});

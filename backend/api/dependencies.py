@@ -1,9 +1,11 @@
 """FastAPI dependency injection - DI seam for test overrides."""
 
+from __future__ import annotations
+
 from collections.abc import Generator
 from typing import Annotated, Any
 
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 
 from api.config import Settings, get_settings
 
@@ -22,14 +24,35 @@ def get_supabase_client(
     yield client
 
 
+def _bearer_access_token(authorization: str | None) -> str | None:
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.removeprefix("Bearer ").strip()
+    return token or None
+
+
+def get_bearer_raw_token(
+    authorization: Annotated[str | None, Header()] = None,
+) -> str:
+    """Return the raw JWT from Authorization: Bearer (for logout / sign-out)."""
+    token = _bearer_access_token(authorization)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    return token
+
+
 def get_current_user(
-    access_token: Annotated[str | None, Cookie()] = None,
+    authorization: Annotated[str | None, Header()] = None,
     client: Any = Depends(get_supabase_client),
 ) -> dict:
-    """Validate access token from cookie and return current user.
+    """Validate access token from Authorization: Bearer and return current user.
     Use as a dependency on protected routes.
     Raises 401 if token is missing/invalid.
     """
+    access_token = _bearer_access_token(authorization)
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

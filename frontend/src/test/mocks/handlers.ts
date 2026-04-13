@@ -22,12 +22,16 @@ export const handlers = [
     const body = (await request.json()) as { email: string; password: string };
     if (body.email && body.password) {
       return HttpResponse.json({
-        id: mockUser.id,
-        email: body.email,
-        first_name: mockUser.first_name,
-        last_name: mockUser.last_name,
-        role: mockUser.role,
-        team_id: mockUser.team_id,
+        user: {
+          id: mockUser.id,
+          email: body.email,
+          first_name: mockUser.first_name,
+          last_name: mockUser.last_name,
+          role: mockUser.role,
+          team_id: mockUser.team_id,
+        },
+        access_token: "mock-access-token",
+        refresh_token: "mock-refresh-token",
       });
     }
     return HttpResponse.json({ detail: "Invalid credentials" }, { status: 401 });
@@ -37,8 +41,19 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  http.get("http://localhost:8000/api/auth/me", () => {
-    return HttpResponse.json({ detail: "Not authenticated" }, { status: 401 });
+  http.get("http://localhost:8000/api/auth/me", ({ request }) => {
+    const auth = request.headers.get("Authorization");
+    if (!auth?.startsWith("Bearer ")) {
+      return HttpResponse.json({ detail: "Not authenticated" }, { status: 401 });
+    }
+    return HttpResponse.json({
+      id: mockUser.id,
+      email: mockUser.email,
+      first_name: mockUser.first_name,
+      last_name: mockUser.last_name,
+      role: mockUser.role,
+      team_id: mockUser.team_id,
+    });
   }),
 
   http.post("http://localhost:8000/api/auth/register", async ({ request }) => {
@@ -63,8 +78,15 @@ export const handlers = [
     );
   }),
 
-  http.post("http://localhost:8000/api/auth/refresh", () => {
-    return HttpResponse.json({ message: "Token refreshed successfully" });
+  http.post("http://localhost:8000/api/auth/refresh", async ({ request }) => {
+    const body = (await request.json()) as { refresh_token?: string };
+    if (body.refresh_token) {
+      return HttpResponse.json({
+        access_token: "mock-access-token-refreshed",
+        refresh_token: "mock-refresh-token-rotated",
+      });
+    }
+    return HttpResponse.json({ detail: "No refresh token provided" }, { status: 401 });
   }),
 
   http.post("http://localhost:8000/api/auth/forgot-password", () => {
