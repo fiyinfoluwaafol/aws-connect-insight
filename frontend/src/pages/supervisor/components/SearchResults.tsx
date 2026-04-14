@@ -31,6 +31,21 @@ function sentimentAccentClass(sentiment: Call['sentimentLabel']) {
   }
 }
 
+function formatResultsSummary(results: SearchResult): string {
+  const { total, page, pageSize, totalPages, calls } = results;
+  if (total === 0) {
+    return 'Found 0 calls';
+  }
+  if (calls.length === 0) {
+    return `${total} calls found · Page ${page} of ${totalPages}`;
+  }
+  const start = (page - 1) * pageSize + 1;
+  const end = (page - 1) * pageSize + calls.length;
+  const range =
+    start === end ? `Showing ${start} of ${total}` : `Showing ${start}–${end} of ${total}`;
+  return `${range} calls · Page ${page} of ${totalPages}`;
+}
+
 function SearchResultSkeleton() {
   return (
     <Card className="p-4 border-l-4 border-l-muted">
@@ -79,7 +94,7 @@ export function SearchResults({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          Found {results.total} calls (page {results.page} of {results.totalPages})
+          {formatResultsSummary(results)}
         </p>
         {results.totalPages > 1 && (
           <div className="flex gap-2">
