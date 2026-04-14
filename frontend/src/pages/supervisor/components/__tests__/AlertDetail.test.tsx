@@ -82,6 +82,7 @@ describe('AlertDetail', () => {
     );
 
     expect(screen.getByRole('status', { name: 'Loading affected calls' })).toBeInTheDocument();
+    expect(screen.queryByText('Affected Calls (2)')).not.toBeInTheDocument();
     expect(screen.queryByText('Loading related calls...')).not.toBeInTheDocument();
   });
 
@@ -103,7 +104,7 @@ describe('AlertDetail', () => {
       />
     );
 
-    expect(screen.getByText('Call Information')).toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Loading call information' })).toBeInTheDocument();
+    expect(screen.queryByText('Call Information')).not.toBeInTheDocument();
   });
 });

@@ -63,13 +63,13 @@ export function AlertDetail({
 
             {!isRecurringAlert && (isLoadingRelatedCalls || primaryCall) && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <h5 className="text-sm font-medium">Call Information</h5>
                 {isLoadingRelatedCalls ? (
                   <div
                     className="space-y-3"
                     role="status"
                     aria-label="Loading call information"
                   >
+                    <Skeleton className="h-4 w-28" />
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
@@ -88,6 +88,7 @@ export function AlertDetail({
                   </div>
                 ) : primaryCall ? (
                   <>
+                    <h5 className="text-sm font-medium">Call Information</h5>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
@@ -120,50 +121,61 @@ export function AlertDetail({
 
             {isRecurringAlert && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <h5 className="text-sm font-medium">
-                  Affected Calls
-                  {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
-                </h5>
                 {isLoadingRelatedCalls ? (
                   <div
-                    className="space-y-2"
+                    className="space-y-3"
                     role="status"
                     aria-label="Loading affected calls"
                   >
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div
-                        key={index}
-                        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3"
-                      >
-                        <Skeleton className="h-4 w-36" />
-                        <Skeleton className="h-6 w-16 rounded-full" />
-                      </div>
-                    ))}
+                    <Skeleton className="h-4 w-32" />
+                    <div className="space-y-2">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3"
+                        >
+                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="h-6 w-16 rounded-full" />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : relatedCalls.length > 0 ? (
-                  <div className="space-y-2">
-                    {relatedCalls.map((call) => (
-                      <Button
-                        key={call.id}
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-between"
-                        onClick={() => {
-                          onOpenCall(call.id);
-                          onClose();
-                        }}
-                      >
-                        <span className="truncate text-left">
-                          {call.agentName} · {new Date(call.startedAt).toLocaleDateString()}
-                        </span>
-                        <SentimentBadge sentiment={call.sentimentLabel} />
-                      </Button>
-                    ))}
-                  </div>
+                  <>
+                    <h5 className="text-sm font-medium">
+                      Affected Calls
+                      {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
+                    </h5>
+                    <div className="space-y-2">
+                      {relatedCalls.map((call) => (
+                        <Button
+                          key={call.id}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-between"
+                          onClick={() => {
+                            onOpenCall(call.id);
+                            onClose();
+                          }}
+                        >
+                          <span className="truncate text-left">
+                            {call.agentName} · {new Date(call.startedAt).toLocaleDateString()}
+                          </span>
+                          <SentimentBadge sentiment={call.sentimentLabel} />
+                        </Button>
+                      ))}
+                    </div>
+                  </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No contributing calls were found for this recurring alert.
-                  </p>
+                  <>
+                    <h5 className="text-sm font-medium">
+                      Affected Calls
+                      {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
+                    </h5>
+                    <p className="text-sm text-muted-foreground">
+                      No contributing calls were found for this recurring alert.
+                    </p>
+                  </>
                 )}
               </div>
             )}
