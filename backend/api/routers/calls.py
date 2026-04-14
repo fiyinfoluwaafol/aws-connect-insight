@@ -2,7 +2,7 @@
 
 import logging
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -81,6 +81,7 @@ class CallDetailResponse(BaseModel):
     sentiment_label: str | None = None
     is_resolved: bool | None = None
     topics: list[str]
+    key_moves: list[str] = []
     keywords: list[str] = []
     summary: str | None = None
     transcript: list[CallDetailTranscriptTurn]
@@ -307,6 +308,8 @@ def get_call_detail(
 
         topics = analysis.get("topics", []) if analysis else []
         keywords = analysis.get("keywords", []) if analysis else []
+        key_moves_raw = analysis.get("key_moves") if analysis else None
+        key_moves = list(key_moves_raw) if isinstance(key_moves_raw, list) else []
 
         return CallDetailResponse(
             id=call["id"],
@@ -321,6 +324,7 @@ def get_call_detail(
             sentiment_label=analysis.get("sentiment_label") if analysis else None,
             is_resolved=analysis.get("is_resolved") if analysis else None,
             topics=topics,
+            key_moves=key_moves,
             keywords=keywords,
             summary=analysis.get("summary") if analysis else None,
             transcript=[CallDetailTranscriptTurn(**turn) for turn in transcript],
@@ -363,12 +367,8 @@ def simulate_call(
     agent_id = current_user.get("id")
     team_id = _get_user_team_id(current_user)
 
-    # Generate random call data within the last 6 days (to show in performance tab)
-    call_time = datetime.now() - timedelta(
-        days=random.randint(0, 6),  # Last 7 days only
-        hours=random.randint(0, 8),
-        minutes=random.randint(0, 59),
-    )
+    # UTC so clients parse unambiguously; browsers show local time via toLocaleString().
+    call_time = datetime.now(timezone.utc)
     duration = random.randint(120, 1200)  # 2-20 minutes
 
     try:

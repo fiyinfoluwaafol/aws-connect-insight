@@ -261,7 +261,7 @@ export function CallDetailDrawer({
                   ))}
                 </div>
               ) : transcript && transcript.length > 0 ? (
-                <div className="space-y-3">
+                <div className="max-h-96 space-y-3 overflow-y-auto pr-2">
                   {transcript.map((turn, idx) => {
                     const agent = isAgentSpeaker(turn.speaker);
                     return (

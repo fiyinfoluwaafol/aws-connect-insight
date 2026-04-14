@@ -4,13 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Search, Download, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, Download, ChevronDown, Loader2, Check } from 'lucide-react';
 import type { Agent } from '@/lib/mock-data';
 
 export interface SearchFiltersProps {
@@ -100,21 +99,31 @@ export function SearchFilters({
                 </div>
               </div>
               <div className="max-h-64 overflow-y-auto p-2">
-                {agents.map((agent) => (
-                  <label
-                    key={agent.id}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
-                  >
-                    <Checkbox
-                      checked={selectedAgentIds.includes(agent.id)}
-                      onCheckedChange={() => onAgentToggle(agent.id)}
-                    />
-                    <span className="text-sm">{agent.name}</span>
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {agent.team}
-                    </Badge>
-                  </label>
-                ))}
+                {agents.map((agent) => {
+                  const isSelected = selectedAgentIds.includes(agent.id);
+
+                  return (
+                    <button
+                      key={agent.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => onAgentToggle(agent.id)}
+                      className={`flex w-full items-center gap-2 rounded-md border p-2 text-left transition-colors ${
+                        isSelected
+                          ? 'border-primary/50 bg-primary/10 text-foreground'
+                          : 'border-transparent hover:border-border hover:bg-muted'
+                      }`}
+                    >
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                        {isSelected && <Check className="h-4 w-4 text-primary" aria-hidden />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{agent.name}</span>
+                      <Badge variant={isSelected ? 'default' : 'secondary'} className="text-xs">
+                        {agent.team}
+                      </Badge>
+                    </button>
+                  );
+                })}
               </div>
             </PopoverContent>
           </Popover>

@@ -45,25 +45,6 @@ interface CallNote {
   createdAt: string;
 }
 
-interface AgentCall {
-  id: string;
-  callId: string;
-  agentId: string;
-  createdAt: string;
-  summary: string;
-  sentimentScore: number;
-  sentimentLabel: 'positive' | 'neutral' | 'negative';
-  topics: string[];
-  keyMoves: string[];
-  isResolved: boolean;
-  keywords: string[];
-  transcript: Array<{
-    speaker: string;
-    text: string;
-    timestamp?: string;
-  }>;
-}
-
 interface Settings {
   dataRetentionDays: number;
 }
@@ -94,9 +75,6 @@ interface AppState {
   addAgentTip: (tip: Omit<AgentTip, 'id' | 'createdAt' | 'dismissed' | 'bookmarked' | 'helpful'>) => void;
   updateAgentTip: (tipId: string, patch: Partial<AgentTip>) => void;
 
-  agentCalls: AgentCall[];
-  addAgentCall: (call: Omit<AgentCall, 'id' | 'createdAt'>) => void;
-  
   // Settings
   settings: Settings;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -175,18 +153,6 @@ export const useAppStore = create<AppState>()(
             },
           ],
         })),
-      agentCalls: [],
-      addAgentCall: (call) =>
-        set((state) => ({
-          agentCalls: [
-            {
-              ...call,
-              id: `agent-call-${Date.now()}`,
-              createdAt: new Date().toISOString(),
-            },
-            ...state.agentCalls,
-          ],
-        })),
       updateAgentTip: (tipId, patch) =>
         set((state) => ({
           agentTips: state.agentTips.map((t) =>
@@ -221,13 +187,19 @@ export const useAppStore = create<AppState>()(
           dailyBriefs: [],
           sentEmails: [],
           agentTips: [],
-          agentCalls: [],
           settings: defaultSettings,
           notifications: [],
         }),
     }),
     {
       name: 'app-storage',
+      merge: (persistedState, currentState) => {
+        if (!persistedState || typeof persistedState !== 'object') {
+          return currentState;
+        }
+        const { agentCalls: _removed, ...rest } = persistedState as Record<string, unknown>;
+        return { ...currentState, ...rest } as AppState;
+      },
     }
   )
 );

@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAppStore } from '@/stores/app-store';
 import { callsApi, type SimulateCallResponse, type CallSearchItem } from '@/lib/api';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SentimentBadge } from '@/components/SentimentBadge';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { pageShellClassName } from '@/lib/page-animation';
+import { parseBackendTimestamp } from '@/lib/datetime';
 import { toast } from '@/hooks/use-toast';
 import {
   Lightbulb,
@@ -25,6 +27,33 @@ import {
 } from 'lucide-react';
 
 type TranscriptTurn = SimulateCallResponse['transcript'][number];
+
+function RecentCallsListSkeleton() {
+  return (
+    <div className="space-y-4" aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <Card key={i} className="p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-4 w-44" />
+              </div>
+              <Skeleton className="h-4 w-full max-w-xl" />
+              <Skeleton className="h-4 w-full max-w-md" />
+              <div className="flex flex-wrap gap-2">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-5 w-20" />
+              </div>
+            </div>
+            <Skeleton className="h-9 w-28 shrink-0" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -43,14 +72,7 @@ const liveCallStages = [
 
 export default function AgentHome() {
   const { user } = useAuthStore();
-  const {
-    agentTips,
-    addAgentTip,
-    updateAgentTip,
-    addNotification,
-    addAgentCall,
-    agentCalls,
-  } = useAppStore();
+  const { agentTips, addAgentTip, updateAgentTip, addNotification } = useAppStore();
   const [expandedTips, setExpandedTips] = useState<string[]>([]);
   const [expandedCalls, setExpandedCalls] = useState<string[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -64,6 +86,7 @@ export default function AgentHome() {
     keywords: string[];
   }>>({});
   const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set());
+  const [recentCallsLoading, setRecentCallsLoading] = useState(() => Boolean(user?.id));
   const [liveCallProcessing, setLiveCallProcessing] = useState<{
     callSid: string;
     stage: string;
@@ -125,6 +148,7 @@ export default function AgentHome() {
 
   const fetchRecentCalls = useCallback(async () => {
     if (!user?.id) return;
+    setRecentCallsLoading(true);
     try {
       const result = await callsApi.searchCalls({
         agent_id: user.id,
@@ -133,8 +157,18 @@ export default function AgentHome() {
       });
       setApiCalls(result.calls);
     } catch {
-      // Silently fail — local calls still display
+      // Silently fail — keep previous list if any
+    } finally {
+      setRecentCallsLoading(false);
     }
+  }, [user?.id]);
+
+  useLayoutEffect(() => {
+    if (!user?.id) {
+      setRecentCallsLoading(false);
+      return;
+    }
+    setRecentCallsLoading(true);
   }, [user?.id]);
 
   useEffect(() => {
@@ -146,40 +180,29 @@ export default function AgentHome() {
     [agentTips, user?.id]
   );
 
-  // Merge local (simulated) calls with API calls, deduplicate by callId
+  /** Recent calls from the API (live and simulated are persisted server-side). */
   const userCalls = useMemo(() => {
-    const localCalls = agentCalls.filter((call) => call.agentId === user?.id);
-    const localCallIds = new Set(localCalls.map((c) => c.callId));
+    const rows = apiCalls.map((c) => ({
+      callId: c.id,
+      agentId: c.agent_id,
+      createdAt: c.started_at ?? new Date().toISOString(),
+      summary: c.summary ?? '',
+      sentimentScore: c.sentiment_score ?? 0,
+      sentimentLabel: (c.sentiment_label ?? 'neutral') as 'positive' | 'neutral' | 'negative',
+      topics: c.topics ?? [],
+      keyMoves: callDetails[c.id]?.keyMoves ?? [],
+      isResolved: false,
+      keywords: [] as string[],
+      transcript: [] as Array<{ speaker: string; text: string; timestamp?: string }>,
+    }));
 
-    // Convert API calls that aren't already in local store
-    const remoteCalls = apiCalls
-      .filter((c) => !localCallIds.has(c.id))
-      .map((c) => ({
-        id: c.id,
-        callId: c.id,
-        agentId: c.agent_id,
-        createdAt: c.started_at ?? new Date().toISOString(),
-        summary: c.summary ?? '',
-        sentimentScore: c.sentiment_score ?? 0,
-        sentimentLabel: (c.sentiment_label ?? 'neutral') as 'positive' | 'neutral' | 'negative',
-        topics: c.topics ?? [],
-        keyMoves: [] as string[],
-        isResolved: false,
-        keywords: [] as string[],
-        transcript: [] as Array<{ speaker: string; text: string; timestamp?: string }>,
-        source: 'api' as const,
-      }));
+    rows.sort(
+      (a, b) =>
+        parseBackendTimestamp(b.createdAt).getTime() - parseBackendTimestamp(a.createdAt).getTime()
+    );
 
-    const merged = [
-      ...localCalls.map((c) => ({ ...c, source: 'local' as const })),
-      ...remoteCalls,
-    ];
-
-    // Sort by most recent first
-    merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-    return merged;
-  }, [agentCalls, apiCalls, user?.id]);
+    return rows;
+  }, [apiCalls, callDetails]);
 
   const getKeywordList = (keywords: Record<string, boolean> | undefined) =>
     Object.entries(keywords ?? {})
@@ -192,14 +215,13 @@ export default function AgentHome() {
     );
   };
 
-  const toggleCallExpand = async (callId: string, source: 'local' | 'api') => {
+  const toggleCallExpand = async (callId: string) => {
     const isExpanding = !expandedCalls.includes(callId);
     setExpandedCalls((prev) =>
       prev.includes(callId) ? prev.filter((id) => id !== callId) : [...prev, callId]
     );
 
-    // Fetch full detail for API calls when expanding (to get transcript, key moves, etc.)
-    if (isExpanding && source === 'api' && !callDetails[callId]) {
+    if (isExpanding && !callDetails[callId]) {
       setLoadingDetails((prev) => new Set(prev).add(callId));
       try {
         const detail = await callsApi.getCallById(callId);
@@ -207,7 +229,7 @@ export default function AgentHome() {
           ...prev,
           [callId]: {
             transcript: detail.transcript ?? [],
-            keyMoves: [], // Not in detail response currently
+            keyMoves: detail.key_moves ?? [],
             isResolved: detail.is_resolved ?? false,
             keywords: detail.keywords ?? [],
           },
@@ -232,24 +254,6 @@ export default function AgentHome() {
   };
 
   useEffect(() => () => clearSimulateTimer(), []);
-
-  const normalizeTurn = (turn: unknown): TranscriptTurn => {
-    if (
-      turn &&
-      typeof turn === 'object' &&
-      'speaker' in turn &&
-      'text' in turn &&
-      typeof (turn as { speaker: unknown; text: unknown }).speaker === 'string' &&
-      typeof (turn as { speaker: unknown; text: unknown }).text === 'string'
-    ) {
-      const speaker = (turn as { speaker: string; text: string }).speaker;
-      const text = (turn as { speaker: string; text: string }).text;
-      const timestamp = (turn as { speaker: string; text: string; timestamp?: string }).timestamp;
-      return { speaker, text, timestamp };
-    }
-
-    return { speaker: 'Unknown', text: String(turn) };
-  };
 
   const handleSimulateCallEnd = async () => {
     if (isSimulating) {
@@ -277,29 +281,50 @@ export default function AgentHome() {
     try {
       const result = await callsApi.simulateCall();
 
-      const keyMoves = Array.isArray(result.key_moves) ? result.key_moves : [];
-      const rawTranscript = Array.isArray(result.transcript)
-        ? result.transcript
-        : [];
-      const transcript = rawTranscript.map(normalizeTurn);
-      const keywords = getKeywordList(result.keywords);
+      const agentDisplayName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+      setApiCalls((prev) => {
+        const item: CallSearchItem = {
+          id: result.call_id,
+          agent_id: user.id,
+          agent_name: agentDisplayName || null,
+          started_at: new Date().toISOString(),
+          duration_seconds: null,
+          sentiment_score: result.sentiment_score,
+          sentiment_label: result.sentiment_label,
+          topics: result.topics,
+          summary: result.summary,
+        };
+        const without = prev.filter((c) => c.id !== item.id);
+        const merged = [item, ...without];
+        merged.sort(
+          (a, b) =>
+            parseBackendTimestamp(b.started_at).getTime() -
+            parseBackendTimestamp(a.started_at).getTime()
+        );
+        return merged.slice(0, 5);
+      });
+
+      const simKeyMoves = Array.isArray(result.key_moves) ? result.key_moves : [];
+      const simKeywords = getKeywordList(result.keywords);
+      setCallDetails((prev) => ({
+        ...prev,
+        [result.call_id]: {
+          transcript: (result.transcript ?? []).map((t) => ({
+            speaker: t.speaker,
+            text: t.text,
+            ...(t.timestamp ? { timestamp: t.timestamp } : {}),
+          })),
+          keyMoves: simKeyMoves,
+          isResolved: result.is_resolved,
+          keywords: simKeywords,
+        },
+      }));
+
+      const keyMoves = simKeyMoves;
       const shouldCreateTip =
         result.sentiment_label === 'negative' ||
         result.sentiment_score < -0.3 ||
         result.is_resolved === false;
-
-      addAgentCall({
-        callId: result.call_id,
-        agentId: user.id,
-        summary: result.summary,
-        sentimentScore: result.sentiment_score,
-        sentimentLabel: result.sentiment_label,
-        topics: result.topics,
-        keyMoves,
-        isResolved: result.is_resolved,
-        keywords,
-        transcript,
-      });
 
       if (shouldCreateTip) {
         const tips: string[] = [];
@@ -318,8 +343,8 @@ export default function AgentHome() {
           `Resolved: ${result.is_resolved ? 'Yes' : 'No'}`,
           `Topics: ${result.topics.join(', ') || 'No topics detected'}`,
         ];
-        if (keywords.length > 0) {
-          reasonParts.push(`Matched terms: ${keywords.join(', ')}`);
+        if (simKeywords.length > 0) {
+          reasonParts.push(`Matched terms: ${simKeywords.join(', ')}`);
         }
 
         addAgentTip({
@@ -354,7 +379,7 @@ export default function AgentHome() {
   };
 
   const renderTranscript = (transcript: TranscriptTurn[]) => (
-    <div className="space-y-2">
+    <div className="max-h-80 space-y-2 overflow-y-auto pr-2">
       {transcript.map((turn, index) => {
         const isAgent = turn.speaker.toLowerCase() === 'agent';
         return (
@@ -528,9 +553,19 @@ export default function AgentHome() {
           </Card>
         )}
 
-        <section>
-          <h3 className="text-lg font-semibold mb-4">Recent Calls</h3>
-          {userCalls.length === 0 ? (
+        <section aria-busy={recentCallsLoading}>
+          <div className="mb-4 flex items-center gap-3">
+            <h3 className="text-lg font-semibold">Recent Calls</h3>
+            {recentCallsLoading && userCalls.length > 0 ? (
+              <span className="inline-flex flex-1 items-center gap-2 sm:max-w-[min(100%,12rem)]" aria-live="polite">
+                <span className="sr-only">Updating recent calls</span>
+                <Skeleton className="h-3 w-full flex-1" />
+              </span>
+            ) : null}
+          </div>
+          {recentCallsLoading && userCalls.length === 0 ? (
+            <RecentCallsListSkeleton />
+          ) : userCalls.length === 0 ? (
             <EmptyState
               icon={Phone}
               title="No recent calls"
@@ -551,17 +586,15 @@ export default function AgentHome() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={call.source === 'api' ? 'default' : 'outline'}>
-                            {call.source === 'api' ? 'Live Call' : 'Simulated'}
-                          </Badge>
+                          <Badge variant="secondary">Recorded call</Badge>
                           <SentimentBadge sentiment={call.sentimentLabel} score={call.sentimentScore} />
-                          {(call.source === 'local' || callDetails[call.callId]) && (
-                            <Badge variant={(callDetails[call.callId]?.isResolved ?? call.isResolved) ? 'secondary' : 'destructive'}>
-                              {(callDetails[call.callId]?.isResolved ?? call.isResolved) ? 'Resolved' : 'Unresolved'}
+                          {callDetails[call.callId] ? (
+                            <Badge variant={callDetails[call.callId].isResolved ? 'secondary' : 'destructive'}>
+                              {callDetails[call.callId].isResolved ? 'Resolved' : 'Unresolved'}
                             </Badge>
-                          )}
+                          ) : null}
                           <span className="text-xs text-muted-foreground">
-                            {new Date(call.createdAt).toLocaleString()}
+                            {parseBackendTimestamp(call.createdAt).toLocaleString()}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">{call.summary}</p>
@@ -574,7 +607,7 @@ export default function AgentHome() {
                         </div>
                       </div>
 
-                      <Button size="sm" variant="outline" onClick={() => toggleCallExpand(call.callId, call.source)}>
+                      <Button size="sm" variant="outline" onClick={() => toggleCallExpand(call.callId)}>
                         {isExpanded ? 'Hide details' : 'View details'}
                       </Button>
                     </div>
