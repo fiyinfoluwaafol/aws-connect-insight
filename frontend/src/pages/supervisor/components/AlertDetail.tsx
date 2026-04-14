@@ -13,6 +13,13 @@ import { AlertTriangle, CheckCircle, User, Clock } from 'lucide-react';
 import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
 
 const MIN_RELATED_CALLS_SKELETON_MS = 250;
+const RELATED_CALLS_CROSSFADE_MS = 650;
+const LOADED_RELATED_CALLS_CLASSNAME =
+  'space-y-3 animate-in fade-in-0 duration-700 ease-out';
+const CROSSFADE_SKELETON_CLASSNAME =
+  'space-y-3 animate-out fade-out-0 duration-500 ease-out';
+
+type LoadingTransitionPhase = 'loading' | 'crossfading' | 'loaded';
 
 export interface AlertDetailProps {
   alert: SupervisorAlertViewModel | null;
@@ -36,10 +43,13 @@ export function AlertDetail({
   severityClassName,
 }: AlertDetailProps) {
   const primaryCall = relatedCalls[0];
-  const showRelatedCallsSkeleton = useMinimumLoadingState(
+  const relatedCallsLoadingPhase = useLoadingTransitionPhase(
     isLoadingRelatedCalls,
-    MIN_RELATED_CALLS_SKELETON_MS
+    MIN_RELATED_CALLS_SKELETON_MS,
+    RELATED_CALLS_CROSSFADE_MS
   );
+  const showRelatedCallsSkeleton = relatedCallsLoadingPhase !== 'loaded';
+  const showRelatedCallsContent = relatedCallsLoadingPhase !== 'loading';
   const isRecurringAlert =
     alert?.type === 'recurring_topic' || alert?.type === 'recurring_keyword';
 
@@ -70,119 +80,60 @@ export function AlertDetail({
 
             {!isRecurringAlert && (showRelatedCallsSkeleton || primaryCall) && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {showRelatedCallsSkeleton ? (
-                  <div
-                    className="space-y-3"
-                    role="status"
-                    aria-label="Loading call information"
-                  >
-                    <Skeleton className="h-4 w-28" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <Skeleton className="h-4 w-24" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <Skeleton className="h-4 w-16" />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-6 w-16 rounded-full" />
-                    </div>
-                    <Skeleton className="h-9 w-full" />
+                {showRelatedCallsSkeleton && showRelatedCallsContent ? (
+                  <div className="grid">
+                    <CallInformationSkeleton
+                      className={`${CROSSFADE_SKELETON_CLASSNAME} col-start-1 row-start-1`}
+                      ariaHidden
+                    />
+                    {primaryCall ? (
+                      <CallInformationContent
+                        call={primaryCall}
+                        onOpenCall={onOpenCall}
+                        onClose={onClose}
+                        className={`${LOADED_RELATED_CALLS_CLASSNAME} col-start-1 row-start-1`}
+                      />
+                    ) : null}
                   </div>
+                ) : showRelatedCallsSkeleton ? (
+                  <CallInformationSkeleton />
                 ) : primaryCall ? (
-                  <>
-                    <h5 className="text-sm font-medium">Call Information</h5>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        {primaryCall.agentName}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        {Math.floor(primaryCall.durationSec / 60)}m {primaryCall.durationSec % 60}s
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Sentiment:</span>
-                      <SentimentBadge sentiment={primaryCall.sentimentLabel} />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        onOpenCall(primaryCall.id);
-                        onClose();
-                      }}
-                    >
-                      View Full Call Details
-                    </Button>
-                  </>
+                  <CallInformationContent
+                    call={primaryCall}
+                    onOpenCall={onOpenCall}
+                    onClose={onClose}
+                    className={LOADED_RELATED_CALLS_CLASSNAME}
+                  />
                 ) : null}
               </div>
             )}
 
             {isRecurringAlert && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {showRelatedCallsSkeleton ? (
-                  <div
-                    className="space-y-3"
-                    role="status"
-                    aria-label="Loading affected calls"
-                  >
-                    <Skeleton className="h-4 w-32" />
-                    <div className="space-y-2">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3"
-                        >
-                          <Skeleton className="h-4 w-36" />
-                          <Skeleton className="h-6 w-16 rounded-full" />
-                        </div>
-                      ))}
-                    </div>
+                {showRelatedCallsSkeleton && showRelatedCallsContent ? (
+                  <div className="grid">
+                    <AffectedCallsSkeleton
+                      className={`${CROSSFADE_SKELETON_CLASSNAME} col-start-1 row-start-1`}
+                      ariaHidden
+                    />
+                    <AffectedCallsContent
+                      alert={alert}
+                      relatedCalls={relatedCalls}
+                      onOpenCall={onOpenCall}
+                      onClose={onClose}
+                      className={`${LOADED_RELATED_CALLS_CLASSNAME} col-start-1 row-start-1`}
+                    />
                   </div>
-                ) : relatedCalls.length > 0 ? (
-                  <>
-                    <h5 className="text-sm font-medium">
-                      Affected Calls
-                      {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
-                    </h5>
-                    <div className="space-y-2">
-                      {relatedCalls.map((call) => (
-                        <Button
-                          key={call.id}
-                          variant="outline"
-                          size="sm"
-                          className="w-full justify-between"
-                          onClick={() => {
-                            onOpenCall(call.id);
-                            onClose();
-                          }}
-                        >
-                          <span className="truncate text-left">
-                            {call.agentName} · {new Date(call.startedAt).toLocaleDateString()}
-                          </span>
-                          <SentimentBadge sentiment={call.sentimentLabel} />
-                        </Button>
-                      ))}
-                    </div>
-                  </>
+                ) : showRelatedCallsSkeleton ? (
+                  <AffectedCallsSkeleton />
                 ) : (
-                  <>
-                    <h5 className="text-sm font-medium">
-                      Affected Calls
-                      {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
-                    </h5>
-                    <p className="text-sm text-muted-foreground">
-                      No contributing calls were found for this recurring alert.
-                    </p>
-                  </>
+                  <AffectedCallsContent
+                    alert={alert}
+                    relatedCalls={relatedCalls}
+                    onOpenCall={onOpenCall}
+                    onClose={onClose}
+                    className={LOADED_RELATED_CALLS_CLASSNAME}
+                  />
                 )}
               </div>
             )}
@@ -213,21 +164,194 @@ export function AlertDetail({
   );
 }
 
-function useMinimumLoadingState(isLoading: boolean, minimumMs: number) {
-  const [showLoading, setShowLoading] = useState(isLoading);
+function CallInformationSkeleton({
+  className = 'space-y-3',
+  ariaHidden = false,
+}: {
+  className?: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <div
+      className={className}
+      role={ariaHidden ? undefined : 'status'}
+      aria-label={ariaHidden ? undefined : 'Loading call information'}
+      aria-hidden={ariaHidden || undefined}
+    >
+      <Skeleton className="h-4 w-28" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-6 w-16 rounded-full" />
+      </div>
+      <Skeleton className="h-9 w-full" />
+    </div>
+  );
+}
+
+function CallInformationContent({
+  call,
+  onOpenCall,
+  onClose,
+  className,
+}: {
+  call: SupervisorCallViewModel;
+  onOpenCall: (callId: string) => void;
+  onClose: () => void;
+  className: string;
+}) {
+  return (
+    <div className={className}>
+      <h5 className="text-sm font-medium">Call Information</h5>
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="flex items-center gap-2">
+          <User className="h-4 w-4 text-muted-foreground" />
+          {call.agentName}
+        </div>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          {Math.floor(call.durationSec / 60)}m {call.durationSec % 60}s
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-muted-foreground">Sentiment:</span>
+        <SentimentBadge sentiment={call.sentimentLabel} />
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          onOpenCall(call.id);
+          onClose();
+        }}
+      >
+        View Full Call Details
+      </Button>
+    </div>
+  );
+}
+
+function AffectedCallsSkeleton({
+  className = 'space-y-3',
+  ariaHidden = false,
+}: {
+  className?: string;
+  ariaHidden?: boolean;
+}) {
+  return (
+    <div
+      className={className}
+      role={ariaHidden ? undefined : 'status'}
+      aria-label={ariaHidden ? undefined : 'Loading affected calls'}
+      aria-hidden={ariaHidden || undefined}
+    >
+      <Skeleton className="h-4 w-32" />
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3"
+          >
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AffectedCallsContent({
+  alert,
+  relatedCalls,
+  onOpenCall,
+  onClose,
+  className,
+}: {
+  alert: SupervisorAlertViewModel;
+  relatedCalls: SupervisorCallViewModel[];
+  onOpenCall: (callId: string) => void;
+  onClose: () => void;
+  className: string;
+}) {
+  return (
+    <div className={className}>
+      <h5 className="text-sm font-medium">
+        Affected Calls
+        {alert.matchedCount ? ` (${alert.matchedCount})` : ''}
+      </h5>
+      {relatedCalls.length > 0 ? (
+        <div className="space-y-2">
+          {relatedCalls.map((call) => (
+            <Button
+              key={call.id}
+              variant="outline"
+              size="sm"
+              className="w-full justify-between"
+              onClick={() => {
+                onOpenCall(call.id);
+                onClose();
+              }}
+            >
+              <span className="truncate text-left">
+                {call.agentName} · {new Date(call.startedAt).toLocaleDateString()}
+              </span>
+              <SentimentBadge sentiment={call.sentimentLabel} />
+            </Button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          No contributing calls were found for this recurring alert.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function useLoadingTransitionPhase(
+  isLoading: boolean,
+  minimumMs: number,
+  crossfadeMs: number
+) {
+  const [phase, setPhase] = useState<LoadingTransitionPhase>(
+    isLoading ? 'loading' : 'loaded'
+  );
 
   useEffect(() => {
     if (isLoading) {
-      setShowLoading(true);
+      setPhase('loading');
       return undefined;
     }
 
-    const timeout = window.setTimeout(() => {
-      setShowLoading(false);
+    if (phase === 'loaded') {
+      return undefined;
+    }
+
+    if (phase === 'crossfading') {
+      const crossfadeTimeout = window.setTimeout(() => {
+        setPhase('loaded');
+      }, crossfadeMs);
+
+      return () => window.clearTimeout(crossfadeTimeout);
+    }
+
+    const minimumTimeout = window.setTimeout(() => {
+      setPhase('crossfading');
     }, minimumMs);
 
-    return () => window.clearTimeout(timeout);
-  }, [isLoading, minimumMs]);
+    return () => window.clearTimeout(minimumTimeout);
+  }, [crossfadeMs, isLoading, minimumMs, phase]);
 
-  return showLoading;
+  return phase;
 }
