@@ -130,10 +130,11 @@ def test_simulate_call_returns_enriched_payload(
     monkeypatch.setattr(calls_router, "add_keywords_to_analysis", add_keywords_mock)
     monkeypatch.setattr(calls_router, "get_team_by_id", get_team_mock)
     monkeypatch.setattr(calls_router, "evaluate_alert_rules_for_call", evaluate_alerts_mock)
+    # Simulate uses randint only for duration_seconds and recording URL id (started_at is now "now").
     monkeypatch.setattr(
         calls_router.random,
         "randint",
-        MagicMock(side_effect=[2, 3, 15, 180, 99999]),
+        MagicMock(side_effect=[180, 99999]),
     )
 
     response = authenticated_agent_client.post("/api/calls/simulate")
@@ -225,7 +226,8 @@ def test_simulate_call_returns_502_when_analysis_fails(
     )
     create_call_mock = MagicMock()
     monkeypatch.setattr(calls_router, "create_call", create_call_mock)
-    monkeypatch.setattr(calls_router.random, "randint", MagicMock(side_effect=[1, 2, 3, 180]))
+    # Analysis fails before duration/recording randints run; mock is harmless if unused.
+    monkeypatch.setattr(calls_router.random, "randint", MagicMock(side_effect=[180, 99999]))
 
     response = authenticated_agent_client.post("/api/calls/simulate")
 
@@ -291,7 +293,7 @@ def test_simulate_call_returns_500_on_database_failure(
     monkeypatch.setattr(
         calls_router.random,
         "randint",
-        MagicMock(side_effect=[1, 2, 3, 180, 12345]),
+        MagicMock(side_effect=[180, 12345]),
     )
 
     response = authenticated_agent_client.post("/api/calls/simulate")
@@ -358,7 +360,7 @@ def test_simulate_call_returns_success_when_alert_evaluation_fails(
     monkeypatch.setattr(
         calls_router.random,
         "randint",
-        MagicMock(side_effect=[2, 3, 15, 180, 99999]),
+        MagicMock(side_effect=[180, 99999]),
     )
 
     response = authenticated_agent_client.post("/api/calls/simulate")
