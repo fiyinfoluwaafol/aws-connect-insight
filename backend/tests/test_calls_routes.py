@@ -413,6 +413,7 @@ def test_get_call_detail_returns_call_for_same_team(
                 "sentiment_label": "negative",
                 "is_resolved": False,
                 "topics": ["refund"],
+                "key_moves": ["Empathize", "Offer resolution"],
             }
         ),
     )
@@ -435,6 +436,7 @@ def test_get_call_detail_returns_call_for_same_team(
         "sentiment_label": "negative",
         "is_resolved": False,
         "topics": ["refund"],
+        "key_moves": ["Empathize", "Offer resolution"],
         "summary": "Customer requested a refund.",
         "has_open_alert": True,
         "open_alert_id": "alert-1",

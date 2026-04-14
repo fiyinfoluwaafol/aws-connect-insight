@@ -528,6 +528,8 @@ export interface SupervisorCallDetail {
   sentiment_label: 'positive' | 'neutral' | 'negative' | null;
   is_resolved: boolean | null;
   topics: string[];
+  /** Present when analysis includes coaching key moves (same source as simulate `key_moves`). */
+  key_moves?: string[];
   keywords?: string[];
   summary: string | null;
   has_open_alert: boolean;

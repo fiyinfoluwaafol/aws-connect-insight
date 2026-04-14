@@ -190,7 +190,7 @@ export default function AgentHome() {
       sentimentScore: c.sentiment_score ?? 0,
       sentimentLabel: (c.sentiment_label ?? 'neutral') as 'positive' | 'neutral' | 'negative',
       topics: c.topics ?? [],
-      keyMoves: [] as string[],
+      keyMoves: callDetails[c.id]?.keyMoves ?? [],
       isResolved: false,
       keywords: [] as string[],
       transcript: [] as Array<{ speaker: string; text: string; timestamp?: string }>,
@@ -202,7 +202,7 @@ export default function AgentHome() {
     );
 
     return rows;
-  }, [apiCalls]);
+  }, [apiCalls, callDetails]);
 
   const getKeywordList = (keywords: Record<string, boolean> | undefined) =>
     Object.entries(keywords ?? {})
@@ -229,7 +229,7 @@ export default function AgentHome() {
           ...prev,
           [callId]: {
             transcript: detail.transcript ?? [],
-            keyMoves: [], // Not in detail response currently
+            keyMoves: detail.key_moves ?? [],
             isResolved: detail.is_resolved ?? false,
             keywords: detail.keywords ?? [],
           },
@@ -304,8 +304,23 @@ export default function AgentHome() {
         return merged.slice(0, 5);
       });
 
-      const keyMoves = Array.isArray(result.key_moves) ? result.key_moves : [];
-      const keywords = getKeywordList(result.keywords);
+      const simKeyMoves = Array.isArray(result.key_moves) ? result.key_moves : [];
+      const simKeywords = getKeywordList(result.keywords);
+      setCallDetails((prev) => ({
+        ...prev,
+        [result.call_id]: {
+          transcript: (result.transcript ?? []).map((t) => ({
+            speaker: t.speaker,
+            text: t.text,
+            ...(t.timestamp ? { timestamp: t.timestamp } : {}),
+          })),
+          keyMoves: simKeyMoves,
+          isResolved: result.is_resolved,
+          keywords: simKeywords,
+        },
+      }));
+
+      const keyMoves = simKeyMoves;
       const shouldCreateTip =
         result.sentiment_label === 'negative' ||
         result.sentiment_score < -0.3 ||
@@ -328,8 +343,8 @@ export default function AgentHome() {
           `Resolved: ${result.is_resolved ? 'Yes' : 'No'}`,
           `Topics: ${result.topics.join(', ') || 'No topics detected'}`,
         ];
-        if (keywords.length > 0) {
-          reasonParts.push(`Matched terms: ${keywords.join(', ')}`);
+        if (simKeywords.length > 0) {
+          reasonParts.push(`Matched terms: ${simKeywords.join(', ')}`);
         }
 
         addAgentTip({
