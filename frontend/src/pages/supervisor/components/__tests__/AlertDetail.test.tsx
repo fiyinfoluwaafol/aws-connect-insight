@@ -3,23 +3,33 @@ import { render, screen } from '@testing-library/react';
 import { AlertDetail } from '../AlertDetail';
 
 describe('AlertDetail', () => {
+  const baseAlert = {
+    id: 'alert-1',
+    type: 'recurring_keyword' as const,
+    callId: null,
+    createdAt: '2026-04-02T12:00:00Z',
+    ruleId: 'rule-1',
+    ruleLabel: 'Recurring keyword detected',
+    severity: 'high' as const,
+    status: 'open' as const,
+    issue: 'Keyword "refund" appeared across multiple calls.',
+    matchedValue: 'refund',
+    matchedCount: 2,
+    windowDays: 7,
+  };
+
+  const baseProps = {
+    onClose: vi.fn(),
+    onOpenCall: vi.fn(),
+    onCloseAlert: vi.fn(),
+    onReopenAlert: vi.fn(),
+    severityClassName: () => 'severity',
+  };
+
   it('renders affected calls for recurring alerts', () => {
     render(
       <AlertDetail
-        alert={{
-          id: 'alert-1',
-          type: 'recurring_keyword',
-          callId: null,
-          createdAt: '2026-04-02T12:00:00Z',
-          ruleId: 'rule-1',
-          ruleLabel: 'Recurring keyword detected',
-          severity: 'high',
-          status: 'open',
-          issue: 'Keyword "refund" appeared across multiple calls.',
-          matchedValue: 'refund',
-          matchedCount: 2,
-          windowDays: 7,
-        }}
+        alert={baseAlert}
         relatedCalls={[
           {
             id: 'call-1',
@@ -52,16 +62,48 @@ describe('AlertDetail', () => {
             openAlertId: null,
           },
         ]}
-        onClose={vi.fn()}
-        onOpenCall={vi.fn()}
-        onCloseAlert={vi.fn()}
-        onReopenAlert={vi.fn()}
-        severityClassName={() => 'severity'}
+        {...baseProps}
       />
     );
 
     expect(screen.getByText('Affected Calls (2)')).toBeInTheDocument();
     expect(screen.getByText(/Ada Lovelace/)).toBeInTheDocument();
     expect(screen.getByText(/Grace Hopper/)).toBeInTheDocument();
+  });
+
+  it('renders a skeleton while recurring alert calls load', () => {
+    render(
+      <AlertDetail
+        alert={baseAlert}
+        relatedCalls={[]}
+        isLoadingRelatedCalls
+        {...baseProps}
+      />
+    );
+
+    expect(screen.getByRole('status', { name: 'Loading affected calls' })).toBeInTheDocument();
+    expect(screen.queryByText('Loading related calls...')).not.toBeInTheDocument();
+  });
+
+  it('renders a skeleton while single alert call information loads', () => {
+    render(
+      <AlertDetail
+        alert={{
+          ...baseAlert,
+          type: 'sentiment_threshold',
+          callId: 'call-1',
+          ruleLabel: 'Negative sentiment threshold breached',
+          issue: 'Call sentiment score fell below the configured threshold.',
+          matchedCount: null,
+          windowDays: null,
+        }}
+        relatedCalls={[]}
+        isLoadingRelatedCalls
+        {...baseProps}
+      />
+    );
+
+    expect(screen.getByText('Call Information')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Loading call information' })).toBeInTheDocument();
   });
 });

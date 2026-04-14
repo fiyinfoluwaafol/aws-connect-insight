@@ -6,6 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SentimentBadge } from '@/components/SentimentBadge';
 import { AlertTriangle, CheckCircle, User, Clock } from 'lucide-react';
 import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
@@ -60,34 +61,60 @@ export function AlertDetail({
               <p className="text-sm text-muted-foreground">{alert.issue}</p>
             </div>
 
-            {!isRecurringAlert && primaryCall && (
+            {!isRecurringAlert && (isLoadingRelatedCalls || primaryCall) && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                 <h5 className="text-sm font-medium">Call Information</h5>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    {primaryCall.agentName}
+                {isLoadingRelatedCalls ? (
+                  <div
+                    className="space-y-3"
+                    role="status"
+                    aria-label="Loading call information"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </div>
+                    <Skeleton className="h-9 w-full" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    {Math.floor(primaryCall.durationSec / 60)}m {primaryCall.durationSec % 60}s
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Sentiment:</span>
-                  <SentimentBadge sentiment={primaryCall.sentimentLabel} />
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    onOpenCall(primaryCall.id);
-                    onClose();
-                  }}
-                >
-                  View Full Call Details
-                </Button>
+                ) : primaryCall ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        {primaryCall.agentName}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        {Math.floor(primaryCall.durationSec / 60)}m {primaryCall.durationSec % 60}s
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Sentiment:</span>
+                      <SentimentBadge sentiment={primaryCall.sentimentLabel} />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        onOpenCall(primaryCall.id);
+                        onClose();
+                      }}
+                    >
+                      View Full Call Details
+                    </Button>
+                  </>
+                ) : null}
               </div>
             )}
 
@@ -98,7 +125,21 @@ export function AlertDetail({
                   {alert?.matchedCount ? ` (${alert.matchedCount})` : ''}
                 </h5>
                 {isLoadingRelatedCalls ? (
-                  <p className="text-sm text-muted-foreground">Loading related calls...</p>
+                  <div
+                    className="space-y-2"
+                    role="status"
+                    aria-label="Loading affected calls"
+                  >
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3"
+                      >
+                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                      </div>
+                    ))}
+                  </div>
                 ) : relatedCalls.length > 0 ? (
                   <div className="space-y-2">
                     {relatedCalls.map((call) => (
