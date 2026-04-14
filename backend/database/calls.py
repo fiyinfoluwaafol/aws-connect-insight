@@ -1,5 +1,7 @@
 """Call record helpers."""
 
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 
 from supabase import Client
@@ -9,6 +11,37 @@ from .decorators import db_operation
 from .exceptions import NotFoundError
 
 MAX_PER_PAGE = 100
+
+
+def _apply_call_search_filters(
+    query,
+    *,
+    agent_id: str | None,
+    date_from: str | None,
+    date_to: str | None,
+    sentiment_min: float | None,
+    sentiment_max: float | None,
+    keyword: str | None,
+    topic: str | None,
+):
+    """Apply shared filters for call search (calls + inner call_analyses)."""
+    if agent_id is not None:
+        query = query.eq("agent_id", agent_id)
+    if date_from is not None:
+        query = query.gte("started_at", date_from)
+    if date_to is not None:
+        next_day = (datetime.fromisoformat(date_to) + timedelta(days=1)).strftime("%Y-%m-%d")
+        query = query.lt("started_at", next_day)
+
+    if sentiment_min is not None:
+        query = query.gte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_min)
+    if sentiment_max is not None:
+        query = query.lte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_max)
+    if keyword:
+        query = query.ilike("call_analyses.summary", f"%{keyword}%")
+    if topic:
+        query = query.contains(f"{Tables.CALL_ANALYSES}.topics", f'["{topic}"]')
+    return query
 
 
 @db_operation
@@ -94,32 +127,44 @@ def search_calls(
         page = 1
     per_page = min(per_page, MAX_PER_PAGE)
 
+    # Count distinct calls: join only analyses (1:1). Embedding call_analysis_topics
+    # multiplies rows and inflates PostgREST count="exact" vs. the paged rows.
+    count_query = (
+        client.table(Tables.CALLS)
+        .select(f"id,{Tables.CALL_ANALYSES}!inner(id)", count="exact")
+        .eq("team_id", team_id)
+    )
+    count_query = _apply_call_search_filters(
+        count_query,
+        agent_id=agent_id,
+        date_from=date_from,
+        date_to=date_to,
+        sentiment_min=sentiment_min,
+        sentiment_max=sentiment_max,
+        keyword=keyword,
+        topic=topic,
+    )
+    count_result = count_query.execute()
+    total = count_result.count if count_result.count is not None else 0
+
     query = (
         client.table(Tables.CALLS)
         .select(
             f"*, {Tables.CALL_ANALYSES}!inner(*, "
             f"{Tables.CALL_ANALYSIS_TOPICS}({Tables.TOPICS}(name)))",
-            count="exact",
         )
         .eq("team_id", team_id)
     )
-
-    if agent_id is not None:
-        query = query.eq("agent_id", agent_id)
-    if date_from is not None:
-        query = query.gte("started_at", date_from)
-    if date_to is not None:
-        next_day = (datetime.fromisoformat(date_to) + timedelta(days=1)).strftime("%Y-%m-%d")
-        query = query.lt("started_at", next_day)
-
-    if sentiment_min is not None:
-        query = query.gte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_min)
-    if sentiment_max is not None:
-        query = query.lte(f"{Tables.CALL_ANALYSES}.sentiment_score", sentiment_max)
-    if keyword:
-        query = query.ilike("call_analyses.summary", f"%{keyword}%")
-    if topic:
-        query = query.contains(f"{Tables.CALL_ANALYSES}.topics", f'["{topic}"]')
+    query = _apply_call_search_filters(
+        query,
+        agent_id=agent_id,
+        date_from=date_from,
+        date_to=date_to,
+        sentiment_min=sentiment_min,
+        sentiment_max=sentiment_max,
+        keyword=keyword,
+        topic=topic,
+    )
 
     if sort == SortOrder.OLDEST:
         query = query.order("started_at", desc=False)
@@ -131,4 +176,4 @@ def search_calls(
     query = query.range(offset, offset + per_page - 1)
 
     result = query.execute()
-    return {"calls": result.data, "total": result.count}
+    return {"calls": result.data, "total": total}
