@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SentimentBadge } from '@/components/SentimentBadge';
 import { AlertTriangle, CheckCircle, User, Clock } from 'lucide-react';
 import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/supervisor-alerts';
+
+const MIN_RELATED_CALLS_SKELETON_MS = 250;
 
 export interface AlertDetailProps {
   alert: SupervisorAlertViewModel | null;
@@ -33,6 +36,10 @@ export function AlertDetail({
   severityClassName,
 }: AlertDetailProps) {
   const primaryCall = relatedCalls[0];
+  const showRelatedCallsSkeleton = useMinimumLoadingState(
+    isLoadingRelatedCalls,
+    MIN_RELATED_CALLS_SKELETON_MS
+  );
   const isRecurringAlert =
     alert?.type === 'recurring_topic' || alert?.type === 'recurring_keyword';
 
@@ -61,9 +68,9 @@ export function AlertDetail({
               <p className="text-sm text-muted-foreground">{alert.issue}</p>
             </div>
 
-            {!isRecurringAlert && (isLoadingRelatedCalls || primaryCall) && (
+            {!isRecurringAlert && (showRelatedCallsSkeleton || primaryCall) && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {isLoadingRelatedCalls ? (
+                {showRelatedCallsSkeleton ? (
                   <div
                     className="space-y-3"
                     role="status"
@@ -121,7 +128,7 @@ export function AlertDetail({
 
             {isRecurringAlert && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {isLoadingRelatedCalls ? (
+                {showRelatedCallsSkeleton ? (
                   <div
                     className="space-y-3"
                     role="status"
@@ -204,4 +211,23 @@ export function AlertDetail({
       </SheetContent>
     </Sheet>
   );
+}
+
+function useMinimumLoadingState(isLoading: boolean, minimumMs: number) {
+  const [showLoading, setShowLoading] = useState(isLoading);
+
+  useEffect(() => {
+    if (isLoading) {
+      setShowLoading(true);
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShowLoading(false);
+    }, minimumMs);
+
+    return () => window.clearTimeout(timeout);
+  }, [isLoading, minimumMs]);
+
+  return showLoading;
 }

@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import { AlertDetail } from '../AlertDetail';
 
 describe('AlertDetail', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const baseAlert = {
     id: 'alert-1',
     type: 'recurring_keyword' as const,
@@ -26,26 +30,28 @@ describe('AlertDetail', () => {
     severityClassName: () => 'severity',
   };
 
+  const baseCall = {
+    id: 'call-1',
+    agentId: 'agent-1',
+    agentName: 'Ada Lovelace',
+    startedAt: '2026-04-02T12:00:00Z',
+    durationSec: 240,
+    sentimentScore: -0.3,
+    sentimentLabel: 'negative' as const,
+    topics: ['refund'],
+    resolved: false,
+    csat: null,
+    customerName: 'Customer',
+    hasOpenAlert: false,
+    openAlertId: null,
+  };
+
   it('renders affected calls for recurring alerts', () => {
     render(
       <AlertDetail
         alert={baseAlert}
         relatedCalls={[
-          {
-            id: 'call-1',
-            agentId: 'agent-1',
-            agentName: 'Ada Lovelace',
-            startedAt: '2026-04-02T12:00:00Z',
-            durationSec: 240,
-            sentimentScore: -0.3,
-            sentimentLabel: 'negative',
-            topics: ['refund'],
-            resolved: false,
-            csat: null,
-            customerName: 'Customer',
-            hasOpenAlert: false,
-            openAlertId: null,
-          },
+          baseCall,
           {
             id: 'call-2',
             agentId: 'agent-2',
@@ -106,5 +112,36 @@ describe('AlertDetail', () => {
 
     expect(screen.getByRole('status', { name: 'Loading call information' })).toBeInTheDocument();
     expect(screen.queryByText('Call Information')).not.toBeInTheDocument();
+  });
+
+  it('keeps the skeleton visible briefly after calls finish loading', () => {
+    vi.useFakeTimers();
+
+    const { rerender } = render(
+      <AlertDetail
+        alert={baseAlert}
+        relatedCalls={[]}
+        isLoadingRelatedCalls
+        {...baseProps}
+      />
+    );
+
+    rerender(
+      <AlertDetail
+        alert={baseAlert}
+        relatedCalls={[baseCall]}
+        isLoadingRelatedCalls={false}
+        {...baseProps}
+      />
+    );
+
+    expect(screen.getByRole('status', { name: 'Loading affected calls' })).toBeInTheDocument();
+    expect(screen.queryByText('Affected Calls (2)')).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    expect(screen.getByText('Affected Calls (2)')).toBeInTheDocument();
   });
 });
