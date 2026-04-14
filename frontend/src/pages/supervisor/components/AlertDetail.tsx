@@ -15,9 +15,9 @@ import type { SupervisorAlertViewModel, SupervisorCallViewModel } from '@/lib/su
 const MIN_RELATED_CALLS_SKELETON_MS = 250;
 const RELATED_CALLS_CROSSFADE_MS = 650;
 const LOADED_RELATED_CALLS_CLASSNAME =
-  'space-y-3 animate-in fade-in-0 duration-700 ease-out';
+  'space-y-3 col-start-1 row-start-1 animate-in fade-in-0 duration-700 ease-out';
 const CROSSFADE_SKELETON_CLASSNAME =
-  'space-y-3 animate-out fade-out-0 duration-500 ease-out';
+  'space-y-3 col-start-1 row-start-1 animate-out fade-out-0 duration-500 ease-out';
 
 type LoadingTransitionPhase = 'loading' | 'crossfading' | 'loaded';
 
@@ -50,6 +50,7 @@ export function AlertDetail({
   );
   const showRelatedCallsSkeleton = relatedCallsLoadingPhase !== 'loaded';
   const showRelatedCallsContent = relatedCallsLoadingPhase !== 'loading';
+  const isCrossfadingRelatedCalls = relatedCallsLoadingPhase === 'crossfading';
   const isRecurringAlert =
     alert?.type === 'recurring_topic' || alert?.type === 'recurring_keyword';
 
@@ -80,61 +81,56 @@ export function AlertDetail({
 
             {!isRecurringAlert && (showRelatedCallsSkeleton || primaryCall) && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {showRelatedCallsSkeleton && showRelatedCallsContent ? (
-                  <div className="grid">
+                <div className="grid">
+                  {showRelatedCallsSkeleton ? (
                     <CallInformationSkeleton
-                      className={`${CROSSFADE_SKELETON_CLASSNAME} col-start-1 row-start-1`}
-                      ariaHidden
+                      key="call-information-skeleton"
+                      className={
+                        isCrossfadingRelatedCalls
+                          ? CROSSFADE_SKELETON_CLASSNAME
+                          : undefined
+                      }
+                      ariaHidden={showRelatedCallsContent}
                     />
-                    {primaryCall ? (
-                      <CallInformationContent
-                        call={primaryCall}
-                        onOpenCall={onOpenCall}
-                        onClose={onClose}
-                        className={`${LOADED_RELATED_CALLS_CLASSNAME} col-start-1 row-start-1`}
-                      />
-                    ) : null}
-                  </div>
-                ) : showRelatedCallsSkeleton ? (
-                  <CallInformationSkeleton />
-                ) : primaryCall ? (
-                  <CallInformationContent
-                    call={primaryCall}
-                    onOpenCall={onOpenCall}
-                    onClose={onClose}
-                    className={LOADED_RELATED_CALLS_CLASSNAME}
-                  />
-                ) : null}
+                  ) : null}
+                  {showRelatedCallsContent && primaryCall ? (
+                    <CallInformationContent
+                      key="call-information-content"
+                      call={primaryCall}
+                      onOpenCall={onOpenCall}
+                      onClose={onClose}
+                      className={LOADED_RELATED_CALLS_CLASSNAME}
+                    />
+                  ) : null}
+                </div>
               </div>
             )}
 
             {isRecurringAlert && (
               <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                {showRelatedCallsSkeleton && showRelatedCallsContent ? (
-                  <div className="grid">
+                <div className="grid">
+                  {showRelatedCallsSkeleton ? (
                     <AffectedCallsSkeleton
-                      className={`${CROSSFADE_SKELETON_CLASSNAME} col-start-1 row-start-1`}
-                      ariaHidden
+                      key="affected-calls-skeleton"
+                      className={
+                        isCrossfadingRelatedCalls
+                          ? CROSSFADE_SKELETON_CLASSNAME
+                          : undefined
+                      }
+                      ariaHidden={showRelatedCallsContent}
                     />
+                  ) : null}
+                  {showRelatedCallsContent ? (
                     <AffectedCallsContent
+                      key="affected-calls-content"
                       alert={alert}
                       relatedCalls={relatedCalls}
                       onOpenCall={onOpenCall}
                       onClose={onClose}
-                      className={`${LOADED_RELATED_CALLS_CLASSNAME} col-start-1 row-start-1`}
+                      className={LOADED_RELATED_CALLS_CLASSNAME}
                     />
-                  </div>
-                ) : showRelatedCallsSkeleton ? (
-                  <AffectedCallsSkeleton />
-                ) : (
-                  <AffectedCallsContent
-                    alert={alert}
-                    relatedCalls={relatedCalls}
-                    onOpenCall={onOpenCall}
-                    onClose={onClose}
-                    className={LOADED_RELATED_CALLS_CLASSNAME}
-                  />
-                )}
+                  ) : null}
+                </div>
               </div>
             )}
 
@@ -165,7 +161,7 @@ export function AlertDetail({
 }
 
 function CallInformationSkeleton({
-  className = 'space-y-3',
+  className = 'space-y-3 col-start-1 row-start-1',
   ariaHidden = false,
 }: {
   className?: string;
@@ -242,7 +238,7 @@ function CallInformationContent({
 }
 
 function AffectedCallsSkeleton({
-  className = 'space-y-3',
+  className = 'space-y-3 col-start-1 row-start-1',
   ariaHidden = false,
 }: {
   className?: string;
