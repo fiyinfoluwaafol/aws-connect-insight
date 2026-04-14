@@ -130,7 +130,7 @@ def test_simulate_call_returns_enriched_payload(
     monkeypatch.setattr(calls_router, "add_keywords_to_analysis", add_keywords_mock)
     monkeypatch.setattr(calls_router, "get_team_by_id", get_team_mock)
     monkeypatch.setattr(calls_router, "evaluate_alert_rules_for_call", evaluate_alerts_mock)
-    # Simulate uses randint only for duration_seconds and recording URL id (started_at is now "now").
+    # randint: duration_seconds and recording URL id only (started_at is set to "now").
     monkeypatch.setattr(
         calls_router.random,
         "randint",

@@ -363,7 +363,7 @@ def simulate_call(
     agent_id = current_user.get("id")
     team_id = _get_user_team_id(current_user)
 
-    # UTC so clients can parse unambiguously; Date#toLocaleString() then shows the user's local time correctly.
+    # UTC so clients parse unambiguously; browsers show local time via toLocaleString().
     call_time = datetime.now(timezone.utc)
     duration = random.randint(120, 1200)  # 2-20 minutes
 
