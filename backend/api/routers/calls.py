@@ -2,7 +2,7 @@
 
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -363,8 +363,8 @@ def simulate_call(
     agent_id = current_user.get("id")
     team_id = _get_user_team_id(current_user)
 
-    # Current time so the new row sorts first in "recent" lists (search uses started_at desc + small page size).
-    call_time = datetime.now()
+    # UTC so clients can parse unambiguously; Date#toLocaleString() then shows the user's local time correctly.
+    call_time = datetime.now(timezone.utc)
     duration = random.randint(120, 1200)  # 2-20 minutes
 
     try:

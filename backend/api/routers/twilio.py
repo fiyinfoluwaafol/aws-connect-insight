@@ -3,7 +3,7 @@
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
@@ -146,7 +146,7 @@ def _process_recording(
             team_id=team_id,
             recording_url=recording_url,
             duration_seconds=recording_duration,
-            started_at=datetime.now().isoformat(),
+            started_at=datetime.now(timezone.utc).isoformat(),
             transcript=transcript,
         )
         logger.info("Created call %s for Twilio call SID %s", call["id"], call_sid)

@@ -10,6 +10,7 @@ import { SentimentBadge } from '@/components/SentimentBadge';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { pageShellClassName } from '@/lib/page-animation';
+import { parseBackendTimestamp } from '@/lib/datetime';
 import { toast } from '@/hooks/use-toast';
 import {
   Lightbulb,
@@ -195,7 +196,10 @@ export default function AgentHome() {
       transcript: [] as Array<{ speaker: string; text: string; timestamp?: string }>,
     }));
 
-    rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    rows.sort(
+      (a, b) =>
+        parseBackendTimestamp(b.createdAt).getTime() - parseBackendTimestamp(a.createdAt).getTime()
+    );
 
     return rows;
   }, [apiCalls]);
@@ -294,7 +298,8 @@ export default function AgentHome() {
         const merged = [item, ...without];
         merged.sort(
           (a, b) =>
-            new Date(b.started_at ?? 0).getTime() - new Date(a.started_at ?? 0).getTime()
+            parseBackendTimestamp(b.started_at).getTime() -
+            parseBackendTimestamp(a.started_at).getTime()
         );
         return merged.slice(0, 5);
       });
@@ -574,7 +579,7 @@ export default function AgentHome() {
                             </Badge>
                           ) : null}
                           <span className="text-xs text-muted-foreground">
-                            {new Date(call.createdAt).toLocaleString()}
+                            {parseBackendTimestamp(call.createdAt).toLocaleString()}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">{call.summary}</p>
