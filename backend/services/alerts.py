@@ -30,7 +30,13 @@ def _normalize_values(values: list[str] | dict[str, bool] | None) -> set[str]:
 
 
 def _parse_iso_datetime(value: str) -> datetime:
-    """Parse ISO timestamps that may include a trailing Z."""
+    """Parse ISO timestamps that may include a trailing Z.
+
+    Raises:
+        ValueError: If value is empty or blank.
+    """
+    if not value or not value.strip():
+        raise ValueError(f"Cannot parse timestamp: expected a non-empty ISO string, got {value!r}")
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 

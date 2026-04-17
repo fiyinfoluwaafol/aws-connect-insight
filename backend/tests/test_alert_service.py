@@ -6,6 +6,25 @@ import pytest
 
 from database.constants import AlertRuleType
 from services import alerts as alert_service
+from services.alerts import _parse_iso_datetime
+
+
+def test_parse_iso_datetime_handles_z_suffix() -> None:
+    """_parse_iso_datetime should normalise the Z suffix to +00:00."""
+    dt = _parse_iso_datetime("2026-04-02T12:00:00Z")
+    assert dt.isoformat() == "2026-04-02T12:00:00+00:00"
+
+
+def test_parse_iso_datetime_raises_on_empty_string() -> None:
+    """_parse_iso_datetime should raise ValueError for empty input, not a cryptic internal error."""
+    with pytest.raises(ValueError, match="Cannot parse timestamp"):
+        _parse_iso_datetime("")
+
+
+def test_parse_iso_datetime_raises_on_blank_string() -> None:
+    """_parse_iso_datetime should raise ValueError for whitespace-only input."""
+    with pytest.raises(ValueError, match="Cannot parse timestamp"):
+        _parse_iso_datetime("   ")
 
 
 def test_evaluate_alert_rules_triggers_sentiment_rule(monkeypatch: pytest.MonkeyPatch) -> None:
