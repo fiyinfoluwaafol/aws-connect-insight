@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAppStore } from '@/stores/app-store';
+import { exportPDF, exportPDFText, sendEmailMock } from '@/lib/export';
 import { MockService } from '@/lib/mock-service';
 import { toast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/PageHeader';
@@ -49,7 +50,7 @@ export default function DailyBriefs() {
   const handleExportPDF = async (brief: DailyBrief) => {
     setExporting(true);
     try {
-      await MockService.exportPDF('brief-content', `daily-brief-${brief.date}`);
+      await exportPDF('brief-content', `daily-brief-${brief.date}`);
       toast({
         title: 'PDF Exported',
         description: 'The daily brief has been downloaded as PDF.',
@@ -79,7 +80,7 @@ EXEMPLAR CALLS
 ${brief.content.exemplarLinks.join(', ')}
       `.trim();
 
-      await MockService.exportPDFText(content, `daily-brief-${brief.date}`);
+      await exportPDFText(content, `daily-brief-${brief.date}`);
       toast({
         title: 'PDF Exported',
         description: 'The daily brief has been downloaded as PDF.',
@@ -90,7 +91,7 @@ ${brief.content.exemplarLinks.join(', ')}
   };
 
   const handleEmailBrief = (brief: DailyBrief) => {
-    const result = MockService.sendEmailMock(
+    const result = sendEmailMock(
       'leadership@demo.com',
       `Daily Brief - ${brief.date}`,
       `Daily brief report for ${brief.date}. Total calls: ${brief.content.totalCalls}, Average sentiment: ${brief.content.avgSentiment}`
