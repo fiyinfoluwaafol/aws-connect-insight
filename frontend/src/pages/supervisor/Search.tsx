@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Call } from '@/lib/mock-data';
+import { exportCSV } from '@/lib/export';
 import { MockService, SearchResult } from '@/lib/mock-service';
 import { callsApi, teamsApi, alertsApi, AgentInfo } from '@/lib/api';
 import { CallDetailDrawer, CallDetailCall } from '@/components/CallDetailDrawer';
@@ -131,7 +132,7 @@ export default function CallSearch() {
       resolved: call.resolved ? 'Yes' : 'No',
     }));
 
-    MockService.exportCSV(data, `call-search-${new Date().toISOString().split('T')[0]}`);
+    exportCSV(data, `call-search-${new Date().toISOString().split('T')[0]}`);
     toast({
       title: 'Export Complete',
       description: `${data.length} calls exported to CSV.`,

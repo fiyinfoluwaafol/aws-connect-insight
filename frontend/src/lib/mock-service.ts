@@ -1,7 +1,5 @@
 import { mockData, Call, CallSummary } from './mock-data';
 import { useAppStore } from '@/stores/app-store';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 export interface SearchParams {
   keyword?: string;
@@ -125,112 +123,6 @@ export const MockService = {
     
     useAppStore.getState().addDailyBrief(brief);
     return brief;
-  },
-
-  exportCSV(data: Record<string, unknown>[], filename: string) {
-    if (data.length === 0) return;
-    
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(','),
-      ...data.map((row) =>
-        headers.map((h) => {
-          const val = row[h];
-          if (typeof val === 'string' && (val.includes(',') || val.includes('"'))) {
-            return `"${val.replace(/"/g, '""')}"`;
-          }
-          return val;
-        }).join(',')
-      ),
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  },
-
-  async exportPDF(elementId: string, filename: string): Promise<void> {
-    const element = document.getElementById(elementId);
-    
-    if (!element) {
-      // Fallback to text-based PDF if no element found
-      console.warn('Element not found for PDF export, using fallback');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.setFontSize(20);
-      pdf.text('Daily Brief Report', 105, 20, { align: 'center' });
-      pdf.setFontSize(12);
-      pdf.text('Content not available', 20, 40);
-      pdf.save(`${filename}.pdf`);
-      return;
-    }
-
-    try {
-      // Use html2canvas to capture the element
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
-      
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${filename}.pdf`);
-    } catch (error) {
-      console.error('PDF export failed:', error);
-      // Fallback to text-based PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.setFontSize(20);
-      pdf.text('Daily Brief Report', 105, 20, { align: 'center' });
-      pdf.setFontSize(12);
-      pdf.text('Export failed - please try again', 20, 40);
-      pdf.save(`${filename}.pdf`);
-    }
-  },
-
-  // Legacy text-based PDF export for backwards compatibility
-  async exportPDFText(content: string, filename: string) {
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    
-    pdf.setFontSize(20);
-    pdf.text('Daily Brief Report', pageWidth / 2, 20, { align: 'center' });
-    
-    pdf.setFontSize(12);
-    const lines = content.split('\n');
-    let y = 40;
-    
-    lines.forEach((line) => {
-      if (y > 280) {
-        pdf.addPage();
-        y = 20;
-      }
-      pdf.text(line, 10, y);
-      y += 7;
-    });
-    
-    pdf.save(`${filename}.pdf`);
-  },
-
-  sendEmailMock(to: string, subject: string, body: string) {
-    useAppStore.getState().addSentEmail({ to, subject, body });
-    return { success: true, message: `Email queued to ${to}` };
   },
 
   generatePostCallTips(call: Call): { tips: string[]; reason: string } {
