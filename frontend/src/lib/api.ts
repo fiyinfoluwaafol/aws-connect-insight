@@ -6,6 +6,18 @@ interface ApiError {
   detail: string;
 }
 
+// ✨ I (Improve): Added explicit error class to preserve HTTP status codes and provide type safety.
+export class ApiRequestError extends Error {
+  constructor(
+    public message: string,
+    public status?: number,
+    public data?: any
+  ) {
+    super(message);
+    this.name = 'ApiRequestError';
+  }
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -18,20 +30,32 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
-      ...options,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    
+    let response: Response;
+    
+    // ✨ I (Improve): Added defensive error handling for pure network/CORS failures
+    try {
+      response = await fetch(url, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new ApiRequestError('Network error: Unable to reach the server. Please check your connection.', 0);
+      }
+      throw new ApiRequestError('An unexpected request error occurred.', 0);
+    }
 
     if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
+      const errorData: ApiError = await response.json().catch(() => ({
         detail: 'An unexpected error occurred',
       }));
-      throw new Error(error.detail);
+      // ✨ V (Verify): Custom error thrown here to preserve 'response.status' for the UI
+      throw new ApiRequestError(errorData.detail, response.status, errorData);
     }
 
     // Handle 204 No Content
